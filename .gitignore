@@ -49,3 +49,16 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+.Rproj.user
+
+*.[cC][sS][vV]*
+
+# excel files
+*.[xX][lL][sS]*
+
+#sav files
+*.[sS][aA][vV]*
+
+#zip files
+
+*.[zZ][iI][pP]*
