@@ -1,0 +1,18 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rprofile
+*.[cC][sS][vV]*
+
+#excel files
+*.[xX][lL][sS]*
+
+#zip files
+*.[zZ][iI][pP]*
+
+# History files
+.Rapp.history
+
+#sav files
+*.[sS][aA][vV]*
