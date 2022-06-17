@@ -14,7 +14,7 @@
 
 #### 1 - Packages and functions ----
 #1.1 - Load libraries ----
-source("packages.R")
+source("packages/packages.R")
 
 Sys.umask("002") # Used to ensure directory permissions are correct
 
