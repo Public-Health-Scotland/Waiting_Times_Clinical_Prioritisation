@@ -38,10 +38,15 @@ rsconnect/
 
 .Rproj.user
 
+# data folder
+data/**
+
+# csv files
 *.[cC][sS][vV]*
 
 # excel files
 *.[xX][lL][sS]*
+*.[xX][lL][sS][xX]*
 
 #sav files
 *.[sS][aA][vV]*
