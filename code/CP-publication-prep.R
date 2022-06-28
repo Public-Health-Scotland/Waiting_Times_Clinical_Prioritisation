@@ -93,6 +93,7 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 #2.2 - Performance ----
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
+#2.2.1 - Monthly ---- 
 perf <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
@@ -110,6 +111,48 @@ perf_split <- perf %>%
                 y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
+
+#Save version for DQ shiny app ----
+perf_split_monthly <- perf_split %>%
+  select(-c(starts_with("Waited"), y_max)) %>%
+  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
+
+saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
+
+#2.2.2 - Quarterly ---- 
+
+#Note that this is done by summing up monthly data until the queries have been re-run
+perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =as.Date(as.yearqtr(openxlsx::convertToDate(date), format = "Q%q/%y"), frac = 1), #Convert dates from Excel format 
+         #mutate(date = date) %>%
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  filter(!specialty %in% exclusions) %>% #note no date filter so that we get the whole quarter for June - September
+  complete(urgency, date, ongoing_completed, 
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_12_weeks = 0)) %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, urgency, date) %>%
+    summarise_all(sum, na.rm=T) %>%
+    mutate(median = round(median/3,1), #Added this to calculate quasi-median, can remove this after the reports have been refreshed!
+           `90th_percentile` = round(`90th_percentile`/3,1)
+           ) %>%
+    ungroup()
+
+#Create version of data that has proportions per CP code per month
+perf_qtr_split <- perf_qtr %>% 
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
+  mutate(`proportion_seen/on_list` = 100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T),
+         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
+  mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
+
+#Save version for DQ shiny app ----
+perf_split_qtr <- perf_qtr_split %>%
+  select(-c(starts_with("Waited"), y_max)) %>%
+  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
+
+saveRDS(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
 
 #2.3 - Distribution of wait ----
 dow_4wk <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
@@ -191,7 +234,7 @@ specstats %<>% filter(specialty %in% topsix$specialty)
 
 #Graph
 topsixplot <- perf_split %>%
-  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max(date)) %>%
+  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max(date)) %>% #Amend to include latest quarter for completed waits!
   ggplot(aes(x = specialty, y = `proportion_seen/on_list`, colour = urgency, fill = urgency), group = ongoing_completed) +
   geom_bar(stat="identity") +
   facet_wrap(~ongoing_completed, nrow=2, scales = "free_y") +
@@ -256,11 +299,11 @@ dow_hb %<>%
 #Plot of proportions by HBT
 dow_hbplot <- dow_hb %>%
   mutate(indicator = factor(indicator, 
-                            levels = c("< 4 weeks", "4-12 weeks", "12-24 weeks", "24-52 weeks", "52-76 weeks", "76-104 weeks", "> 104 weeks")),
-         nhs_board_of_treatment = factor(nhs_board_of_treatment,                                    # Factor levels in decreasing order
-                                         levels = nhs_board_of_treatment[order(percentage[indicator=="<4 weeks"], decreasing = TRUE)])) %>%
+                            levels = c("< 4 weeks", "4-12 weeks", "12-24 weeks", "24-52 weeks", "52-76 weeks", "76-104 weeks", "> 104 weeks"))#,
+        # nhs_board_of_treatment = factor(nhs_board_of_treatment,                                    # Factor levels in decreasing order
+                    #                     levels = nhs_board_of_treatment[order(percentage[indicator=="< 4 weeks"], decreasing = TRUE)])
+        ) %>%
   filter(specialty=="All Specialties", date == as.Date("2022-03-31"), urgency == "All CP codes", ongoing_completed =="Ongoing", !nhs_board_of_treatment=="NHS Scotland") %>%
-  
   ggplot(aes(x = nhs_board_of_treatment, y = percentage, fill = indicator, colour = indicator)) +
   geom_bar(position = position_fill(reverse = TRUE), stat="identity") +
   theme_bw() +
