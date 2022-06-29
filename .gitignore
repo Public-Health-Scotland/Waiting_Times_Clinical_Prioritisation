@@ -1,6 +1,6 @@
 
 # ---> R
-Clinical_Prioritisation.Rproj
+r_code_maiana.Rproj
 
 # History files
 .Rhistory
@@ -42,6 +42,9 @@ rsconnect/
 
 # data folder
 data/**
+
+#functions folder
+functions/**
 
 # csv files
 *.[cC][sS][vV]*
