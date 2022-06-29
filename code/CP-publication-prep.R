@@ -21,7 +21,7 @@ Sys.umask(002) #Used to ensure directory permissions are correct
 
 #1.2 - Dates ----
 min_date <- as.Date("2021-09-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
-max_date <- as.Date("2022-03-31")
+max_date <- as.Date("2022-06-30")
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -259,13 +259,13 @@ dow_barplot <- dow_4wk %>%
   geom_blank(aes(y = plyr::round_any(y_max,2000,f = ceiling))) +
   facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top") +
   ylab(NULL) +
-  xlab("Weeks waiting") +
+ xlab("Weeks waiting") +
   theme(text = element_text(size = 16),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
-        panel.grid.minor.x = element_blank(), 
-        panel.grid.major.x = element_blank(),
+        striptext.x = element_text(angle = 0,hjust = 0,size = 16),
+        panel.grid.minor.x = lement_blank(), 
+        panel.r.x = element_blank(),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
         legend.position="bottom")
@@ -386,8 +386,120 @@ additions_trendplot <- addrem %>%
 
 ####3.4 - Additions by HBR ----
 
+#3.4.1 - Rates per 100k population ----
+
+pop_path <- dplyr::if_else(platform == "server",
+                           "/conf/linkage/output/lookups/Unicode/Populations",
+                           "//stats/cl-out/lookups/Unicode/Populations")
+
+#Get 2021 populations and calculate Scotland total
+popproj <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+  mutate(board = paste0("NHS ",str_replace(hb2019name, " and ", " & "))) %>% #Reformat names to match other data 
+  group_by(board, year) %>%
+  summarise(pop = sum(pop, na.rm=T)) %>%
+  bind_rows(readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+              group_by(year) %>%
+              summarise(pop = sum(pop, na.rm=T)) %>%
+              mutate(board = "NHS Scotland")) %>%
+  filter(year >= "2021")
+
+#Get population estimates and calculate Scotland total
+popest <- readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
+  mutate(board = str_replace(hb2019name, " and ", " & ")) %>% #Reformat names to match other data 
+  group_by(board, year) %>%
+  summarise(pop = sum(pop, na.rm=T)) %>%
+  bind_rows(readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
+              group_by(year) %>%
+              summarise(pop = sum(pop, na.rm=T)) %>%
+              mutate(board = "NHS Scotland"))
+
+#Create combined population df
+pop <- bind_rows(popest, popproj)
+
+pop_path <- dplyr::if_else(platform == "server",
+                           "/conf/linkage/output/lookups/Unicode/Populations",
+                           "//stats/cl-out/lookups/Unicode/Populations")
+
+#Get 2021 populations and calculate Scotland total
+popproj <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+  mutate(board = paste0("NHS ",str_replace(hb2019name, " and ", " & "))) %>% #Reformat names to match other data 
+  group_by(board, year) %>%
+  summarise(pop = sum(pop, na.rm=T)) %>%
+  bind_rows(readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+              group_by(year) %>%
+              summarise(pop = sum(pop, na.rm=T)) %>%
+              mutate(board = "NHS Scotland")) %>%
+  filter(year >= "2021")
+
+#Get population estimates and calculate Scotland total
+popest <- readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
+  mutate(board = str_replace(hb2019name, " and ", " & ")) %>% #Reformat names to match other data 
+  group_by(board, year) %>%
+  summarise(pop = sum(pop, na.rm=T)) %>%
+  bind_rows(readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
+              group_by(year) %>%
+              summarise(pop = sum(pop, na.rm=T)) %>%
+              mutate(board = "NHS Scotland"))
+
+#Create combined population df
+pop <- bind_rows(popest, popproj) %>%
+  mutate(board = toupper(board))
+
+
+#Calculate crude rates pet month
+add_rate <- addhbr %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, date) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  filter(!health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
+  ungroup() %>%
+  complete(date, urgency, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
+  mutate(year=year(date)) %>%
+  left_join(pop, by = c(health_board_of_residence="board","year")) %>%
+  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  select(-year) 
+
+#Calculate crude rates per quarter
+add_rate_qtr <- addhbr %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, date) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  filter(!health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
+  ungroup() %>%
+  complete(date, urgency, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(year=year(date)) %>%
+  left_join(pop, by = c(health_board_of_residence="board","year")) %>%
+  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  select(-year)
+
+#Graph for selected specialty ----
+
+rate_plot <- add_rate %>% 
+  filter(specialty == "All Specialties",
+         urgency %in% c("P2", "P3", "P4")) %>%
+  ggplot(aes(x = date, y = additions_per_100k, colour = health_board_of_residence)) +
+  geom_line(stat="identity") +
+  facet_wrap(~urgency) +
+  theme_bw() +
+  scale_x_date()
+
+rate_plot_2 <- add_rate %>% 
+  filter(specialty == "All Specialties",
+         urgency %in% c("P2", "P3", "P4")) %>%
+  ggplot(aes(x = date, y = additions_per_100k, colour = urgency, shape = urgency)) +
+  geom_line(stat="identity") +
+  geom_point(stat="identity") +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
+  facet_wrap(~health_board_of_residence, ncol = 3) +
+  theme_bw() +
+  scale_x_date(labels = date_format("%b %y")) +
+  scale_y_continuous(breaks = breaks_pretty(n = 5)) +
+  labs(x = NULL, y = "Crude rate of additions, per 100k population")
+  
+
+#cross-border flow
 cbf <- addhbr %>% 
- # group_by(health_board_of_residence, nhs_board_of_treatment, specialty, date) %>%
   filter(!nhs_board_of_treatment=="NHS Scotland",
          between(date, max(addhbr$date) - months(3), max(addhbr$date)),
          !nhs_board_of_treatment == "NHS Scotland",
