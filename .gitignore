@@ -43,6 +43,9 @@ rsconnect/
 # data folder
 data/**
 
+#functions folder
+functions/**
+
 # csv files
 *.[cC][sS][vV]*
 
