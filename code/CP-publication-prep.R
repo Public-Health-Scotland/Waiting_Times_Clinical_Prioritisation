@@ -163,6 +163,8 @@ perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Q
 #data for report up to latest complete quarter
 perf_qtr <- perf_qtr_all %>% 
   filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
+                ongoing_completed == "Completed")) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
@@ -172,6 +174,8 @@ perf_qtr <- perf_qtr_all %>%
 #data for CP DQ, up to latest month
 perf_qtr2 <- perf_qtr_all %>% 
   filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
+                ongoing_completed == "Completed")) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
