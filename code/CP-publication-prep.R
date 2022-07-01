@@ -95,31 +95,63 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
 #2.2.1 - Monthly ---- 
-perf <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+
+#monthly ipdc wt data
+perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Monthly Week Flags.xlsx"),
+                  sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
+
+#monthly data for report, Sept 2021 to latest complete quarter
+perf <- perf_all %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  complete(urgency, date, ongoing_completed, 
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0)) 
+#monthly data for cp code data quality investigation, sept 2021 to latest month
+perf2 <- perf_all %>% 
   filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_12_weeks = 0)) 
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0)) 
                   
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-         mutate(`proportion_seen/on_list` = 100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T),
+  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
+                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
                 y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
+
+
 #Save version for DQ shiny app ----
-perf_split_monthly <- perf_split %>%
-  select(-c(starts_with("Waited"), y_max)) %>%
-  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
+perf_split2 <- perf2 %>% 
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
+  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
+                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
+  mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
+
+perf_split_monthly <- perf_split2 %>%
+  select(-c(y_max)) %>%
+  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), 
+               names_to = "Indicator", values_to = "value")
+#check for NAs in value column for indicators (excl. median and percentiles)
+# sum(is.na(perf_split_monthly[!(perf_split_monthly$Indicator %in% c("median", 	
+#                                                        "90th_percentile")),8]))
 
 saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
 write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
+
 #2.2.2 - Quarterly ---- 
 
 #Note that this is done by summing up monthly data until the queries have been re-run
