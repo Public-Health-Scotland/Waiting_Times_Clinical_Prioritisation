@@ -153,8 +153,6 @@ saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/C
 write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 
 #2.2.2 - Quarterly ---- 
-
-
 perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
                       sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
@@ -198,10 +196,6 @@ perf_qtr_split2 <- perf_qtr2 %>%
   mutate(y_max = roundUpNice(max(y_max))) %>%  #calculate max y for graph limits
   select(-c(y_max)) %>% 
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
-
-# #perf_split_qtr <- perf_qtr_split %>%
-#   select(-c(starts_with("Waited"), y_max)) %>% #Change this line to get new >52 and >104 weeks waits
-#   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
 
 saveRDS(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
 write.xlsx(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
