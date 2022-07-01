@@ -154,36 +154,54 @@ write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MM
 
 #2.2.2 - Quarterly ---- 
 
-#Note that this is done by summing up monthly data until the queries have been re-run
-perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+
+perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
+                      sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         #mutate(date = date) %>%
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% 
-  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
-                ongoing_completed == "Completed")) %>% 
-  #convert monthly dates to end of quarter dates
- # mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
-#  group_by(across(-`number_seen/on_list`:`90th_percentile`)) %>% 
-  #get the sum of waits/patients seen for each quarter
-#  summarise(`number_seen/on_list` = sum(`number_seen/on_list`)) 
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) 
+
+#data for report up to latest complete quarter
+perf_qtr <- perf_qtr_all %>% 
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_12_weeks = 0))
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0)) 
+
+#data for CP DQ, up to latest month
+perf_qtr2 <- perf_qtr_all %>% 
+  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
+  complete(urgency, date, ongoing_completed, 
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0))
 
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = 100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T),
+  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
+                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
          y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
 #Save version for DQ shiny app ----
-perf_split_qtr <- perf_qtr_split %>%
-  select(-c(starts_with("Waited"), y_max)) %>% #Change this line to get new >52 and >104 weeks waits
+perf_qtr_split2 <- perf_qtr2 %>% 
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
+  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
+  mutate(y_max = roundUpNice(max(y_max))) %>%  #calculate max y for graph limits
+  select(-c(y_max)) %>% 
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
+
+# #perf_split_qtr <- perf_qtr_split %>%
+#   select(-c(starts_with("Waited"), y_max)) %>% #Change this line to get new >52 and >104 weeks waits
+#   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
 
 saveRDS(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
 write.xlsx(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
