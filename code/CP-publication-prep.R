@@ -95,15 +95,19 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
 #2.2.1 - Monthly ---- 
-perf <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+perf <- read.xlsx("data/Performance excl. Lothian Dental Monthly Week Flags.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_12_weeks = 0)) 
+                       waited_waiting_over_54_weeks = 0,
+                       waited_waiting_over_104_weeks = 0)) %>%
+  replace_na(list(`number_seen/on_list` = 0,
+                  waited_waiting_over_52_weeks = 0,
+                  waited_waiting_over_104_weeks = 0))
                   
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
@@ -123,7 +127,7 @@ write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MM
 #2.2.2 - Quarterly ---- 
 
 #Note that this is done by summing up monthly data until the queries have been re-run
-perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental Quarterly Week Flags.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          #mutate(date = date) %>%
@@ -138,10 +142,15 @@ perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental.xlsx", sheet = "IPD
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_12_weeks = 0))
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0)) %>%
+  replace_na(list(`number_seen/on_list` = 0,
+                  waited_waiting_over_52_weeks = 0,
+                  waited_waiting_over_104_weeks = 0))
 
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>% 
+  filter(date <= max_date) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = 100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T),
          y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
@@ -271,35 +280,54 @@ activity_trendplot <- trendbar(perf_split, "All Specialties", "NHS Scotland")
 
 #Identify top 6 specialties by number waiting, calculate what proportion of waiting and seen these represent 
 
-specstats <- perf  %>% 
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-       summarise(month = sum(`number_seen/on_list`[date == max(date)], na.rm=T),
-                 quarter = sum(`number_seen/on_list`[between(date, max(date)-months(2), max(date))], na.rm=T)) %>%
-       mutate(`number_seen/on_list` = if_else(ongoing_completed=="Ongoing", month, quarter)) %>%
-  ungroup() %>%
-  mutate(allspec = `number_seen/on_list`)[specialty=="All Specialties"])#,
-              proportion = 100*`number_seen/on_list`/allspec) %>%
-       select(-c(month, quarter))
-
+specstats <- perf_qtr  %>% 
+  group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment) %>%
+  mutate(allspec = sum(`number_seen/on_list`[specialty=="All Specialties"],na.rm=T)) %>% #Add all specialties total added to all rows
+  group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>% 
+  summarise(`total_seen/on_list` = sum(`number_seen/on_list`, na.rm = T), #Calculate total seen/waiting for each specialty (sum across CP codes)
+    proportion = 100*`total_seen/on_list`/allspec) %>% #Calculate the proportion of all seen/waiting for each specialty
+  unique()
+  
+    
 #List of top six specialties
 topsix <- specstats %>%
-  filter(ongoing_completed=="Ongoing", nhs_board_of_treatment == "NHS Scotland", !specialty=="All Specialties") %>% 
+  filter(date == max_date, ongoing_completed=="Ongoing", nhs_board_of_treatment == "NHS Scotland", !specialty=="All Specialties") %>% 
   arrange(desc(proportion)) %>% 
-  slice_head(n=6) %>%
   ungroup() %>%
+  head(n=6) %>%
   select(specialty) %>%
   as.list()
 
-#Data for top six specialties by 
-specstats %<>% filter(specialty %in% topsix$specialty)
+#Data for top six specialties 
+specstats %<>% filter(specialty %in% topsix$specialty, date == max_date)
+
+#Proportion of total seen/waiting represented by these 6 specialties
+topsix_prop <- specstats %>%
+  filter(nhs_board_of_treatment == "NHS Scotland") %>%
+  group_by(ongoing_completed) %>%
+  summarise(`proportion of waiting/seen` = sum(proportion))
 
 #Graph
-topsixplot <- perf_split %>%
-  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max(date)) %>% #Amend to include latest quarter for completed waits!
-  ggplot(aes(x = specialty, y = `proportion_seen/on_list`, colour = urgency, fill = urgency), group = ongoing_completed) +
-  geom_bar(stat="identity") +
-  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y") +
-  theme_bw()
+topsixplot <- perf_qtr_split %>%
+  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>% #Amend to include latest quarter for completed waits!
+  ggplot(aes(x = specialty, y = `proportion_seen/on_list`), group = ongoing_completed) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+  theme_bw() + 
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  theme(text = element_text(size = 16))+
+  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top", 
+             labeller = as_labeller(c(Completed = "Patients seen", Ongoing = "Patients waiting") )) +
+  labs(x = NULL, y = NULL) +
+  theme(text = element_text(size = 16),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(1, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom")
 
 #3.2 - Distribution of waits ----
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
