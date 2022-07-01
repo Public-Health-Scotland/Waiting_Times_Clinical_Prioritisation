@@ -20,7 +20,7 @@ source("functions/CP-functions.R")
 Sys.umask(002) #Used to ensure directory permissions are correct
 
 #1.2 - Dates ----
-min_date <- as.Date("2021-09-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
+min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
 max_date <- as.Date("2022-03-31")
 max_date2 <- as.Date("2022-06-30") #max date for CP DQ data 
 
@@ -99,7 +99,7 @@ perf <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = 
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
@@ -119,26 +119,26 @@ perf_split_monthly <- perf_split %>%
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
 
 saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
-
+write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 #2.2.2 - Quarterly ---- 
 
 #Note that this is done by summing up monthly data until the queries have been re-run
-perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental Monthly.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+perf_qtr <- read.xlsx("data/Performance excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =as.Date(as.yearqtr(openxlsx::convertToDate(date), format = "Q%q/%y"), frac = 1), #Convert dates from Excel format 
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          #mutate(date = date) %>%
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(!specialty %in% exclusions) %>% #note no date filter so that we get the whole quarter for June - September
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% 
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
+                ongoing_completed == "Completed")) %>% 
+  #convert monthly dates to end of quarter dates
+ # mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
+#  group_by(across(-`number_seen/on_list`:`90th_percentile`)) %>% 
+  #get the sum of waits/patients seen for each quarter
+#  summarise(`number_seen/on_list` = sum(`number_seen/on_list`)) 
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_12_weeks = 0)) %>%
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, urgency, date) %>%
-    summarise_all(sum, na.rm=T) %>%
-    mutate(median = round(median/3,1), #Added this to calculate quasi-median, can remove this after the reports have been refreshed!
-           `90th_percentile` = round(`90th_percentile`/3,1)
-           ) %>%
-    ungroup()
+                       waited_waiting_over_12_weeks = 0))
 
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>% 
@@ -150,10 +150,13 @@ perf_qtr_split <- perf_qtr %>%
 
 #Save version for DQ shiny app ----
 perf_split_qtr <- perf_qtr_split %>%
-  select(-c(starts_with("Waited"), y_max)) %>%
+  select(-c(starts_with("Waited"), y_max)) %>% #Change this line to get new >52 and >104 weeks waits
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
 
 saveRDS(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
+write.xlsx(perf_split_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
+
+
 
 #2.3 - Distribution of wait ----
 dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
@@ -225,6 +228,10 @@ saveRDS(dow_4wk_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shin
 saveRDS(dow_large2, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_monthly.RDS")
 saveRDS(dow_large_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_quarterly.RDS")
 
+write.xlsx(dow_4wk2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.xlsx")
+write.xlsx(dow_4wk_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.xlsx")
+write.xlsx(dow_large2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_monthly.xlsx")
+write.xlsx(dow_large_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_quarterly.xlsx")
 
 
 #2.4 - Additions by HBT ----
@@ -232,7 +239,7 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
   pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
   complete(urgency, date, indicator,
            nesting(nhs_board_of_treatment, specialty, patient_type),
@@ -249,7 +256,7 @@ addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
 clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
 mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
 specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-filter(between(date, min_date, max_date), !specialty %in% exclusions)
+filter(between(date, min_date, max_date2), !specialty %in% exclusions)
 
 
 #### 3 - Data wrangling ----
@@ -263,11 +270,15 @@ activity_trendplot <- trendbar(perf_split, "All Specialties", "NHS Scotland")
 #3.1.2 - Top 6 specialties by waiting/seen ----
 
 #Identify top 6 specialties by number waiting, calculate what proportion of waiting and seen these represent 
-specstats <- perf  %>% group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-       summarise(month = sum(`number_seen/on_list`[date == max(date)]),
+
+specstats <- perf  %>% 
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
+       summarise(month = sum(`number_seen/on_list`[date == max(date)], na.rm=T),
                  quarter = sum(`number_seen/on_list`[between(date, max(date)-months(2), max(date))], na.rm=T)) %>%
-       mutate(`number_seen/on_list` = if_else(ongoing_completed=="Ongoing", month, quarter),
-              proportion = 100*`number_seen/on_list`/`number_seen/on_list`[specialty=="All Specialties"]) %>%
+       mutate(`number_seen/on_list` = if_else(ongoing_completed=="Ongoing", month, quarter)) %>%
+  ungroup() %>%
+  mutate(allspec = `number_seen/on_list`)[specialty=="All Specialties"])#,
+              proportion = 100*`number_seen/on_list`/allspec) %>%
        select(-c(month, quarter))
 
 #List of top six specialties
@@ -438,9 +449,7 @@ additions_trendplot <- addrem %>%
 
 #3.4.1 - Rates per 100k population ----
 
-pop_path <- dplyr::if_else(platform == "server",
-                           "/conf/linkage/output/lookups/Unicode/Populations",
-                           "//stats/cl-out/lookups/Unicode/Populations")
+pop_path <- ("/conf/linkage/output/lookups/Unicode/Populations")
 
 #Get 2021 populations and calculate Scotland total
 popproj <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
@@ -463,35 +472,6 @@ popest <- readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds"
               summarise(pop = sum(pop, na.rm=T)) %>%
               mutate(board = "NHS Scotland"))
 
-#Create combined population df
-pop <- bind_rows(popest, popproj)
-
-pop_path <- dplyr::if_else(platform == "server",
-                           "/conf/linkage/output/lookups/Unicode/Populations",
-                           "//stats/cl-out/lookups/Unicode/Populations")
-
-#Get 2021 populations and calculate Scotland total
-popproj <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
-  mutate(board = paste0("NHS ",str_replace(hb2019name, " and ", " & "))) %>% #Reformat names to match other data 
-  group_by(board, year) %>%
-  summarise(pop = sum(pop, na.rm=T)) %>%
-  bind_rows(readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
-              group_by(year) %>%
-              summarise(pop = sum(pop, na.rm=T)) %>%
-              mutate(board = "NHS Scotland")) %>%
-  filter(year >= "2021")
-
-#Get population estimates and calculate Scotland total
-popest <- readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
-  mutate(board = str_replace(hb2019name, " and ", " & ")) %>% #Reformat names to match other data 
-  group_by(board, year) %>%
-  summarise(pop = sum(pop, na.rm=T)) %>%
-  bind_rows(readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
-              group_by(year) %>%
-              summarise(pop = sum(pop, na.rm=T)) %>%
-              mutate(board = "NHS Scotland"))
-
-#Create combined population df
 pop <- bind_rows(popest, popproj) %>%
   mutate(board = toupper(board))
 
@@ -508,6 +488,23 @@ add_rate <- addhbr %>%
   mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
   select(-year) 
 
+add_rate_scot <- addhbr %>%
+  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
+  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  ungroup() %>%
+  complete(date, urgency, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
+  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
+  left_join(pop, by = c("nhs_board_of_treatment" ="board","year")) %>%
+  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  select(-year) %>%
+  rename(health_board_of_residence = nhs_board_of_treatment)
+
+add_rate %<>% bind_rows(add_rate_scot)
+
+saveRDS(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.RDS")
+write.xlsx(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.xlsx")
+
 #Calculate crude rates per quarter
 add_rate_qtr <- addhbr %>%
   group_by(patient_type, health_board_of_residence, specialty, urgency, date) %>%
@@ -522,6 +519,29 @@ add_rate_qtr <- addhbr %>%
   left_join(pop, by = c(health_board_of_residence="board","year")) %>%
   mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
   select(-year)
+
+
+#Scotland level rates
+add_rate_qtr_scot <- addhbr %>%
+  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
+  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  ungroup() %>%
+  complete(date, urgency, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
+  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
+  left_join(pop, by = c(nhs_board_of_treatment="board","year")) %>%
+  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  select(-year) %>%
+  rename(health_board_of_residence = nhs_board_of_treatment)
+
+add_rate_qtr %<>% bind_rows(add_rate_qtr_scot)
+
+saveRDS(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.RDS")
+write.xlsx(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.xlsx")
+
 
 #Graph for selected specialty ----
 
