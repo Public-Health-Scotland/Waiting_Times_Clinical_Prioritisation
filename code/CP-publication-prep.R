@@ -41,11 +41,9 @@ linecolours <- phs_colours(c("phs-green","phs-purple","phs-blue"))
 names(linecolours) <- c("Additions", "Seen", "All removals (including patients seen)")
 
 #1.4 - Functions (move to functions file) ----
-trendbar <- function(data, spec, hb)
-{
+trendbar <- function(data, spec, hb){
   data %>% filter(specialty==spec,
-                  nhs_board_of_treatment==hb
-  ) %>%
+                  nhs_board_of_treatment==hb) %>%
    # mutate(nicedate = format(date, "%b %y")) %>% 
     mutate(date2 = format(date, "%b %y"),
     date2 = forcats::fct_reorder(date2, date)) %>%
@@ -61,7 +59,7 @@ trendbar <- function(data, spec, hb)
     #theme(text = element_text(size = 16))+
     geom_blank(aes(y = y_max)) +
     facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
-               labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients seen") )) +
+               labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients admitted") )) +
     ylab(NULL) +
     xlab("Month ending") +
     theme(text = element_text(size = 24),
@@ -72,9 +70,42 @@ trendbar <- function(data, spec, hb)
           panel.grid.minor.x = element_blank(), 
           panel.grid.major.x = element_blank(),
           legend.position="bottom")
+
 }
 
-
+dow_spec <- function(data, speclist, hb, date)
+{
+  data %>% filter(specialty %in% speclist,
+                  nhs_board_of_treatment == hb,
+                  date==date) %>%
+    group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+    mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
+    group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+    mutate(y_max = max(y_max),
+           ongoing_completed = if_else(ongoing_completed=="Ongoing", "Patients waiting","Patients admitted")) %>%
+    unite("BothLabels", ongoing_completed, specialty, sep = " - ", remove = FALSE) %>% #Create merged column with ongoing/completed and specialty for nicer facetting
+    ggplot(aes(x = weeks, y = `number_seen/on_list`), group = BothLabels) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),
+             stat="identity") +
+    theme_bw() +
+    scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    geom_blank(aes(y = plyr::round_any(y_max,2000,f = ceiling))) +
+    facet_wrap(~BothLabels, nrow = 2, scales = "free_y",  strip.position = "top") +#,
+#               labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+    ylab(NULL) +
+    xlab("Weeks waited or waiting") +
+    theme(text = element_text(size = 24),
+          strip.background = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(), 
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom")
+}
 
 
 #### 2 - Import data ----
@@ -226,6 +257,16 @@ dow_4wk <- dow_4wk_all %>%
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0)) 
 
+#quarterly 4 week bands dow data for publication
+dow_4wk_qtr_pub <- dow_4wk %>% 
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
+              ongoing_completed == "Completed")) %>% 
+  #convert monthly dates to end of quarter dates
+  mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
+  group_by(across(-`number_seen/on_list`)) %>% 
+  #get the sum of waits/patients seen for each quarter
+  summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
+
 #dow 4 week bands data for CP DQ shiny, max date set to end of latest available month
 dow_4wk2 <- dow_4wk_all %>% 
   filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
@@ -355,56 +396,102 @@ topsix_prop <- specstats %>%
 #Graph
 topsixplot <- perf_qtr_split %>%
   filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>% #Amend to include latest quarter for completed waits!
-  ggplot(aes(x = specialty, y = `proportion_seen/on_list`), group = ongoing_completed) +
+  ggplot(aes(x = specialty, y = `proportion_seen/on_list`/100), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   theme_bw() + 
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_y_continuous(labels = scales::percent) + 
   theme(text = element_text(size = 16))+
   facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top", 
-             labeller = as_labeller(c(Completed = "Patients seen", Ongoing = "Patients waiting") )) +
+             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
   labs(x = NULL, y = NULL) +
-  theme(text = element_text(size = 16),
+  theme(text = element_text(size = 24),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
         panel.grid.minor.x = element_blank(), 
         panel.grid.major.x = element_blank(),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
         legend.position="bottom")
 
+topsix_CP <- perf_qtr_split %>%
+  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date)
+
 #3.2 - Distribution of waits ----
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
-dow_barplot <- dow_4wk %>%
-  filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max(dow_4wk$date)) %>%
+ dow_4wk_plot <- dow_4wk_qtr_pub %>%
+  mutate(weeks2 = case_when(weeks == "000-004"  ~"<=4",
+                           weeks == "Over 104" ~">104",
+                           TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
+  
+  dow_barplot <- dow_4wk_plot %>% 
+  filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max(dow_4wk_plot$date)) %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
   group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
-  mutate(y_max = max(y_max)) %>%
+    mutate(y_max = max(y_max)) %>%
   ggplot(aes(x = weeks, y = `number_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   theme_bw() +
-  scale_x_discrete(labels = scales::label_wrap(10)) +
+  scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
   theme(text = element_text(size = 16))+
   geom_blank(aes(y = plyr::round_any(y_max,2000,f = ceiling))) +
-  facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top") +
+  facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top",
+             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
   ylab(NULL) +
- xlab("Weeks waiting") +
-  theme(text = element_text(size = 16),
+ xlab("Weeks waited or waiting") +
+  theme(text = element_text(size = 24),
         strip.background = element_blank(),
-        strip.placement = "outside",
-        striptext.x = element_text(angle = 0,hjust = 0,size = 16),
-        panel.grid.minor.x = lement_blank(), 
-        panel.r.x = element_blank(),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
         legend.position="bottom")
 
-#3.2.2 - Barplot showing number waiting by defined wait lengths by HBT ----
+#3.2.2 - Barplot for Gynaecology and Ophthalmology ----
+  
+  spec_dow_bar <-  dow_4wk_plot %>% 
+    filter(specialty %in% c("Gynaecology", "Ophthalmology"), date == as.Date("2022-03-31"), nhs_board_of_treatment =="NHS Scotland") %>% 
+    group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+    mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
+    group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+    mutate(y_max = max(y_max),
+           ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+    unite("BothLabels", ongoing_completed, specialty, sep = " - ", remove = FALSE) %>% #Create labels
+    ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
+                 fill=fct_rev(factor(urgency, levels = colourset$codes))),
+             stat="identity") +
+    #geom_blank(aes(y = y_max)) +
+    geom_blank(aes(y = plyr::round_any(y_max,1000,f = ceiling))) + #add blank geom to extend y axis up to nearest 1000 
+    theme_bw() +
+    scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    facet_wrap(~BothLabels, nrow = 2,  strip.position = "top") + #,
+             #  labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting")))
+    ylab(NULL) +
+    xlab("Weeks waited or waiting") +
+    theme(text = element_text(size = 24),
+          strip.background = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(), 
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom")
+  
+ #dow_spec(dow_4wk_plot, c("Gynaecology", "Ophthalmology"), "NHS Scotland", max(dow_4wk_plot$date))  
+  
+#3.2.3 - Barplot showing number waiting by defined wait lengths by HBT ----
 dow_hb <- dow_4wk %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, urgency, date) %>%
   summarise(`< 4 weeks` = sum(`number_seen/on_list`[weeks == "000-004 Weeks"], na.rm=T), 
@@ -451,7 +538,7 @@ dow_hbplot <- dow_hb %>%
         panel.grid.major.x = element_blank(),
         legend.position="bottom")
 
-#3.3 - Additions and removals ----
+#3.4 - Additions and removals ----
 
 #Trend in additions and removals by CP (barplot) ----
 additions_barplot <- addrem %>%
