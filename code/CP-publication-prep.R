@@ -132,7 +132,6 @@ perf_split <- perf %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
 
-
 #Save version for DQ shiny app ----
 perf_split2 <- perf2 %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
@@ -382,6 +381,52 @@ topsixplot <- perf_qtr_split %>%
         panel.border = element_blank(),
         legend.position="bottom")
 
+#3.1.3 - HBT variation ----
+#Graph
+#bar chart qe march, All Speciaties, stacked by urgency code, hbt on x axis, facet seen/waiting
+
+hb_p2_prop <- perf_qtr_split %>% 
+  filter(specialty == "All Specialties", ongoing_completed == "Completed", date == max_date, urgency=="P2") %>% 
+  select(ongoing_completed, nhs_board_of_treatment, `proportion_seen/on_list`) %>% 
+  rename("p2_prop"="proportion_seen/on_list")
+
+hb_var_data <- perf_qtr_split %>% 
+  filter(specialty == "All Specialties", date == max_date) %>% 
+  left_join(select(ungroup(hb_p2_prop), -ongoing_completed), 
+            by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
+  arrange(ongoing_completed,-p2_prop)
+
+hb_var_plot <- hb_var_data %>% 
+  ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_prop, .desc =FALSE),y = `proportion_seen/on_list`/100),group=ongoing_completed) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
+  #scale_x_reordered() +
+  theme_bw() + 
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_y_continuous(labels=scales::percent) +
+  facet_wrap(.~ongoing_completed, 
+             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+  #facet_grid(cols = vars(ongoing_completed), scales = "free_x",drop = TRUE)+
+  labs(x = NULL, y = NULL) +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8)) +
+  coord_flip()
+
+#Save this image
+ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+
+
+
 #3.2 - Distribution of waits ----
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
 
@@ -452,6 +497,44 @@ spec_dow_bar <-  dow_4wk_plot %>%
         panel.grid.major.x = element_blank(),
         legend.position="bottom")
 
+#Single column layout to make text more legible
+spec_dow_bar_2 <-  dow_4wk_plot %>%
+  filter(specialty %in% c("Gynaecology", "Ophthalmology"), date == as.Date("2022-03-31"), nhs_board_of_treatment =="NHS Scotland") %>%
+  group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+  mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
+  group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+  mutate(y_max = max(y_max),
+         ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+  unite("BothLabels", specialty, ongoing_completed,  sep = " - ", remove = FALSE) %>% #Create labels
+  ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity") +
+  geom_blank(aes(y = plyr::round_any(y_max,1000,f = ceiling))) + #add blank geom to extend y axis up to nearest 1000
+  theme_bw() +
+  scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  facet_wrap(~BothLabels, ncol = 1,  strip.position = "top") + #Add scales = "free_y" if we want each graph to have its own y_max
+  ylab(NULL) +
+  xlab("Weeks waited or waiting") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8)) 
+
+#Save this image
+ggsave("gynae_ophthalmology_dow.png", dpi=300, dev='png', height=20, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 
 #3.2.3 - Barplot showing number waiting by defined wait lengths by HBT ----
@@ -503,7 +586,7 @@ dow_hbplot <- dow_hb %>%
 
 #3.3 - Additions and removals ----
 
-#Trend in additions and removals by CP (barplot) ----
+#3.3.1 - Trend in additions and removals by CP (barplot) ----
 additions_barplot <- addrem %>%
   filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", indicator %in% c("additions_to_list", "removals_from_list")) %>%
   group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
@@ -536,7 +619,7 @@ additions_barplot <- addrem %>%
         legend.position="bottom")
   
 
-#Trend in additions and removals, by CP category (line plot) ----
+#3.3.2 - Trend in additions and removals, by CP category (line plot) ----
 
 additions_trendplot <- addrem %>%
   group_by(patient_type, nhs_board_of_treatment, specialty, indicator, date) %>%
@@ -691,57 +774,64 @@ rate_plot_2 <- add_rate %>%
   labs(x = NULL, y = "Crude rate of additions, per 100k population")
   
 
-#cross-border flow
+#cross-border flow table
 cbf <- addhbr %>% 
-  filter(!nhs_board_of_treatment=="NHS Scotland",
-         between(date, max(addhbr$date) - months(3), max(addhbr$date)),
-         !nhs_board_of_treatment == "NHS Scotland",
-         specialty == "All Specialties") %>%
-  mutate(health_board_of_residence = if_else(is.na(health_board_of_residence), "NOT KNOWN", health_board_of_residence)) %>%
-  group_by(source = health_board_of_residence, target = nhs_board_of_treatment) %>%
-  summarise(value = sum(additions_to_list, na.rm = T))
+  filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude Boards
+         !health_board_of_residence %in% c(NA, "OUTSIDE U.K.", "NOT KNOWN", "NO FIXED ABODE", "ENGLAND/WALES/NORTHERN IRELAND"),
+         date <= max_date) %>%
+  mutate(source = health_board_of_residence, target = nhs_board_of_treatment) %>%
+  group_by(specialty) %>% 
+  summarise(total_additions = sum(additions_to_list, na.rm = T),
+            cbf_additions = sum(additions_to_list[!source == target & !source ==toupper(target)], na.rm=T)) %>%
+  mutate(cbf_proportion = cbf_additions/total_additions) %>%
+  filter(!specialty == "All Specialties",
+         total_additions >=500) %>%
+  arrange(desc(cbf_proportion))
 
 
-####3.5 - Variation between HBT ----
-#Graph
-#bar chart qe march, All Speciaties, stacked by urgency code, hbt on x axis, facet seen/waiting
+#3.4.2 - Additions by CP/HBR ----
 
-hb_p2_prop <- perf_qtr_split %>% 
-  filter(specialty == "All Specialties", ongoing_completed == "Completed", date == max_date, urgency=="P2") %>% 
-  select(ongoing_completed, nhs_board_of_treatment, `proportion_seen/on_list`) %>% 
-  rename("p2_prop"="proportion_seen/on_list")
 
-hb_var_data <- perf_qtr_split %>% 
-  filter(specialty == "All Specialties", date == max_date) %>% 
-  left_join(select(ungroup(hb_p2_prop), -ongoing_completed), 
-            by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
-  arrange(ongoing_completed,-p2_prop)
+add_prop <- addhbr %>%
+group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  group_by(patient_type, health_board_of_residence, specialty, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  mutate(total_additions = sum(additions_to_list, na.rm = T),
+         p2_additions = sum(additions_to_list[urgency=="P2"], na.rm = T),
+         p1_p3_additions = sum(additions_to_list[urgency %in% c("P1A-1B","P2", "P3")], na.rm = T)) %>%
+  ungroup() %>%
+  mutate(proportion = additions_to_list/total_additions,
+         p2_proportion = p2_additions/total_additions,
+         p1_p3_proportion = p1_p3_additions/total_additions)
 
-hb_var_plot <- hb_var_data %>% 
-  ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_prop, .desc =FALSE),y = `proportion_seen/on_list`/100),group=ongoing_completed) +
-  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
-  #scale_x_reordered() +
-  theme_bw() + 
+prop_plot <- add_prop %>%
+  filter(!health_board_of_residence %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NO FIXED ABODE", "NOT KNOWN", "OUTSIDE U.K.", NA),
+         specialty == "All Specialties",
+         date == max_date) %>%
+  ggplot(aes(x = fct_reorder(health_board_of_residence,p2_proportion, .desc=FALSE), y = `proportion`),
+         group=health_board_of_residence) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity", width=0.75) +
+  theme_bw() +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
   scale_y_continuous(labels=scales::percent) +
-  facet_wrap(.~ongoing_completed, 
-             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
-  #facet_grid(cols = vars(ongoing_completed), scales = "free_x",drop = TRUE)+
   labs(x = NULL, y = NULL) +
   theme(text = element_text(size = 12),
         strip.background = element_blank(),
         strip.placement = "outside",
         strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-        panel.grid.minor.x = element_blank(), 
+        panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.spacing = unit(0.5, "cm"),
         panel.border = element_blank(),
         legend.position="bottom",
-        legend.key.height= unit(0.25, 'cm'),
-        legend.key.width= unit(0.25, 'cm'),
-        legend.text = element_text(size = 8)) +
+        legend.key.height= unit(0.5, 'cm'),
+        legend.key.width= unit(0.5, 'cm'),
+        legend.text = element_text(size = 10)) +
   coord_flip()
 
+
 #Save this image
-ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+ggsave("hb_additions_plot", dpi=300, dev='png', height=14, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
