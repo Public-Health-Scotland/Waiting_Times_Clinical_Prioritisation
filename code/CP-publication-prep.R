@@ -209,11 +209,27 @@ write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/C
 
 
 #2.3 - Distribution of wait ----
-dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+
+#uncomment code below if ngoing and completed rows have same date format
+# dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+#   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+#   mutate(date = openxlsx::convertToDateTime(date),
+#     weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+#          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+
+dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+  clean_names(use_make_names = FALSE) %>% 
+  filter(ongoing_completed=="Ongoing") %>% 
+  mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
+
+dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+  clean_names(use_make_names = FALSE) %>% 
+  filter(ongoing_completed=="Completed") %>% 
+  mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
+
+dow_4wk_all <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>% 
+  mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+        specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
 #dow 4 week bands data for publication, max date set to end of latest quarter
 dow_4wk <- dow_4wk_all %>% 
