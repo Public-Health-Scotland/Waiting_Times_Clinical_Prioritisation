@@ -61,15 +61,16 @@ trendbar <- function(data, spec, hb)
                labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients seen") )) +
     ylab(NULL) +
     xlab("Month ending") +
-    theme(text = element_text(size = 16),
+    theme(text = element_text(size = 12),
           strip.background = element_blank(),
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
           panel.spacing = unit(1, "cm"),
           panel.border = element_blank(),
           panel.grid.minor.x = element_blank(), 
           panel.grid.major.x = element_blank(),
           legend.position="bottom")
 }
+
 
 
 
@@ -211,7 +212,7 @@ write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/C
 #2.3 - Distribution of wait ----
 dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
+  mutate(date = if_else(ongoing_completed == "Completed", openxlsx::convertToDate(date), dmy(date)), #Convert dates from Excel format 
          weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
@@ -311,6 +312,25 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
   mutate(proportion_removals = if_else(!indicator %in% c("additions_to_list", "removals_from_list"), 
                                        100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
                                        0)) #Calculate proportion of total removals by removal reason
+
+#2.4.1 - Create version for shiny app ----
+RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
+  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
+  complete(urgency, date, indicator,
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(number = 0)) %>%
+  mutate(indicator = str_to_sentence(str_replace_all(indicator, "_", " "))) %>%
+  rename(`NHS Board of Treatment` = nhs_board_of_treatment,
+         Specialty = specialty,
+         Date = date,
+         Indicator = indicator)
+
+write.xlsx(RR, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/RR Monthly.xlsx")
+
 
 #2.5 - Additions by HBR ----
 addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Additions HBR") %>%
@@ -426,6 +446,8 @@ hb_var_plot <- hb_var_data %>%
 ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 
+#3.1.4 - HBT comparison for a particular specialty ----
+
 
 #3.2 - Distribution of waits ----
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
@@ -454,17 +476,18 @@ dow_barplot <- dow_4wk_plot %>%
   facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top") +
   ylab(NULL) +
  xlab("Weeks waiting") +
-  theme(text = element_text(size = 16),
+  theme(text = element_text(size = 12),
         strip.background = element_blank(),
         strip.placement = "outside",
-        striptext.x = element_text(angle = 0,hjust = 0,size = 16),
-        panel.grid.minor.x = lement_blank(), 
-        panel.r.x = element_blank(),
+        striptext.x = element_text(angle = 0,hjust = 0,size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
         legend.position="bottom")
 
-#3.2.2 - Barplot of two contrasting specialties (Gyna and Ophthalmology) ----
+#3.2.2 - Barplot of two contrasting specialties (Gynae and Ophthalmology) ----
 
 spec_dow_bar <-  dow_4wk_plot %>%
   filter(specialty %in% c("Gynaecology", "Ophthalmology"), date == as.Date("2022-03-31"), nhs_board_of_treatment =="NHS Scotland") %>%
@@ -537,7 +560,41 @@ spec_dow_bar_2 <-  dow_4wk_plot %>%
 ggsave("gynae_ophthalmology_dow.png", dpi=300, dev='png', height=20, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 
-#3.2.3 - Barplot showing number waiting by defined wait lengths by HBT ----
+#3.2.3 - Barplot of two contrasting Boards for single specialty (Lanarkshire and Fife) ----
+
+hb_dow_bar <-  dow_4wk_plot %>%
+  filter(specialty =="Ophthalmology", date == as.Date("2022-03-31"), nhs_board_of_treatment %in% c("NHS Lanarkshire", "NHS Fife")) %>%
+  group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+  mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
+  group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+  mutate(y_max = max(y_max),
+         ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+  unite("BothLabels", ongoing_completed, nhs_board_of_treatment, sep = " - ", remove = FALSE) %>% #Create labels
+  ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity") +
+  geom_blank(aes(y = plyr::round_any(y_max,1000,f = ceiling))) + #add blank geom to extend y axis up to nearest 1000
+  theme_bw() +
+  scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  facet_wrap(~BothLabels, nrow = 2,  strip.position = "top") + #,
+  ylab(NULL) +
+  xlab("Weeks waited or waiting") +
+  theme(text = element_text(size = 24),
+        strip.background = element_blank(),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.spacing = unit(1, "cm"),
+        panel.border = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        legend.position="bottom")
+
+
+#3.2.4 - Barplot showing number waiting by defined wait lengths by HBT ----
 dow_hb <- dow_4wk %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, urgency, date) %>%
   summarise(`< 4 weeks` = sum(`number_seen/on_list`[weeks == "000-004 Weeks"], na.rm=T), 
@@ -772,26 +829,11 @@ rate_plot_2 <- add_rate %>%
   scale_x_date(labels = date_format("%b %y")) +
   scale_y_continuous(breaks = breaks_pretty(n = 5)) +
   labs(x = NULL, y = "Crude rate of additions, per 100k population")
-  
-
-#cross-border flow table
-cbf <- addhbr %>% 
-  filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude Boards
-         !health_board_of_residence %in% c(NA, "OUTSIDE U.K.", "NOT KNOWN", "NO FIXED ABODE", "ENGLAND/WALES/NORTHERN IRELAND"),
-         date <= max_date) %>%
-  mutate(source = health_board_of_residence, target = nhs_board_of_treatment) %>%
-  group_by(specialty) %>% 
-  summarise(total_additions = sum(additions_to_list, na.rm = T),
-            cbf_additions = sum(additions_to_list[!source == target & !source ==toupper(target)], na.rm=T)) %>%
-  mutate(cbf_proportion = cbf_additions/total_additions) %>%
-  filter(!specialty == "All Specialties",
-         total_additions >=500) %>%
-  arrange(desc(cbf_proportion))
 
 
 #3.4.2 - Additions by CP/HBR ----
 
-
+#Calculate proportions by CP category for each HBR, specialty, quarter
 add_prop <- addhbr %>%
 group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
@@ -802,14 +844,17 @@ group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Da
   ungroup() %>%
   mutate(proportion = additions_to_list/total_additions,
          p2_proportion = p2_additions/total_additions,
-         p1_p3_proportion = p1_p3_additions/total_additions)
+         p1_p3_proportion = p1_p3_additions/total_additions) %>%
+  mutate(type = "Residence") %>%
+  rename(board = health_board_of_residence)
 
 prop_plot <- add_prop %>%
-  filter(!health_board_of_residence %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NO FIXED ABODE", "NOT KNOWN", "OUTSIDE U.K.", NA),
+  filter(!board %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NO FIXED ABODE", "NOT KNOWN", "OUTSIDE U.K.", NA),
+         type == "Residence",
          specialty == "All Specialties",
          date == max_date) %>%
-  ggplot(aes(x = fct_reorder(health_board_of_residence,p2_proportion, .desc=FALSE), y = `proportion`),
-         group=health_board_of_residence) +
+  ggplot(aes(x = fct_reorder(board,p2_proportion, .desc=FALSE), y = `proportion`),group=urgency) +
+         #group=health_board_of_residence) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
                fill=fct_rev(factor(urgency, levels = colourset$codes))),
            stat="identity", width=0.75) +
@@ -834,4 +879,191 @@ prop_plot <- add_prop %>%
 
 
 #Save this image
-ggsave("hb_additions_plot", dpi=300, dev='png', height=14, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+ggsave("hb_additions_plot.png", dpi=300, dev='png', height=14, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+
+
+#Graph for opthalmology
+opt_prop_plot <- add_prop %>%
+  filter(!board %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NO FIXED ABODE", "NOT KNOWN", "OUTSIDE U.K.", NA),
+         specialty == "Ophthalmology",
+         type == "Residence",
+         date == max_date,
+         total_additions >=1000) %>%
+  ggplot(aes(x = fct_reorder(board,p2_proportion, .desc=FALSE), y = `proportion`),
+         group=urgency) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity", width=0.75) +
+  theme_bw() +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_y_continuous(labels=scales::percent) +
+  labs(x = NULL, y = NULL) +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.5, 'cm'),
+        legend.key.width= unit(0.5, 'cm'),
+        legend.text = element_text(size = 10)) +
+  coord_flip()
+
+ggsave("ophthalmology_additions_plot.png", dpi=300, dev='png', height=14, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+
+
+#3.4.2.1 - Additions by HBT ----
+add_prop_hbt <- addhbr %>%
+  filter(!nhs_board_of_treatment == "NHS Scotland") %>%
+  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  group_by(patient_type, nhs_board_of_treatment, specialty, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  mutate(total_additions = sum(additions_to_list, na.rm = T),
+         p2_additions = sum(additions_to_list[urgency=="P2"], na.rm = T),
+         p1_p3_additions = sum(additions_to_list[urgency %in% c("P1A-1B","P2", "P3")], na.rm = T)) %>%
+  ungroup() %>%
+  mutate(proportion = additions_to_list/total_additions,
+         p2_proportion = p2_additions/total_additions,
+         p1_p3_proportion = p1_p3_additions/total_additions) %>% 
+  mutate(type = "Treatment",
+         nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
+  rename(board = nhs_board_of_treatment)
+
+
+prop_plot_hbt <- add_prop_hbt %>%
+  filter(!board=="NHS Scotland",
+         type == "Treatment",
+         specialty == "All Specialties",
+         date == max_date) %>%
+  ggplot(aes(x = fct_reorder(board,p2_proportion, .desc=FALSE), y = `proportion`),
+         group=urgency) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity", width=0.75) +
+  theme_bw() +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_y_continuous(labels=scales::percent) +
+  labs(x = NULL, y = NULL) +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.5, 'cm'),
+        legend.key.width= unit(0.5, 'cm'),
+        legend.text = element_text(size = 10)) +
+  coord_flip()
+
+ggsave("hbt_additions_plot.png", dpi=300, dev='png', height=14, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+
+
+#3.4.2.2 - Combined HBR and HBT figures ---- 
+hbr_hbt_prop <- bind_rows(add_prop, add_prop_hbt) %>%
+  filter(!board %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NOT KNOWN", "NO FIXED ABODE", "OUTSIDE U.K.", "SCOTLAND", NA)) %>%
+  group_by(patient_type, board, specialty, urgency, date) %>%
+  summarise(type = unique(type),
+            proportion = unique(proportion),
+    p2_prop = sum(p2_proportion[type == "Residence"]))
+
+#Graph of proportions facetted by residence/treatment ----
+hbr_hbt_plot <- hbr_hbt_prop %>% 
+  filter(date ==max_date,
+         specialty == "All Specialties") %>%
+  ggplot(aes(x = fct_reorder(board, p2_prop, .desc =FALSE),y = proportion), group=type) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
+  theme_bw() + 
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_y_continuous(labels=scales::percent) +
+  facet_wrap(.~type)+#, 
+#             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+  labs(x = NULL, y = NULL) +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8)) +
+  coord_flip()
+
+
+#3.4.3 - Cross Border Flow ----
+
+#cross-border flow table
+cbf <- addhbr %>% 
+  filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude Boards
+         !health_board_of_residence %in% c(NA, "OUTSIDE U.K.", "NOT KNOWN", "NO FIXED ABODE", "ENGLAND/WALES/NORTHERN IRELAND"),
+         date <= max_date) %>%
+  mutate(source = health_board_of_residence, target = nhs_board_of_treatment) %>%
+  group_by(specialty) %>% 
+  summarise(total_additions = sum(additions_to_list, na.rm = T),
+            cbf_additions = sum(additions_to_list[!source == target & !source ==toupper(target)], na.rm=T)) %>%
+  mutate(cbf_proportion = cbf_additions/total_additions) %>%
+  filter(!specialty == "All Specialties",
+         total_additions >=500) %>%
+  arrange(desc(cbf_proportion))
+
+cbf_plot_data <- addhbr %>% 
+  filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude Boards
+         !health_board_of_residence %in% c(NA, "OUTSIDE U.K.", "NOT KNOWN", "NO FIXED ABODE", "ENGLAND/WALES/NORTHERN IRELAND"),
+         date <= max_date) %>%
+  group_by(source = health_board_of_residence, target = nhs_board_of_treatment, specialty) %>%
+  summarise(value = sum(additions_to_list[!source == target & !source ==toupper(target)], na.rm = T))
+
+#Create links data for sankeyNetwork function
+links <- data.frame(source = cbf_plot_data$source,
+             target = cbf_plot_data$target,
+             value  = cbf_plot_data$value)
+
+#Create lists of source and target Boards for nodes data frame
+id <- unique(c(as.character(cbf_plot_data$source), as.character(cbf_plot_data$target)))
+label <- toupper(id)
+
+# create nodes data frame from unique nodes found in links data frame
+nodes <- data.frame(id = id, label = label) %>% 
+    mutate(node_group = gsub(" ", "_", label),
+           x = if_else(id %in% unique(cbf_plot_data$source), 0.3, 0.7), 
+           pad = 10) #node_group
+
+sankey_data <- links %>%
+    mutate(IDsource = match(links$source, nodes$id) -1,
+           IDtarget = match(links$target, nodes$id) - 1,
+           link_group = gsub(" ", "_", links$source))
+  
+list(
+  type = "sankey",
+ # arrangement = "snap",
+ # domain = c(
+#    x =  c(0,1),
+#    y =  c(0,1)
+#  ),
+  node = list(
+    label = nodes$label,
+    x = nodes$x,
+    pad = 20),
+  link = list(
+    source = as.numeric(sankey_data$IDsource), 
+    target = as.numeric(sankey_data$IDtarget), 
+    value = sankey_data$value
+  )
+) -> trace1
+
+plot_ly(
+  domain=trace1$domain, link=trace1$link,
+  node=trace1$node, type=trace1$type
+)
