@@ -102,7 +102,7 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 
 #monthly ipdc wt data
 perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Monthly Week Flags.xlsx"),
-                  sheet = "IPDC Clinical Prioritisation") %>%
+                      sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -141,8 +141,8 @@ perf2 <- perf_all %>%
 perf_split <- perf %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
-                y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
@@ -151,7 +151,7 @@ perf_split <- perf %>%
 perf_split2 <- perf2 %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
          y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
@@ -169,7 +169,7 @@ write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MM
 
 #2.2.2 - Quarterly ---- 
 perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
-                      sheet = "IPDC Clinical Prioritisation") %>%
+                          sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) 
@@ -202,7 +202,7 @@ perf_qtr_split <- perf_qtr %>%
   filter(date <= max_date) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                            100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
          y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
@@ -226,26 +226,25 @@ write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/C
 #2.3 - Distribution of wait ----
 
 
-#uncomment code below if ngoing and completed rows have same date format
-# dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-#   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-#   mutate(date = openxlsx::convertToDateTime(date),
-#     weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-#          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+ dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+   mutate(date = if_else(ongoing_completed == "Completed", openxlsx::convertToDate(date), dmy(date)),
+     weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
-dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-  clean_names(use_make_names = FALSE) %>% 
-  filter(ongoing_completed=="Ongoing") %>% 
-  mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
+#dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+#  clean_names(use_make_names = FALSE) %>% 
+#  filter(ongoing_completed=="Ongoing") %>% 
+#  mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
 
-dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-  clean_names(use_make_names = FALSE) %>% 
-  filter(ongoing_completed=="Completed") %>% 
-  mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
+#dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+#  clean_names(use_make_names = FALSE) %>% 
+#  filter(ongoing_completed=="Completed") %>% 
+#  mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
 
 dow_4wk_all <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>% 
   mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-        specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
 
 #dow 4 week bands data for publication, max date set to end of latest quarter
@@ -257,13 +256,13 @@ dow_4wk <- dow_4wk_all %>%
 
 #quarterly 4 week bands dow data for publication
 dow_4wk_qtr_pub <- dow_4wk %>%
-filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
-ongoing_completed == "Completed")) %>%
-#convert monthly dates to end of quarter dates
-mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
-group_by(across(-`number_seen/on_list`)) %>%
-#get the sum of waits/patients seen for each quarter
-summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
+                ongoing_completed == "Completed")) %>%
+  #convert monthly dates to end of quarter dates
+  mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  group_by(across(-`number_seen/on_list`)) %>%
+  #get the sum of waits/patients seen for each quarter
+  summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
 
 
 #dow 4 week bands data for CP DQ shiny, max date set to end of latest available month
@@ -315,7 +314,7 @@ dow_large_qtr <- dow_large2 %>%
   group_by(across(-`number_seen/on_list`)) %>% 
   #get the sum of waits/patients seen for each quarter
   summarise(`number_seen/on_list` = sum(`number_seen/on_list`))   
-  
+
 #save rds version of monthly and quarterly dow data for CP DQ shiny
 saveRDS(dow_4wk2, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.RDS")
 saveRDS(dow_4wk_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.RDS")
@@ -351,6 +350,18 @@ additions_dat <- addrem %>%
   select(-starts_with("proportion"))
 
 write.xlsx(additions_dat, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/Additions Monthly_2.xlsx")
+
+#2.4.1 - long-term additions to get 2019 average ----
+add_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/RR Monthly.xlsx", rbind =  TRUE) %>%
+  select(- `_file`) %>%
+  filter(substr(Date,4,7) =="2019", 
+         `NHS Board of Treatment` == "NHS Scotland",
+         Specialty == "All Specialties",
+         `Patient Type` == "Inpatient/Day case") %>%
+  select(`Additions to list`) %>%
+  summarise(Indicator = "Additions",
+            monthly_avg = round(mean(`Additions to list`),0))
+
 
 #2.4.1 - Create version for shiny app ----
 #RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
@@ -389,13 +400,13 @@ addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
 
 activity_trendplot <- perf_split %>% 
   filter(specialty=="All Specialties",
-                nhs_board_of_treatment=="NHS Scotland") %>%
+         nhs_board_of_treatment=="NHS Scotland") %>%
   left_join(perf_2019) %>%
   mutate(y_max2 = roundUpNice(max(monthly_avg))) %>%
   ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
-             linetype = "2019 monthly average"), 
+                 linetype = "2019 monthly average"), 
              colour = "#000000") +
   scale_linetype_manual(name ="", values = c('solid')) +
   theme_bw() +
@@ -405,7 +416,7 @@ activity_trendplot <- perf_split %>%
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
- # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
+  # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
   theme(text = element_text(size = 12))+
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
@@ -440,10 +451,10 @@ specstats <- perf_qtr  %>%
   mutate(allspec = sum(`number_seen/on_list`[specialty=="All Specialties"],na.rm=T)) %>% #Add all specialties total added to all rows
   group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>% 
   summarise(`total_seen/on_list` = sum(`number_seen/on_list`, na.rm = T), #Calculate total seen/waiting for each specialty (sum across CP codes)
-    proportion = 100*`total_seen/on_list`/allspec) %>% #Calculate the proportion of all seen/waiting for each specialty
+            proportion = 100*`total_seen/on_list`/allspec) %>% #Calculate the proportion of all seen/waiting for each specialty
   unique()
-  
-    
+
+
 #List of top six specialties
 topsix <- specstats %>%
   filter(date == max_date, ongoing_completed=="Ongoing", nhs_board_of_treatment == "NHS Scotland", !specialty=="All Specialties") %>% 
@@ -564,9 +575,9 @@ ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", p
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
 
 dow_4wk_plot <- dow_4wk_qtr_pub %>%
-mutate(weeks2 = case_when(weeks == "000-004"  ~"<=4",
-                          weeks == "Over 104" ~">104",
-                          TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
+  mutate(weeks2 = case_when(weeks == "000-004"  ~"<=4",
+                            weeks == "Over 104" ~">104",
+                            TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
 
 dow_barplot <- dow_4wk_plot %>%
   filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max_date) %>%
@@ -623,14 +634,14 @@ spec_dow_bar <-  dow_4wk_plot %>%
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-  facet_wrap(~BothLabels, scales = "free_y", nrow = 2) + #,
+  facet_wrap(~BothLabels, nrow = 2, scales = "free_y") + #,
   ylab(NULL) +
   xlab("Weeks waited or waiting") +
   theme(text = element_text(size = 12),
         strip.background = element_blank(),
         strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
         axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.spacing = unit(0.5, "cm"),
+        panel.spacing = unit(0.25, "cm"),
         panel.border = element_blank(),
         panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
@@ -674,7 +685,6 @@ spec_dow_bar <-  dow_4wk_plot %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8))
-
 
 
 #Save this plot
@@ -784,9 +794,9 @@ dow_hb %<>%
 dow_hbplot <- dow_hb %>%
   mutate(indicator = factor(indicator, 
                             levels = c("< 4 weeks", "4-12 weeks", "12-24 weeks", "24-52 weeks", "52-76 weeks", "76-104 weeks", "> 104 weeks"))#,
-        # nhs_board_of_treatment = factor(nhs_board_of_treatment,                                    # Factor levels in decreasing order
-                    #                     levels = nhs_board_of_treatment[order(percentage[indicator=="< 4 weeks"], decreasing = TRUE)])
-        ) %>%
+         # nhs_board_of_treatment = factor(nhs_board_of_treatment,                                    # Factor levels in decreasing order
+         #                     levels = nhs_board_of_treatment[order(percentage[indicator=="< 4 weeks"], decreasing = TRUE)])
+  ) %>%
   filter(specialty=="All Specialties", date == as.Date("2022-03-31"), urgency == "All CP codes", ongoing_completed =="Ongoing", !nhs_board_of_treatment=="NHS Scotland") %>%
   ggplot(aes(x = nhs_board_of_treatment, y = percentage, fill = indicator, colour = indicator)) +
   geom_bar(position = position_fill(reverse = TRUE), stat="identity") +
@@ -834,7 +844,7 @@ additions_barplot <- addrem %>%
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
         legend.position="bottom")
-  
+
 
 #3.3.2 - Trend in additions and removals, by CP category (line plot) ----
 
@@ -995,7 +1005,7 @@ rate_plot_2 <- add_rate %>%
 
 #Calculate proportions by CP category for each HBR, specialty, quarter
 add_prop <- addhbr %>%
-group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
   group_by(patient_type, health_board_of_residence, specialty, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
   mutate(total_additions = sum(additions_to_list, na.rm = T),
@@ -1014,7 +1024,7 @@ prop_plot <- add_prop %>%
          specialty == "All Specialties",
          date == max_date) %>%
   ggplot(aes(x = fct_reorder(board,p2_proportion, .desc=FALSE), y = `proportion`),group=urgency) +
-         #group=health_board_of_residence) +
+  #group=health_board_of_residence) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), 
                fill=fct_rev(factor(urgency, levels = colourset$codes))),
            stat="identity", width=0.75) +
@@ -1132,7 +1142,7 @@ hbr_hbt_prop <- bind_rows(add_prop, add_prop_hbt) %>%
   group_by(patient_type, board, specialty, urgency, date) %>%
   summarise(type = unique(type),
             proportion = unique(proportion),
-    p2_prop = sum(p2_proportion[type == "Residence"]))
+            p2_prop = sum(p2_proportion[type == "Residence"]))
 
 #Graph of proportions facetted by residence/treatment ----
 hbr_hbt_plot <- hbr_hbt_prop %>% 
@@ -1145,7 +1155,7 @@ hbr_hbt_plot <- hbr_hbt_prop %>%
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
   scale_y_continuous(labels=scales::percent) +
   facet_wrap(.~type)+#, 
-#             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+  #             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
   labs(x = NULL, y = NULL) +
   theme(text = element_text(size = 12),
         strip.background = element_blank(),
@@ -1187,8 +1197,8 @@ cbf_plot_data <- addhbr %>%
 
 #Create links data for sankeyNetwork function
 links <- data.frame(source = cbf_plot_data$source,
-             target = cbf_plot_data$target,
-             value  = cbf_plot_data$value)
+                    target = cbf_plot_data$target,
+                    value  = cbf_plot_data$value)
 
 #Create lists of source and target Boards for nodes data frame
 id <- unique(c(as.character(cbf_plot_data$source), as.character(cbf_plot_data$target)))
@@ -1196,22 +1206,22 @@ label <- toupper(id)
 
 # create nodes data frame from unique nodes found in links data frame
 nodes <- data.frame(id = id, label = label) %>% 
-    mutate(node_group = gsub(" ", "_", label),
-           x = if_else(id %in% unique(cbf_plot_data$source), 0.3, 0.7), 
-           pad = 10) #node_group
+  mutate(node_group = gsub(" ", "_", label),
+         x = if_else(id %in% unique(cbf_plot_data$source), 0.3, 0.7), 
+         pad = 10) #node_group
 
 sankey_data <- links %>%
-    mutate(IDsource = match(links$source, nodes$id) -1,
-           IDtarget = match(links$target, nodes$id) - 1,
-           link_group = gsub(" ", "_", links$source))
-  
+  mutate(IDsource = match(links$source, nodes$id) -1,
+         IDtarget = match(links$target, nodes$id) - 1,
+         link_group = gsub(" ", "_", links$source))
+
 list(
   type = "sankey",
- # arrangement = "snap",
- # domain = c(
-#    x =  c(0,1),
-#    y =  c(0,1)
-#  ),
+  # arrangement = "snap",
+  # domain = c(
+  #    x =  c(0,1),
+  #    y =  c(0,1)
+  #  ),
   node = list(
     label = nodes$label,
     x = nodes$x,
