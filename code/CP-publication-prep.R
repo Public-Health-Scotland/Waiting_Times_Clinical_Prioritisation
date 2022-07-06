@@ -105,7 +105,18 @@ perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Month
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
   rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
 
-#monthly data for report, Sept 2021 to latest complete quarter
+#Read in live CO data (for shiny app) to get 2019 all specs averages
+perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind = TRUE) %>%
+  select(- `_file`) %>%
+  filter(year(Date) =="2019", 
+         `NHS Board of Treatment` == "NHS Scotland",
+         Specialty == "All Specialties",
+         `Patient Type` == "Inpatient/Day case") %>%
+  group_by(`Ongoing/Completed`) %>%
+  summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
+  rename(ongoing_completed = `Ongoing/Completed`)
+
+#monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
   filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
@@ -113,6 +124,7 @@ perf <- perf_all %>%
            fill = list(`number_seen/on_list` = 0,
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
+
 #monthly data for cp code data quality investigation, sept 2021 to latest month
 perf2 <- perf_all %>% 
   filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
@@ -122,7 +134,6 @@ perf2 <- perf_all %>%
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
-                  
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
@@ -331,31 +342,38 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
                                        100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
                                        0)) #Calculate proportion of total removals by removal reason
 
-#2.4.1 - Create version for shiny app ----
-RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
-  complete(urgency, date, indicator,
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(number = 0)) %>%
-  mutate(indicator = str_to_sentence(str_replace_all(indicator, "_", " "))) %>%
-  rename(`NHS Board of Treatment` = nhs_board_of_treatment,
-         Specialty = specialty,
-         Date = date,
-         Indicator = indicator)
+#Save data for Excel ----
+additions_dat <- addrem %>% 
+  filter(indicator == "additions_to_list") %>%
+  select(-starts_with("proportion"))
 
-write.xlsx(RR, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/RR Monthly.xlsx")
+write.xlsx(additions_dat, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/Additions Monthly_2.xlsx")
+
+#2.4.1 - Create version for shiny app ----
+#RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+#  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+#  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
+#         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+#  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
+#  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
+#  complete(urgency, date, indicator,
+#           nesting(nhs_board_of_treatment, specialty, patient_type),
+#           fill = list(number = 0)) %>%
+#  mutate(indicator = str_to_sentence(str_replace_all(indicator, "_", " "))) %>%
+#  rename(`NHS Board of Treatment` = nhs_board_of_treatment,
+#         Specialty = specialty,
+#         Date = date,
+#         Indicator = indicator)
+#
+#write.xlsx(RR, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/RR Monthly.xlsx")
 
 
 #2.5 - Additions by HBR ----
 addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Additions HBR") %>%
-clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
-specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-filter(between(date, min_date, max_date2), !specialty %in% exclusions)
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  filter(between(date, min_date, max_date), !specialty %in% exclusions)
 
 
 #### 3 - Data wrangling ----
@@ -364,7 +382,51 @@ filter(between(date, min_date, max_date2), !specialty %in% exclusions)
 
 #3.1.1 -Graph of ongoing and completed waits, by month ----
 
-activity_trendplot <- trendbar(perf_split, "All Specialties", "NHS Scotland")
+#activity_trendplot <- trendbar(perf_split, "All Specialties", "NHS Scotland")
+
+activity_trendplot <- perf_split %>% 
+  filter(specialty=="All Specialties",
+                nhs_board_of_treatment=="NHS Scotland") %>%
+  left_join(perf_2019) %>%
+  mutate(y_max2 = roundUpNice(max(monthly_avg))) %>%
+  ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+  geom_hline(aes(yintercept=monthly_avg, 
+             linetype = "2019 average"), 
+             colour = "#000000") +
+#  geom_hline(aes(yintercept = 18, linetype = "18"), colour = "green", size=1.5) +
+  scale_linetype_manual(name ="", values = c('solid')) +
+ # geom_hline(data=data_line, aes(yintercept=yintercept, linetype="18"), size=1.5, col="#ffff00") +
+  theme_bw() +
+  scale_x_date(labels = date_format("%b %y"),
+               breaks = seq(from = floor_date(min(addrem$date), "month"), 
+                            to = floor_date(max(addrem$date), "month"), by = "1 months")) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
+ # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
+  theme(text = element_text(size = 12))+
+  geom_blank(aes(y = y_max)) +
+  geom_blank(aes(y = y_max2)) +
+  facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
+             labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients admitted") )) +
+  ylab(NULL) +
+  xlab("Month ending") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8))
+
+#Save this image
+ggsave("allspecs_activity_trend_monthly.png", dpi=300, dev='png', height=13, width=15, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 #3.1.2 - Top 6 specialties by waiting/seen ----
 
@@ -397,27 +459,65 @@ topsix_prop <- specstats %>%
   group_by(ongoing_completed) %>%
   summarise(`proportion of waiting/seen` = sum(proportion))
 
+spec_p2_prop <- perf_qtr_split  %>%
+  filter(nhs_board_of_treatment == "NHS Scotland",
+         ongoing_completed == "Completed",
+         date == max_date,
+         urgency=="P2") %>%
+  select(ongoing_completed, specialty, `proportion_seen/on_list`) %>%
+  rename("p2_prop"="proportion_seen/on_list")
+
+
+topsix_plot_data <- perf_qtr_split %>%
+  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>%
+  left_join(select(ungroup(spec_p2_prop), -ongoing_completed),
+            by = c("nhs_board_of_treatment", "patient_type", "specialty")) %>%
+  arrange(ongoing_completed,-p2_prop)
+
 #Graph
-topsixplot <- perf_qtr_split %>%
-  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>% #Amend to include latest quarter for completed waits!
-  ggplot(aes(x = specialty, y = `proportion_seen/on_list`), group = ongoing_completed) +
+topsixplot <- topsix_plot_data %>%
+  ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = `proportion_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
-  theme_bw() + 
+  theme_bw() +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
   theme(text = element_text(size = 16))+
-  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top", 
-             labeller = as_labeller(c(Completed = "Patients seen", Ongoing = "Patients waiting") )) +
+  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top",
+             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
   labs(x = NULL, y = NULL) +
   theme(text = element_text(size = 16),
         strip.background = element_blank(),
         strip.placement = "outside",
         strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
-        panel.grid.minor.x = element_blank(), 
+        panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
         legend.position="bottom")
+
+
+
+#Graph
+#topsixplot <- perf_qtr_split %>%
+#  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>% #Amend to include latest quarter for completed waits!
+#  ggplot(aes(x = specialty, y = `proportion_seen/on_list`), group = urgency) +
+#  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+#  theme_bw() + 
+#  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+#  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+#  theme(text = element_text(size = 16))+
+#  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top", 
+#             labeller = as_labeller(c(Completed = "Patients seen", Ongoing = "Patients waiting") )) +
+#  labs(x = NULL, y = NULL) +
+#  theme(text = element_text(size = 16),
+#        strip.background = element_blank(),
+#        strip.placement = "outside",
+#        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
+#        panel.grid.minor.x = element_blank(), 
+#        panel.grid.major.x = element_blank(),
+#        panel.spacing = unit(1, "cm"),
+#        panel.border = element_blank(),
+#        legend.position="bottom")
 
 #3.1.3 - HBT variation ----
 #Graph
