@@ -55,7 +55,6 @@ trendbar <- function(data, spec, hb)
     scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
     scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
-    theme(text = element_text(size = 16))+
     geom_blank(aes(y = y_max)) +
     facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
                labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients seen") )) +
@@ -72,6 +71,10 @@ trendbar <- function(data, spec, hb)
 }
 
 
+# Function to highlight particular axis labels (e.g. NHS Scotland) 
+highlight = function(x, pat, color="black", family="") {
+  ifelse(grepl(pat, x), glue("<b style='font-family:{family}; color:{color}'>{x}</b>"), x)
+}
 
 
 
@@ -106,7 +109,7 @@ perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Month
   rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
 
 #Read in live CO data (for shiny app) to get 2019 all specs averages
-perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind = TRUE) %>%
+perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
   select(- `_file`) %>%
   filter(year(Date) =="2019", 
          `NHS Board of Treatment` == "NHS Scotland",
@@ -373,12 +376,10 @@ activity_trendplot <- perf_split %>%
   mutate(y_max2 = roundUpNice(max(monthly_avg))) %>%
   ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
-  geom_hline(aes(yintercept=monthly_avg, 
-             linetype = "2019 average"), 
+  geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
+             linetype = "2019 monthly average"), 
              colour = "#000000") +
-#  geom_hline(aes(yintercept = 18, linetype = "18"), colour = "green", size=1.5) +
   scale_linetype_manual(name ="", values = c('solid')) +
- # geom_hline(data=data_line, aes(yintercept=yintercept, linetype="18"), size=1.5, col="#ffff00") +
   theme_bw() +
   scale_x_date(labels = date_format("%b %y"),
                breaks = seq(from = floor_date(min(addrem$date), "month"), 
@@ -405,6 +406,8 @@ activity_trendplot <- perf_split %>%
         legend.position="bottom",
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
+        legend.margin=margin(0,0,0,0),
+        legend.spacing= unit(0.0, "cm"),
         legend.text = element_text(size = 8))
 
 #Save this image
@@ -458,71 +461,60 @@ topsix_plot_data <- perf_qtr_split %>%
 
 #Graph
 topsixplot <- topsix_plot_data %>%
-  ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = `proportion_seen/on_list`), group = ongoing_completed) +
+  ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = `proportion_seen/on_list`/100), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   theme_bw() +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-  theme(text = element_text(size = 16))+
+  scale_y_continuous(labels=scales::percent) +
   facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top",
              labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
   labs(x = NULL, y = NULL) +
-  theme(text = element_text(size = 16),
+  theme(text = element_text(size = 12),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
         panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
-        legend.position="bottom")
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.margin=margin(0,0,0,0),
+        legend.spacing= unit(0.0, "cm"),
+        legend.text = element_text(size = 8))
 
+#Save this image
+ggsave("top_six_spec_plot.png", dpi=300, dev='png', height=14, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
-
-#Graph
-#topsixplot <- perf_qtr_split %>%
-#  filter(specialty %in% topsix$specialty, nhs_board_of_treatment=="NHS Scotland", date == max_date) %>% #Amend to include latest quarter for completed waits!
-#  ggplot(aes(x = specialty, y = `proportion_seen/on_list`), group = urgency) +
-#  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
-#  theme_bw() + 
-#  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
-#  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-#  theme(text = element_text(size = 16))+
-#  facet_wrap(~ongoing_completed, nrow=2, scales = "free_y",  strip.position = "top", 
-#             labeller = as_labeller(c(Completed = "Patients seen", Ongoing = "Patients waiting") )) +
-#  labs(x = NULL, y = NULL) +
-#  theme(text = element_text(size = 16),
-#        strip.background = element_blank(),
-#        strip.placement = "outside",
-#        strip.text.x = element_text(angle = 0,hjust = 0,size = 16),
-#        panel.grid.minor.x = element_blank(), 
-#        panel.grid.major.x = element_blank(),
-#        panel.spacing = unit(1, "cm"),
-#        panel.border = element_blank(),
-#        legend.position="bottom")
 
 #3.1.3 - HBT variation ----
 #Graph
 #bar chart qe march, All Speciaties, stacked by urgency code, hbt on x axis, facet seen/waiting
 
+#Calculate proportion that is P2 to allow ordering of Boards
 hb_p2_prop <- perf_qtr_split %>% 
   filter(specialty == "All Specialties", ongoing_completed == "Completed", date == max_date, urgency=="P2") %>% 
   select(ongoing_completed, nhs_board_of_treatment, `proportion_seen/on_list`) %>% 
   rename("p2_prop"="proportion_seen/on_list")
 
+#Subset data for plotting and bind on 
 hb_var_data <- perf_qtr_split %>% 
   filter(specialty == "All Specialties", date == max_date) %>% 
   left_join(select(ungroup(hb_p2_prop), -ongoing_completed), 
             by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
   arrange(ongoing_completed,-p2_prop)
 
+#Create the plot
 hb_var_plot <- hb_var_data %>% 
-  ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_prop, .desc =FALSE),y = `proportion_seen/on_list`/100),group=ongoing_completed) +
+  ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_prop, .desc =FALSE),y = `proportion_seen/on_list`/100),urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
   #scale_x_reordered() +
   theme_bw() + 
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  scale_x_discrete(labels= function(x) highlight(x, "NHS Scotland", "black")) +
   scale_y_continuous(labels=scales::percent) +
   facet_wrap(.~ongoing_completed, 
              labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
@@ -540,7 +532,8 @@ hb_var_plot <- hb_var_data %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8)) +
-  coord_flip()
+  coord_flip() +
+  theme(axis.text.y=element_markdown())
 
 #Save this image
 ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", path = here::here("..","R plots", "Plots for draft report"))
@@ -555,11 +548,10 @@ ggsave("hb_var_plot.png", dpi=300, dev='png', height=10, width=17, units="cm", p
 dow_4wk_plot <- dow_4wk_qtr_pub %>%
 mutate(weeks2 = case_when(weeks == "000-004"  ~"<=4",
                           weeks == "Over 104" ~">104",
-                          TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE)))
-
+                          TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
 
 dow_barplot <- dow_4wk_plot %>%
-  filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max(dow_4wk$date)) %>%
+  filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max_date) %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
   group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
@@ -567,33 +559,39 @@ dow_barplot <- dow_4wk_plot %>%
   ggplot(aes(x = weeks, y = `number_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   theme_bw() +
-  scale_x_discrete(labels = scales::label_wrap(10)) +
+  scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-  theme(text = element_text(size = 16))+
-  geom_blank(aes(y = plyr::round_any(y_max,2000,f = ceiling))) +
-  facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top") +
+  geom_blank(aes(y = plyr::round_any(y_max,2000, f = ceiling))) +
+  facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
+             labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
   ylab(NULL) +
- xlab("Weeks waiting") +
+  xlab("Weeks waiting") +
   theme(text = element_text(size = 12),
         strip.background = element_blank(),
         strip.placement = "outside",
-        striptext.x = element_text(angle = 0,hjust = 0,size = 12),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.spacing = unit(1, "cm"),
         panel.border = element_blank(),
         panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
-        legend.position="bottom")
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8))
+
+#Save this plot
+ggsave("dow Scotland all specs qe mar 2022.png", dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 #3.2.2 - Barplot of two contrasting specialties (Gynae and Ophthalmology) ----
 
 spec_dow_bar <-  dow_4wk_plot %>%
-  filter(specialty %in% c("Gynaecology", "Ophthalmology"), date == as.Date("2022-03-31"), nhs_board_of_treatment =="NHS Scotland") %>%
+  filter(specialty %in% c("Urology", "Orthopaedics"), date == max_date, nhs_board_of_treatment =="NHS Scotland") %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
-  group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+  group_by(nhs_board_of_treatment, ongoing_completed, date) %>%
   mutate(y_max = max(y_max),
          ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
   unite("BothLabels", ongoing_completed, specialty, sep = " - ", remove = FALSE) %>% #Create labels
@@ -607,18 +605,62 @@ spec_dow_bar <-  dow_4wk_plot %>%
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-  facet_wrap(~BothLabels, nrow = 2,  strip.position = "top") + #,
+  facet_wrap(~BothLabels, scales = "free_y", nrow = 2) + #,
   ylab(NULL) +
   xlab("Weeks waited or waiting") +
-  theme(text = element_text(size = 24),
+  theme(text = element_text(size = 12),
         strip.background = element_blank(),
-        strip.text.x = element_text(angle = 0,hjust = 0,size = 24),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
         axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.spacing = unit(1, "cm"),
+        panel.spacing = unit(0.5, "cm"),
         panel.border = element_blank(),
         panel.grid.minor.x = element_blank(),
         panel.grid.major.x = element_blank(),
-        legend.position="bottom")
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8))
+
+labeller = label_wrap_gen(multi_line=FALSE)
+
+spec_dow_bar <-  dow_4wk_plot %>%
+  filter(specialty %in% c("Urology", "Orthopaedics"), date == max_date, nhs_board_of_treatment =="NHS Scotland") %>%
+  group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+  mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
+  group_by(nhs_board_of_treatment, ongoing_completed, date) %>%
+  mutate(y_max = max(y_max),
+         ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+  unite("BothLabels", ongoing_completed, specialty, sep = " - ", remove = FALSE) %>% #Create labels
+  ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+               fill=fct_rev(factor(urgency, levels = colourset$codes))),
+           stat="identity") +
+  geom_blank(aes(y = plyr::round_any(y_max,1000,f = ceiling))) + #add blank geom to extend y axis up to nearest 1000
+  theme_bw() +
+  scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+  facet_grid(ongoing_completed~specialty, scales = "free_y", labeller = as_labeller(paste0(dow_4wk_plot$ongoing_completed, dow_4wk_plot$specialty, sep = " - "))) + #,
+  ylab(NULL) +
+  xlab("Weeks waited or waiting") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.text = element_text(size = 8))
+
+
+
+#Save this plot
+ggsave("dow_ortho_gynae_mar2022.png", dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 #Single column layout to make text more legible
 spec_dow_bar_2 <-  dow_4wk_plot %>%
