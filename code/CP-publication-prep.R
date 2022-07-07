@@ -117,7 +117,7 @@ perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BO
          `Patient Type` == "Inpatient/Day case") %>%
   group_by(`Ongoing/Completed`) %>%
   summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
-  rename(ongoing_completed = `Ongoing/Completed`)
+  rename(Indicator = `Ongoing/Completed`)
 
 #monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
@@ -332,6 +332,24 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
+  complete(urgency, date, indicator,
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(number = 0)) %>% 
+  group_by(patient_type, nhs_board_of_treatment, specialty, date, indicator) %>%
+  mutate(proportion_CP = 100*number/sum(number, na.rm=T)) %>% #Calculate proportion of indicator by CP
+  group_by(patient_type, nhs_board_of_treatment, specialty, date) %>%
+  mutate(proportion_removals = if_else(!indicator %in% c("additions_to_list", "removals_from_list"), 
+                                       100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
+                                       0)) #Calculate proportion of total removals by removal reason
+
+
+#Save data for Excel ----
+addrem_long <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
   filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
   pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
   complete(urgency, date, indicator,
@@ -344,8 +362,7 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
                                        100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
                                        0)) #Calculate proportion of total removals by removal reason
 
-#Save data for Excel ----
-additions_dat <- addrem %>% 
+additions_dat <- addrem_long %>% 
   filter(indicator == "additions_to_list") %>%
   select(-starts_with("proportion"))
 
@@ -354,16 +371,33 @@ write.xlsx(additions_dat, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP 
 #2.4.1 - long-term additions to get 2019 average ----
 add_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/RR Monthly.xlsx", rbind =  TRUE) %>%
   select(- `_file`) %>%
-  filter(substr(Date,4,7) =="2019", 
+  filter(year(as.yearmon(Date, "%m %Y")) =="2019",
          `NHS Board of Treatment` == "NHS Scotland",
          Specialty == "All Specialties",
          `Patient Type` == "Inpatient/Day case") %>%
   select(`Additions to list`) %>%
-  summarise(Indicator = "Additions",
+  summarise(Indicator = "additions_to_list",
             monthly_avg = round(mean(`Additions to list`),0))
 
+#2.4.2 - Create 2019 average combined lookup and combined data for additions, completed, waiting ----
 
-#2.4.1 - Create version for shiny app ----
+avg_2019 <- bind_rows(add_2019, perf_2019)
+
+add_perf  <- perf_split %>% #First modify perf_split
+  rename(indicator = ongoing_completed,
+         number = `number_seen/on_list`) %>%
+  select(-c(waited_waiting_over_52_weeks:y_max)) %>%
+  bind_rows(select(addrem %>% filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
+  filter(specialty=="All Specialties",
+         nhs_board_of_treatment=="NHS Scotland") %>%
+  left_join(avg_2019, by=c("indicator" = "Indicator")) %>% #Then bind on monthly averages from 2019
+  group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
+  mutate(y_max = roundUpNice(sum(number, na.rm=T)), #Calculate max from current data per group
+         y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
+
+  
+
+#2.4.3 - Create version for shiny app ----
 #RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
 #  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
 #  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
@@ -396,12 +430,10 @@ addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
 
 #3.1.1 -Graph of ongoing and completed waits, by month ----
 
-#activity_trendplot <- trendbar(perf_split, "All Specialties", "NHS Scotland")
-
 activity_trendplot <- perf_split %>% 
   filter(specialty=="All Specialties",
          nhs_board_of_treatment=="NHS Scotland") %>%
-  left_join(perf_2019) %>%
+  left_join(perf_2019, by=c("ongoing_completed" = "Indicator")) %>%
   mutate(y_max2 = roundUpNice(max(monthly_avg))) %>%
   ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
@@ -439,8 +471,45 @@ activity_trendplot <- perf_split %>%
         legend.spacing= unit(0.0, "cm"),
         legend.text = element_text(size = 8))
 
+activity_trendplot <- add_perf %>% 
+  ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+  geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
+                 linetype = "2019 monthly average"), 
+             colour = "#000000") +
+  scale_linetype_manual(name ="", values = c('solid')) +
+  theme_bw() +
+  scale_x_date(labels = date_format("%b %y"),
+               breaks = seq(from = floor_date(min(addrem$date), "month"), 
+                            to = floor_date(max(addrem$date), "month"), by = "1 months")) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
+  # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
+  theme(text = element_text(size = 12))+
+  geom_blank(aes(y = y_max)) +
+  geom_blank(aes(y = y_max2)) +
+  facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
+             labeller = as_labeller(c(additions_to_list ="Additions to list", Ongoing = "Patients waiting", Completed = "Patients admitted") )) +
+  ylab(NULL) +
+  xlab("Month ending") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.margin=margin(0,0,0,0),
+        legend.spacing= unit(0.0, "cm"),
+        legend.text = element_text(size = 8))
+
 #Save this image
-ggsave("allspecs_activity_trend_monthly.png", dpi=300, dev='png', height=13, width=15, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+ggsave("allspecs_activity_trend_monthly.png", dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 #3.1.2 - Top 6 specialties by waiting/seen ----
 
