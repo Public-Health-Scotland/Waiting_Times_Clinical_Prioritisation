@@ -1,6 +1,7 @@
 
 # ---> R
 r_code_maiana.Rproj
+
 # History files
 .Rhistory
 .Rapp.history
@@ -41,6 +42,9 @@ rsconnect/
 
 # data folder
 data/**
+
+#functions folder
+functions/**
 
 # csv files
 *.[cC][sS][vV]*
