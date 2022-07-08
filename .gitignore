@@ -5,6 +5,7 @@ r_code_maiana.Rproj
 # History files
 .Rhistory
 .Rapp.history
+.Rprofile
 # Session Data files
 .RData
 .RDataTmp
@@ -45,6 +46,9 @@ data/**
 
 #functions folder
 functions/**
+
+#old scripts folder
+old scripts/**
 
 # csv files
 *.[cC][sS][vV]*
