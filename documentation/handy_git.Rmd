@@ -20,6 +20,7 @@ Check branch status | `git status`
 Stage all tracked changes | `git add .`
 Commit staged changes | `git commit -a`
 Commit changes and message | `git commit -m 'your commit msg'`
-Push commits to remote branch | `git push origin useful-git`
+Push commits to remote branch | `git push origin branch-name`
+Merge in a feature branch | `git merge branch-name`
 Delete a branch remotely | `git branch --delete --remotes origin/branch-name`
 Delete a branch locally | `git branch --delete branch-name`
