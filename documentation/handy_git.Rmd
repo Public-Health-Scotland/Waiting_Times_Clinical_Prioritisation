@@ -1,0 +1,26 @@
+---
+title: "Handy Git Commands"
+author: "Maiana Sanjuan"
+date: "13/07/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#####List of git commands that have come in handy while working, developpers can add to the list. Git syntax can be run from the Terminal within the PHS RStudio Server.
+
+&nbsp;
+
+Description | Git Syntax
+----------- | -------------
+Switch to another branch | `git checkout main`
+Check branch status | `git status`
+Stage all tracked changes | `git add .`
+Commit staged changes | `git commit -a`
+Commit changes and message | `git commit -m 'your commit msg'`
+Push commits to remote branch | `git push origin branch-name`
+Merge in a feature branch | `git merge branch-name`
+Delete a branch remotely | `git branch --delete --remotes origin/branch-name`
+Delete a branch locally | `git branch --delete branch-name`
