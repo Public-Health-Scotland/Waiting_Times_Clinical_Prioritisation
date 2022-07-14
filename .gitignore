@@ -44,9 +44,6 @@ rsconnect/
 # data folder
 data/**
 
-#functions folder
-functions/**
-
 #old scripts folder
 old scripts/**
 

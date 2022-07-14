@@ -423,18 +423,23 @@ add_perf  <- perf_split %>% #First modify perf_split
 
 
 #2.5 - Additions by HBR ----
-addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Additions HBR") %>%
+addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender.xlsx", sheet = "IPDC Additions HBR") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions)
+  filter(between(date, min_date, max_date), !specialty %in% exclusions,
+         !age_group == "Blank", #Exclude records with "Blank" age
+         !gender == "Blank") %>% #Exclude records with "Blank" gender
+  rename(sex = gender) %>% #Rename to match population lookup
+  mutate(across(c(age_group, sex), ~as.factor(.x)), #Convert age_group and sex to factors
+  age_group = fct_relevel(age_group, "5-9", after = 1)) #Put level "5-9" after "0-4"
 
 
 #### 3 - Data wrangling ----
 
 #3.1 - Completed and ongoing waits ----
 
-#3.1.1 -Graph of ongoing and completed waits, by month ----
+#3.1.1 - Graph of ongoing and completed waits, by month ----
 activity_trendplot <- add_perf %>% 
   ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
@@ -966,105 +971,129 @@ additions_trendplot <- addrem %>%
 
 #3.4.1 - Rates per 100k population ----
 
+#*1 Define populations path in cl-out ----
 pop_path <- ("/conf/linkage/output/lookups/Unicode/Populations")
 
-#Get 2021 populations and calculate Scotland total
-popproj <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+
+#*2 - Define age groups ----
+agebreaks <- c(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,500)
+agelabels <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39", "40-44", "45-49", "50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90+")
+
+#*3 - Get population projections for 2021 onwards and calculate Scotland total ----
+pop <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
   mutate(board = paste0("NHS ",str_replace(hb2019name, " and ", " & "))) %>% #Reformat names to match other data 
-  group_by(board, year) %>%
-  summarise(pop = sum(pop, na.rm=T)) %>%
   bind_rows(readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
-              group_by(year) %>%
+              group_by(year, age, sex_name) %>%
               summarise(pop = sum(pop, na.rm=T)) %>%
               mutate(board = "NHS Scotland")) %>%
-  filter(year >= "2021")
+  filter(year >= "2021") %>%
+  mutate(age_group = as.factor(cut(age, agebreaks, agelabels, include.lowest = TRUE, right= FALSE)), 
+           sex_name = as.factor(sex_name),
+         board = toupper(board)) %>%
+  group_by(board, year, age_group, sex_name) %>%
+  summarise(pop = sum(pop, na.rm =T))
+  
 
-#Get population estimates and calculate Scotland total
-popest <- readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
-  mutate(board = str_replace(hb2019name, " and ", " & ")) %>% #Reformat names to match other data 
-  group_by(board, year) %>%
-  summarise(pop = sum(pop, na.rm=T)) %>%
-  bind_rows(readRDS(glue::glue(pop_path, "/Estimates/HB2019_pop_est_1981_2020.rds")) %>% 
-              group_by(year) %>%
-              summarise(pop = sum(pop, na.rm=T)) %>%
-              mutate(board = "NHS Scotland"))
-
-pop <- bind_rows(popest, popproj) %>%
-  mutate(board = toupper(board))
-
-
-#Calculate crude rates pet month
+#*4 - Calculate crude rates per month ----
 add_rate <- addhbr %>%
-  group_by(patient_type, health_board_of_residence, specialty, urgency, date) %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, age_group, sex, date) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
   filter(!health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
   ungroup() %>%
-  complete(date, urgency, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
+  complete(date, urgency, age_group, sex, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
   mutate(year=year(date)) %>%
-  left_join(pop, by = c(health_board_of_residence="board","year")) %>%
-  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  left_join(pop, by = c("health_board_of_residence" = "board", "year", "sex"="sex_name", "age_group")) %>%
+  mutate(additions_per_100k = (100000*(additions_to_list/pop))) #%>%
   select(-year) 
 
-add_rate_scot <- addhbr %>%
-  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
-  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date) %>%
-  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
-  ungroup() %>%
-  complete(date, urgency, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
-  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
-  left_join(pop, by = c("nhs_board_of_treatment" ="board","year")) %>%
-  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
-  select(-year) %>%
-  rename(health_board_of_residence = nhs_board_of_treatment)
+#add_rate_scot <- addhbr %>%
+#  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO #FIXED ABODE", NA)) %>%
+#  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, age_group, sex, date) %>%
+#  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+#  ungroup() %>%
+#  complete(date, urgency, age_group, sex, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
+#  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
+#  left_join(pop, by = c("health_board_of_residence" = "board", "year", "sex"="sex_name", "age_group")) %>%
+#  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+#  select(-year) %>%
+#  rename(health_board_of_residence = nhs_board_of_treatment)
+#
+#add_rate %<>% bind_rows(add_rate_scot)
 
-add_rate %<>% bind_rows(add_rate_scot)
+#saveRDS(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.RDS")
+#write.xlsx(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.xlsx")
 
-saveRDS(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.RDS")
-write.xlsx(add_rate, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_monthly.xlsx")
-
-#Calculate crude rates per quarter
+#*5 - Calculate crude rates per quarter ----
 add_rate_qtr <- addhbr %>%
-  group_by(patient_type, health_board_of_residence, specialty, urgency, date) %>%
+  group_by(patient_type, health_board_of_residence, specialty, urgency, age_group, sex, date) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
   filter(!health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
   ungroup() %>%
-  complete(date, urgency, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
-  group_by(patient_type, health_board_of_residence, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  complete(date, urgency, age_group, sex, nesting(patient_type,health_board_of_residence, specialty), fill = list(additions_to_list = 0)) %>%
+  group_by(date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1), urgency, age_group, sex, patient_type, health_board_of_residence, specialty) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
   ungroup() %>%
   mutate(year=year(date)) %>%
-  left_join(pop, by = c(health_board_of_residence="board","year")) %>%
-  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+  left_join(pop, by = c("health_board_of_residence" = "board", "year", "sex"="sex_name", "age_group")) %>%
+  mutate(additions_per_100k = (100000*(additions_to_list/pop)))# %>%
   select(-year)
 
 
 #Scotland level rates
-add_rate_qtr_scot <- addhbr %>%
-  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO FIXED ABODE", NA)) %>%
-  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date) %>%
-  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
-  ungroup() %>%
-  complete(date, urgency, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
-  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
-  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
-  ungroup() %>%
-  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
-  left_join(pop, by = c(nhs_board_of_treatment="board","year")) %>%
-  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
-  select(-year) %>%
-  rename(health_board_of_residence = nhs_board_of_treatment)
+#add_rate_qtr_scot <- addhbr %>%
+#  filter(nhs_board_of_treatment =="NHS Scotland", !health_board_of_residence %in% c("NOT KNOWN", "ENGLAND/WALES/NORTHERN IRELAND", "OUTSIDE U.K.", "NO #FIXED ABODE", NA)) %>%
+#  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date) %>%
+#  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+#  ungroup() %>%
+#  complete(date, urgency, nesting(patient_type, nhs_board_of_treatment, specialty), fill = list(additions_to_list = 0)) %>%
+#  group_by(patient_type, nhs_board_of_treatment, specialty, urgency, date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+#  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+#  ungroup() %>%
+#  mutate(year=year(date), nhs_board_of_treatment = toupper(nhs_board_of_treatment)) %>%
+#  left_join(pop, by = c(nhs_board_of_treatment="board","year")) %>%
+#  mutate(additions_per_100k = (100000*additions_to_list/pop)) %>%
+#  select(-year) %>%
+#  rename(health_board_of_residence = nhs_board_of_treatment)
+#
+#add_rate_qtr %<>% bind_rows(add_rate_qtr_scot)
 
-add_rate_qtr %<>% bind_rows(add_rate_qtr_scot)
+#saveRDS(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.RDS")
+#write.xlsx(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.xlsx")
 
-saveRDS(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.RDS")
-write.xlsx(add_rate_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/addition_rate_quarterly.xlsx")
+#*6 - Calculate standardised rates using ESP2013 ----
 
+#Import ESP2013 data
+stdpop <- read.spss(glue::glue(pop_path, "/Standard/ESP2013_by_sex.sav"), to.data.frame = TRUE) 
+
+levels(stdpop$agegroup) <- str_remove_all(levels(stdpop$agegroup),"Persons aged ") #Remove "Persons aged " from factors
+
+stdpop$agegroup <- fct_recode(stdpop$agegroup, "90+" = "90 or above") #Recode "90 or above" factor to match addhbr data 
+
+#Bind ESP to addhbr
+
+stdrate <- add_rate %>% 
+  left_join(stdpop, by = c("age_group" = "agegroup", "sex")) %>%
+  mutate(`asr*ESP2013` = (additions_per_100k * ESP2013)) %>%
+  group_by(health_board_of_residence, specialty, urgency, date) %>%
+  summarise(easr = sum(`asr*ESP2013`, na.rm = T)/sum(ESP2013),
+            crude_rate = 100000*sum(additions_to_list, na.rm = T)/sum(pop, na.rm = T))
+
+stdrate_qtr <- add_rate_qtr %>% 
+  left_join(stdpop, by = c("age_group" = "agegroup", "sex")) %>%
+  mutate(`asr*ESP2013` = (additions_per_100k * ESP2013),
+         var = (additions_per_100k * ESP2013 * ESP2013 * 100000/additions_to_list)) %>%
+  group_by(health_board_of_residence, specialty, urgency, date) %>%
+  summarise(easr = sum(`asr*ESP2013`, na.rm = T)/sum(ESP2013),
+            easr_err = sqrt(sum(var)/(sum(ESP2013)^2)),
+            easr_low = easr - (1.96*easr_err),
+            easr_high = easr + (1.96*easr_err),
+            crude_rate = 100000*sum(additions_to_list, na.rm = T)/sum(pop, na.rm = T))
 
 #Graph for selected specialty ----
-rate_plot <- add_rate %>% 
+rate_plot <- stdrate_qtr %>% 
   filter(specialty == "All Specialties",
          urgency %in% c("P2", "P3", "P4")) %>%
-  ggplot(aes(x = date, y = additions_per_100k, colour = health_board_of_residence)) +
+  ggplot(aes(x = date, y = easr, colour = health_board_of_residence)) +
   geom_line(stat="identity") +
   facet_wrap(~urgency) +
   theme_bw() +
