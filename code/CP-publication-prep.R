@@ -22,7 +22,6 @@ Sys.umask(002) #Used to ensure directory permissions are correct
 #1.2 - Dates ----
 min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
 max_date <- as.Date("2022-03-31")
-max_date2 <- as.Date("2022-06-30") #max date for CP DQ data 
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -108,16 +107,7 @@ perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Month
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
   rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
 
-#Read in live CO data (for shiny app) to get 2019 all specs averages
-perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
-  select(- `_file`) %>%
-  filter(year(Date) =="2019", 
-         `NHS Board of Treatment` == "NHS Scotland",
-         Specialty == "All Specialties",
-         `Patient Type` == "Inpatient/Day case") %>%
-  group_by(`Ongoing/Completed`) %>%
-  summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
-  rename(Indicator = `Ongoing/Completed`)
+
 
 #monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
@@ -128,14 +118,7 @@ perf <- perf_all %>%
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
-#monthly data for cp code data quality investigation, sept 2021 to latest month
-perf2 <- perf_all %>% 
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  complete(urgency, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_52_weeks = 0,
-                       waited_waiting_over_104_weeks = 0)) 
+
 
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
@@ -147,25 +130,6 @@ perf_split <- perf %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
 
-#Save version for DQ shiny app ----
-perf_split2 <- perf2 %>% 
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
-         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-  mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
-
-perf_split_monthly <- perf_split2 %>%
-  select(-c(y_max)) %>%
-  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), 
-               names_to = "Indicator", values_to = "value")
-#check for NAs in value column for indicators (excl. median and percentiles)
-# sum(is.na(perf_split_monthly[!(perf_split_monthly$Indicator %in% c("median", 	
-#                                                        "90th_percentile")),8]))
-
-saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
-write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 
 #2.2.2 - Quarterly ---- 
 perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
