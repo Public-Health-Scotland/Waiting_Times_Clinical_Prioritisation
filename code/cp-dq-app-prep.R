@@ -121,19 +121,60 @@ perf_qtr_split <- perf_qtr %>%
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
 
 
+#2.3 - Distribution of wait ----
+
+#DoW ongoing waits
+dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+  clean_names(use_make_names = FALSE) %>%
+  filter(ongoing_completed=="Ongoing") %>%
+  mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
+
+#DoW completed waits
+dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+  clean_names(use_make_names = FALSE) %>%
+  filter(ongoing_completed=="Completed") %>%
+  mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
+
+#bind completed and ongoing into a single df
+dow_4wk_all <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>%
+  mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+
+#dow 4 week bands data for CP DQ shiny, max date set to end of latest available month
+dow_4wk <- dow_4wk_all %>% 
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  complete(urgency, weeks, date, ongoing_completed, 
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0)) 
+
+#quaterly 4 week bands dow data for CP DQ shiny
+dow_4wk_qtr <- dow_4wk %>% 
+  #keep last month of quarter for ongoing waits, all months for completed
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
+                ongoing_completed == "Completed")) %>% 
+  #convert monthly dates to end of quarter dates
+  mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
+  group_by(across(-`number_seen/on_list`)) %>% 
+  #get the sum of waits/patients seen for each quarter
+  summarise(`number_seen/on_list` = sum(`number_seen/on_list`)) 
 
 
-#2.2.* - Save Outputs ----
+#3.1 - Save Outputs ----
 #monthly performance
 saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
 write.xlsx(perf_plit_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 
 #quarterly performance
-saveRDS(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
-write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
+saveRDS(perf_qtr_split, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
+write.xlsx(perf_qtr_split, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
 
-#DoW 4 week time bands
+#DoW Monthly
+saveRDS(dow_4wk, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.RDS")
+write.xlsx(dow_4wk, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.xlsx")
+
+#DoW Quarterly
+saveRDS(dow_4wk_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.RDS")
+write.xlsx(dow_4wk_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.xlsx")
 
 
-#DoW large time bands
 
