@@ -15,6 +15,8 @@
 
 #### 1 - Packages and functions ----
 #1.1 - Load packages ----
+source("functions/CP-functions.R")
+
 if (!require("pacman")) install.packages("pacman") #loads pacman or installs and then loads it if necessary
 
 #Use pacman to load/install the following:
@@ -65,7 +67,7 @@ perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BO
   rename(Indicator = `Ongoing/Completed`)
 
 #monthly data for cp code data quality investigation, sept 2021 to latest month
-perf2 <- perf_all %>% 
+perf <- perf_all %>% 
   filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
@@ -74,8 +76,8 @@ perf2 <- perf_all %>%
                        waited_waiting_over_104_weeks = 0)) 
 
 
-#Save version for DQ shiny app ----
-perf_split2 <- perf2 %>% 
+#monthly performance for CP DQ app  ----
+perf_split <- perf %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
                                                   100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
@@ -83,15 +85,55 @@ perf_split2 <- perf2 %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
-perf_split_monthly <- perf_split2 %>%
+perf_split_monthly <- perf_split %>%
   select(-c(y_max)) %>%
   pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), 
                names_to = "Indicator", values_to = "value")
-#check for NAs in value column for indicators (excl. median and percentiles)
-# sum(is.na(perf_split_monthly[!(perf_split_monthly$Indicator %in% c("median", 	
-#                                                        "90th_percentile")),8]))
 
+
+#2.2.2 - Quarterly ---- 
+perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
+                          sheet = "IPDC Clinical Prioritisation") %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) 
+
+#data for CP DQ, up to latest month
+perf_qtr <- perf_qtr_all %>% 
+  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
+                ongoing_completed == "Completed")) %>%
+  complete(urgency, date, ongoing_completed, 
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_52_weeks = 0,
+                       waited_waiting_over_104_weeks = 0))
+
+#Save version for DQ shiny app ----
+perf_qtr_split <- perf_qtr %>% 
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
+  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
+  mutate(y_max = roundUpNice(max(y_max))) %>%  #calculate max y for graph limits
+  select(-c(y_max)) %>% 
+  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
+
+
+
+
+#2.2.* - Save Outputs ----
+#monthly performance
 saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
-write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
+write.xlsx(perf_plit_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 
+#quarterly performance
+saveRDS(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
+write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
+
+#DoW 4 week time bands
+
+
+#DoW large time bands
 

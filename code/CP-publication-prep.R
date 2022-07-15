@@ -119,7 +119,6 @@ perf <- perf_all %>%
                        waited_waiting_over_104_weeks = 0)) 
 
 
-
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
@@ -149,17 +148,6 @@ perf_qtr <- perf_qtr_all %>%
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
-#data for CP DQ, up to latest month
-perf_qtr2 <- perf_qtr_all %>% 
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
-                ongoing_completed == "Completed")) %>%
-  complete(urgency, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_52_weeks = 0,
-                       waited_waiting_over_104_weeks = 0))
-
 
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>% 
@@ -170,21 +158,6 @@ perf_qtr_split <- perf_qtr %>%
          y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
-
-#Save version for DQ shiny app ----
-perf_qtr_split2 <- perf_qtr2 %>% 
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
-         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-  mutate(y_max = roundUpNice(max(y_max))) %>%  #calculate max y for graph limits
-  select(-c(y_max)) %>% 
-  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
-
-saveRDS(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
-write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
-
 
 
 #2.3 - Distribution of wait ----
