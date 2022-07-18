@@ -976,7 +976,6 @@ additions_trendplot <- addrem %>%
 #*1 Define populations path in cl-out ----
 pop_path <- ("/conf/linkage/output/lookups/Unicode/Populations")
 
-
 #*2 - Define age groups ----
 agebreaks <- c(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,500)
 agelabels <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39", "40-44", "45-49", "50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90+")
@@ -994,7 +993,6 @@ pop <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds"
          board = toupper(board)) %>%
   group_by(board, year, age_group, sex_name) %>%
   summarise(pop = sum(pop, na.rm =T))
-  
 
 #*4 - Calculate age-sex specific rates per month ----
 add_rate <- addhbr %>%
@@ -1007,7 +1005,6 @@ add_rate <- addhbr %>%
   left_join(pop, by = c("health_board_of_residence" = "board", "year", "sex"="sex_name", "age_group")) %>%
   mutate(asr = (100000*(additions_to_list/pop))) %>%
   select(-year) 
-
 
 #*5 - Calculate crude rates per quarter ----
 add_rate_qtr <- addhbr %>%
@@ -1023,7 +1020,6 @@ add_rate_qtr <- addhbr %>%
   left_join(pop, by = c("health_board_of_residence" = "board", "year", "sex"="sex_name", "age_group")) %>%
   mutate(asr = (100000*(additions_to_list/pop))) %>%
   select(-year)
-
 
 #*6 - Calculate standardised rates using ESP2013 ----
 
@@ -1120,10 +1116,10 @@ EASRplot <- function(df, specialty_of_interest, qtrdate) {
 
 rate_plot <- EASRplot(stdrate_all_qtr, "All Specialties", max_date)
 
-#3.4.1.B - Age-sex-deprivation standardisation using Scotland Population ----
+#3.4.1.B - Age-sex-deprivation direct standardisation using Scotland Population ----
 
 #Since SIMD stratification is only available for Scotland, we cannot calculate a EASR under age-sex-SIMD-standardisation. 
-#Therefore we use the Scottish population (mid-year estimate/projection) as the standard and follow the method above.
+#Therefore we use the Scottish population (mid-year estimate) as the standard and follow the method above.
 
 
 #3.4.1.C - Indirect age-sex-deprivation standardisation ----
@@ -1143,9 +1139,9 @@ rate_plot <- EASRplot(stdrate_all_qtr, "All Specialties", max_date)
 # 99.8% lower = 1000 * ((crude rate Scotland/1000) - (3.091*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
 # 99.8% upper = 1000 * ((crude rate Scotland/1000) + (3.091*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
 # Standardised rate = SOR * crude rate Scotland
-#8 - Calculate control limit status for each HB - if standardised rate between 99.8% limits, "Between limits", if > 99.8% upper, "Above control limits", if < 99.8% lower, "Below control limits"
+#8 (optional) - Calculate control limit status for each HB - if standardised rate between 99.8% limits, "Between limits", if > 99.8% upper, "Above control limits", if < 99.8% lower, "Below control limits"
 
-#1. Import data
+#*1. Import data ----
 #2020 population estimates by HB, sex, age group and SIMD
 pop_simd <- read.xlsx("data/HB Population by SIMD 2020 estimate.xlsx") %>%
   select(-year) %>%
@@ -1179,7 +1175,7 @@ add_simd_scot <- add_simd %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm=T)) %>%
   mutate(board = "NHS Scotland")
   
-#2 and 3 - Scotland crude and standardised rates
+#*2 and 3 - Scotland crude and standardised rates----
 
 add_simd_scot %<>% 
   left_join(pop_simd, by = c("board", "sex", "age_group", "simd")) %>% #Join on population data
@@ -1187,14 +1183,14 @@ add_simd_scot %<>%
   group_by(date, urgency, specialty) %>%
   mutate(crudeRate = 1000 * sum(additions_to_list)/sum(pop)) #Calculate crude rates (across all groups within each CP and specialty)
 
-#4 - Bind rates from Scotland onto add_simd
+#*4 - Bind rates from Scotland onto add_simd----
 
 add_simd %<>% 
   left_join(pop_simd, by = c("board", "sex", "age_group", "simd")) %>% #Join on population data
   left_join(select(add_simd_scot, -c(board, pop, additions_to_list)), by = c("date", "sex", "age_group", "simd", "specialty", "urgency")) %>%
   mutate(expected_additions = standardisedRate * pop / 1000)
 
-#5 - Calculate crude HB rate = 1000 * additions/population and SOR = additions/expected additions
+#*5 - Calculate crude HB rate = 1000 * additions/population and SOR = additions/expected additions ----
 
 add_simd %<>% 
   group_by(date, board, specialty, urgency) %>%
@@ -1225,30 +1221,61 @@ add_simd %<>%
                              str_detect(board, "ISLES") ~"WI")
                              )
 
+crudeRates <- add_simd %>%
+  group_by(date, specialty, urgency) %>%
+  summarise(crudeRate = unique(crudeRate))
+
+pop_seq <- seq(10000, roundUpNice(max(plotdat$pop)), 70000)
+
+lines <- expand_grid(crudeRates, pop_seq) %>%
+  rename(pop = pop_seq) %>%
+  mutate(board = "",
+         shortHB = "",
+         ci95_l = 1000 * ((crudeRate/1000) - (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci95_u = 1000 * ((crudeRate/1000) + (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_l = 1000 * ((crudeRate/1000) - (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_u = 1000 * ((crudeRate/1000) + (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         standardisedHBRate = ci95_l,
+         standardisedHBRate2 = ci95_u,
+         standardisedHBRate3 = ci998_l,
+         standardisedHBRate4 = ci998_u,
+         expected_additions = crudeRate*(pop/1000)
+  ) %>%
+  pivot_longer(cols = c(crudeRate, ci95_l:standardisedHBRate4), names_to = "indicator", values_to = "value")
+
+add_simd_long <- add_simd %>%
+  select(date, specialty, urgency, pop, board, shortHB, everything()) %>%
+  pivot_longer(cols = c(crudeRate, additions_to_list, crudeHBRate:standardisedHBRate), names_to = "indicator", values_to = "value") %>%
+  bind_rows(lines)
+  
+
 funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
-  df %>%
+  
+#Calculate upper and lower CIs over larger population range
+  
+  plotdat <- df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
-           urgency %in% urgencylist) %>%
-    ggplot(aes(x = expected_additions, y = standardisedHBRate, label = shortHB), group = urgency) +
+           urgency %in% urgencylist)
+  
+p <- ggplot(data = plotdat[plotdat$indicator == "standardisedHBRate"], aes(x = population/1000, y = value, label = shortHB), group = urgency,colour = indicator) +
     geom_point(stat="identity") + 
-    geom_line(aes(y = ci998_l), colour = phs_colours("phs-purple")) +
-    geom_line(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
-    geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
-    geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
-    geom_line(aes(y = crudeRate)) +
-    geom_text(hjust=0, vjust=0) +
+  geom_point(data = plotdat[plotdat$indicator == "ci998_l"], aes(y = value)) +#, colour = phs_colours("phs-purple")) +
+  #geom_(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
+  #geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
+  #geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
+  #geom_line(aes(y = crudeRate)) +
+   # geom_line(aes(x = pop_seq, y = crudeRate)) +
+    geom_text_repel(hjust=0, vjust=0, box.padding = 0.3) +
     geom_blank(aes(y = 0)) +
     facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
     theme_bw() +
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
-    labs(x = "Expected additions", y = "Standardised Rate (per 1,000 population)") +
+    labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
     theme(text = element_text(size = 12),
           strip.background = element_blank(),
           strip.placement = "outside",
           strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-          #panel.grid.minor.x = element_blank(), 
-          #panel.grid.major.x = element_blank(),
           panel.spacing = unit(0.5, "cm"),
           panel.border = element_blank(),
           legend.position="bottom",
@@ -1256,13 +1283,246 @@ funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
           legend.key.width= unit(0.25, 'cm'),
           legend.text = element_text(size = 8)) +
     ggtitle(paste0("Age, sex and SIMD standardised addition rates for ", specialty_of_interest, ", ", max_date))
+  
+  p
+}
+
+funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
+df %>%
+    filter(specialty == specialty_of_interest,
+           date == qtrdate,
+           urgency %in% urgencylist) %>%
+    ggplot(aes(x = population/1000, y = standardisedHBRate, label = shortHB), group = urgency) +
+    geom_point(stat="identity") +
+    geom_line(aes(y = ci998_l), colour = phs_colours("phs-purple")) +
+    geom_line(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
+    geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    geom_line(aes(y = crudeRate)) +
+    geom_text_repel(hjust=0, vjust=0, box.padding = 0.5, max.overlaps = 20) +
+    geom_blank(aes(y = 0)) +
+    facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
+    theme_bw() +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
+    theme(text = element_text(size = 12),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+    panel.spacing = unit(0.5, "cm"),
+    panel.border = element_blank(),
+    legend.position="bottom",
+    legend.key.height= unit(0.25, 'cm'),
+    legend.key.width= unit(0.25, 'cm'),
+    legend.text = element_text(size = 8)) +
+    ggtitle(paste0("Age, sex and SIMD standardised addition rates for ", specialty_of_interest, ", ", max_date))
 }
 
 
+#*6 - Create graphs for specialties of interest ----
 fplot_all <- funnelplot(add_simd, "All Specialties", max_date, c("P2", "P3", "P4"))
   
 fplot_cardio <- funnelplot(add_simd, "Cardiology", max_date, c("P2", "P3", "P4"))  
+
+fplot_urol <- funnelplot(add_simd, "Urology", max_date, c("P2", "P3", "P4"))  
   
+fplot_gynae <- funnelplot(add_simd, "Gynaecology", max_date, c("P2", "P3", "P4"))  
+
+fplot_gs <- funnelplot(add_simd, "General Surgery", max_date, c("P2", "P3", "P4"))  
+
+fplot_opto <- funnelplot(add_simd, "Ophthalmology", max_date, c("P2", "P3", "P4"))  
+
+fplot_ortho <- funnelplot(add_simd, "Orthopaedics", max_date, c("P2", "P3", "P4")) 
+
+fplot_ent <- funnelplot(add_simd, "Ear, Nose & Throat", max_date, c("P2", "P3", "P4"))  
+
+
+#3.4.1.D - Indirect age-sex standardisation ----
+
+#This method uses Scotland as the standard population and allows us to calculate what the additions would have been if the HB populations followed the same profile as Scotland as a whole. This is the same method CT used for the funnel plot analysis of high volume procedures for the SG in late 2017/early 2018.
+
+#Steps in this process:
+#1 - Get HB and Scotland level data by urgency, age group, sex for the appropriate time period
+#2 - Calculate Scotland crude rates = 1000 * additions per urgency / population (rate/1000 population)
+#3 - Get age-sex standardised rates for Scotland. ScotlandRate = as above but for each age/sex group
+#4 - Bind ScotlandRate and crude Scotland rate onto HB level data and calculate expected additions = ScotlandRate * HB population / 1000
+#5 - Aggregate up to get HB level. additions = sum(additions), expected = sum(expected), population = sum(population)
+#6 - Calculate crude HB rate = 1000 * additions/population and SOR = additions/expected additions
+#7 - Calculate CI limits and standardised rate for each HB 
+# 95% lower = 1000 * ((crude rate Scotland/1000) - (1.96*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
+# 95% upper = 1000 * ((crude rate Scotland/1000) + (1.96*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
+# 99.8% lower = 1000 * ((crude rate Scotland/1000) - (3.091*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
+# 99.8% upper = 1000 * ((crude rate Scotland/1000) + (3.091*sqrt((1/HB population)*((crude rate Scotland/1000)*(1-(crude rate Scotland/1000))))))
+# Standardised rate = SOR * crude rate Scotland
+#8 (optional) - Calculate control limit status for each HB - if standardised rate between 99.8% limits, "Between limits", if > 99.8% upper, "Above control limits", if < 99.8% lower, "Below control limits"
+
+#*1. Import data ----
+#2021, 2022 population projections by HB, sex, age group 
+pop <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+  mutate(board = paste0("NHS ",str_replace(hb2019name, " and ", " & "))) %>% #Reformat names to match other data 
+  bind_rows(readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds")) %>% 
+              group_by(year, age, sex_name) %>%
+              summarise(pop = sum(pop, na.rm=T)) %>%
+              mutate(board = "NHS Scotland")) %>%
+  filter(year >= "2021") %>%
+  mutate(age_group = as.factor(cut(age, agebreaks, agelabels, include.lowest = TRUE, right= FALSE)), 
+         sex_name = as.factor(sex_name),
+         board = if_else(!board =="NHS Scotland", toupper(board), board)) %>%
+  group_by(board, year, age_group, sex_name) %>%
+  summarise(pop = sum(pop, na.rm =T))%>%
+  rename(sex = sex_name) 
+
+#Additions data by HB, sex, age group, SIMD and urgency
+add_hb_agesex <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender SIMD.xlsx", sheet = "IPDC Additions HBR") %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+  filter(between(date, min_date, max_date), !specialty %in% exclusions,
+         !age_group == "Blank", #Exclude records with "Blank" age
+         !gender == "Blank", #Exclude records with no sex
+         !health_board_of_residence %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NOT KNOWN", "NO FIXED ABODE", "OUTSIDE U.K.", NA)) %>% #Exclude non-Scottish residents
+  rename(sex = gender,
+         board = health_board_of_residence) %>% #Rename to match population lookup
+  mutate(across(c(age_group, sex), ~as.factor(.x)), #Convert age_group and sex to factors
+         age_group = fct_relevel(age_group, "5-9", after = 1)) %>% #Put level "5-9" after "0-4"
+  group_by(patient_type, date, board, specialty, urgency, age_group, sex) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+  ungroup() %>%
+  complete(date, urgency, age_group, sex, nesting(patient_type, board, specialty), fill = list(additions_to_list = 0)) %>%
+  group_by(date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1), urgency, age_group, sex, board, specialty) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm = T), 
+            .groups = "keep") %>%
+  mutate(year = year(date))
+
+add_scot_agesex <- add_hb_agesex %>%
+  group_by(date, urgency, age_group, sex, specialty) %>%
+  summarise(additions_to_list = sum(additions_to_list, na.rm=T)) %>%
+  mutate(board = "NHS Scotland",
+         year = year(date))
+
+#*2 and 3 - Scotland crude and standardised rates----
+
+add_scot_agesex %<>% 
+  left_join(pop, by = c("board", "sex", "age_group", "year")) %>% #Join on population data
+  mutate(standardisedRate = 1000 * additions_to_list/pop) %>% #Calculate rates per group
+  group_by(date, urgency, specialty) %>%
+  mutate(crudeRate = 1000 * sum(additions_to_list)/sum(pop)) #Calculate crude rates (across all groups within each CP and specialty)
+
+#*4 - Bind rates from Scotland onto add_simd----
+
+add_hb_agesex %<>% 
+     #  ungroup() %>%
+  left_join(pop) %>% #Join on population data
+  left_join(select(add_scot_agesex, -c(board, pop, additions_to_list)), by = c("date", "sex", "age_group","specialty", "urgency", "year")) %>%
+  mutate(expected_additions = standardisedRate * pop / 1000)
+
+#*5 - Calculate crude HB rate = 1000 * additions/population and SOR = additions/expected additions ----
+
+add_hb_agesex %<>% 
+  group_by(date, board, specialty, urgency) %>%
+  summarise(pop = sum(pop),
+            crudeRate = unique(crudeRate),
+            additions_to_list = sum(additions_to_list),
+            expected_additions = sum(expected_additions),
+            crudeHBRate = 1000 * sum(additions_to_list)/sum(pop),
+            SOR = sum(additions_to_list)/sum(expected_additions)) %>%
+  mutate(ci95_l = 1000 * ((crudeRate/1000) - (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci95_u = 1000 * ((crudeRate/1000) + (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_l = 1000 * ((crudeRate/1000) - (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_u = 1000 * ((crudeRate/1000) + (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         standardisedHBRate = SOR * crudeRate,
+         shortHB = case_when(str_detect(board, "ARRAN") ~"A&A", #Create short version names for labelling the points in the graphs
+                             str_detect(board, "BORDERS") ~"BORD",
+                             str_detect(board, "DUM") ~"D&G",
+                             str_detect(board, "FIFE") ~"FIFE",
+                             str_detect(board, "FORTH") ~"FV",
+                             str_detect(board, "GLASGOW") ~"GG&C",
+                             str_detect(board, "GRAMPIAN") ~"GRAM",
+                             str_detect(board, "HIGHLAND") ~"HIGH",
+                             str_detect(board, "LANARK") ~"LAN",
+                             str_detect(board, "LOTHIAN") ~"LOTH",
+                             str_detect(board, "ORKNEY") ~"ORKN",
+                             str_detect(board, "SHETLAND") ~"SHET",
+                             str_detect(board, "TAYSIDE") ~"TAY",
+                             str_detect(board, "ISLES") ~"WI"),
+         status = case_when(standardisedHBRate <ci998_u & standardisedHBRate > ci998_l ~"Between control limits",
+                            standardisedHBRate >= ci998_u ~"Above control limits",
+                            standardisedHBRate <= ci998_l ~"Below control limits")
+  ) 
+
+crudeRates_agesex <- add_hb_agesex %>%
+  group_by(date, specialty, urgency) %>%
+  summarise(crudeRate = unique(crudeRate))
+
+pop_seq_agesex <- seq(10000, roundUpNice(max(add_hb_agesex$pop)), 70000)
+
+lines_agesex <- expand_grid(crudeRates_agesex, pop_seq_agesex) %>%
+  rename(pop = pop_seq_agesex) %>%
+  mutate(board = "",
+         shortHB = "",
+         ci95_l = 1000 * ((crudeRate/1000) - (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci95_u = 1000 * ((crudeRate/1000) + (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_l = 1000 * ((crudeRate/1000) - (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         ci998_u = 1000 * ((crudeRate/1000) + (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         standardisedHBRate = ci95_l,
+         standardisedHBRate2 = ci95_u,
+         standardisedHBRate3 = ci998_l,
+         standardisedHBRate4 = ci998_u,
+         expected_additions = crudeRate*(pop/1000)
+  ) %>%
+  pivot_longer(cols = c(crudeRate, ci95_l:standardisedHBRate4), names_to = "indicator", values_to = "value")
+
+funnelplot_agesex <- function(df, specialty_of_interest, qtrdate, urgencylist) {
+  df %>%
+    filter(specialty == specialty_of_interest,
+           date == qtrdate,
+           urgency %in% urgencylist) %>%
+    ggplot(aes(x = pop/1000, y = standardisedHBRate, label = shortHB), group = urgency) +
+    geom_point(stat="identity") +
+    geom_line(aes(y = ci998_l), colour = phs_colours("phs-purple")) +
+    geom_line(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
+    geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    geom_line(aes(y = crudeRate)) +
+    geom_text_repel(hjust=0, vjust=0, point.size =5, box.padding = 0.5, max.overlaps = 5, nudge_x = .15) +#,
+#                    nudge_y = .25*min(df$ci998_u, na.rm=T)/max(df$crudeRate, na.rm=T)) +
+    geom_blank(aes(y = 0)) +
+    facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
+    theme_bw() +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_x_continuous(labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.spacing = unit(0.5, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8)) +
+    ggtitle(paste0("Age, sex standardised addition rates for ", specialty_of_interest, ", ", max_date))
+}
+
+
+#*6 - Create graphs for specialties of interest ----
+fplot_all_as <- funnelplot_agesex(add_hb_agesex, "All Specialties", max_date, c("P2", "P3", "P4"))
+
+fplot_cardio_as <- funnelplot_agesex(add_hb_agesex, "Cardiology", max_date, c("P2", "P3", "P4"))  
+
+fplot_urol_as <- funnelplot_agesex(add_hb_agesex, "Urology", max_date, c("P2", "P3", "P4"))  
+
+fplot_gynae_as <- funnelplot_agesex(add_hb_agesex, "Gynaecology", max_date, c("P2", "P3", "P4"))  
+
+fplot_gs_as <- funnelplot_agesex(add_hb_agesex, "General Surgery", max_date, c("P2", "P3", "P4"))  
+
+fplot_opto_as <- funnelplot_agesex(add_hb_agesex, "Ophthalmology", max_date, c("P2", "P3", "P4"))  
+
+fplot_ortho_as <- funnelplot_agesex(add_hb_agesex, "Orthopaedics", max_date, c("P2", "P3", "P4")) 
+
+fplot_ent_as <- funnelplot_agesex(add_hb_agesex, "Ear, Nose & Throat", max_date, c("P2", "P3", "P4"))
+
 #3.4.2 - Additions by CP/HBR ----
 
 #Calculate proportions by CP category for each HBR, specialty, quarter
