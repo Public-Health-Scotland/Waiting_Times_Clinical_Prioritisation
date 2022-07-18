@@ -22,7 +22,6 @@ Sys.umask(002) #Used to ensure directory permissions are correct
 #1.2 - Dates ----
 min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
 max_date <- as.Date("2022-03-31")
-max_date2 <- as.Date("2022-06-30") #max date for CP DQ data 
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -108,16 +107,6 @@ perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Month
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
   rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
 
-#Read in live CO data (for shiny app) to get 2019 all specs averages
-perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
-  select(- `_file`) %>%
-  filter(year(Date) =="2019", 
-         `NHS Board of Treatment` == "NHS Scotland",
-         Specialty == "All Specialties",
-         `Patient Type` == "Inpatient/Day case") %>%
-  group_by(`Ongoing/Completed`) %>%
-  summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
-  rename(Indicator = `Ongoing/Completed`)
 
 #monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
@@ -128,14 +117,6 @@ perf <- perf_all %>%
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
-#monthly data for cp code data quality investigation, sept 2021 to latest month
-perf2 <- perf_all %>% 
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  complete(urgency, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_52_weeks = 0,
-                       waited_waiting_over_104_weeks = 0)) 
 
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
@@ -147,25 +128,6 @@ perf_split <- perf %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
 
-#Save version for DQ shiny app ----
-perf_split2 <- perf2 %>% 
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
-         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-  mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
-
-perf_split_monthly <- perf_split2 %>%
-  select(-c(y_max)) %>%
-  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), 
-               names_to = "Indicator", values_to = "value")
-#check for NAs in value column for indicators (excl. median and percentiles)
-# sum(is.na(perf_split_monthly[!(perf_split_monthly$Indicator %in% c("median", 	
-#                                                        "90th_percentile")),8]))
-
-saveRDS(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.RDS")
-write.xlsx(perf_split_monthly, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_monthly.xlsx")
 
 #2.2.2 - Quarterly ---- 
 perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
@@ -185,17 +147,6 @@ perf_qtr <- perf_qtr_all %>%
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
-#data for CP DQ, up to latest month
-perf_qtr2 <- perf_qtr_all %>% 
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
-                ongoing_completed == "Completed")) %>%
-  complete(urgency, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0,
-                       waited_waiting_over_52_weeks = 0,
-                       waited_waiting_over_104_weeks = 0))
-
 
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>% 
@@ -207,51 +158,34 @@ perf_qtr_split <- perf_qtr %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
-#Save version for DQ shiny app ----
-perf_qtr_split2 <- perf_qtr2 %>% 
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
-         y_max = sum(`number_seen/on_list`, na.rm=T)) %>%
-  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
-  mutate(y_max = roundUpNice(max(y_max))) %>%  #calculate max y for graph limits
-  select(-c(y_max)) %>% 
-  pivot_longer(c(`number_seen/on_list`:`proportion_seen/on_list`), names_to = "Indicator", values_to = "value")
-
-saveRDS(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.RDS")
-write.xlsx(perf_qtr_split2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/performance_quarterly.xlsx")
-
-
 
 #2.3 - Distribution of wait ----
-
-dow_4wk_all <-  read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
-   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-   mutate(date = if_else(ongoing_completed == "Completed", openxlsx::convertToDate(date), dmy(date)),
-     weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
-
-#dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-#  clean_names(use_make_names = FALSE) %>% 
-#  filter(ongoing_completed=="Ongoing") %>% 
-#  mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
-
-#dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-#  clean_names(use_make_names = FALSE) %>% 
-#  filter(ongoing_completed=="Completed") %>% 
-#  mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
-
-#dow_4wk_all <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>% 
-#  mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-#         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
-#
-
 #dow 4 week bands data for publication, max date set to end of latest quarter
-dow_4wk <- dow_4wk_all %>% 
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
-  complete(urgency, weeks, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0)) 
+
+dow_4wk <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
+  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  mutate(date = if_else(ongoing_completed == "Completed", openxlsx::convertToDate(date), dmy(date)),
+         weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+
+#uncomment code below if dates do not parse properly 
+# #DoW ongoing waits
+# dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+#   clean_names(use_make_names = FALSE) %>%
+#   filter(ongoing_completed=="Ongoing") %>%
+#   mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
+# 
+# #DoW completed waits
+# dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
+#   clean_names(use_make_names = FALSE) %>%
+#   filter(ongoing_completed=="Completed") %>%
+#   mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
+# 
+# #bind completed and ongoing into a single df
+# dow_4wk <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>%
+#   mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
+#          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+
 
 #quarterly 4 week bands dow data for publication
 dow_4wk_qtr_pub <- dow_4wk %>%
@@ -263,68 +197,16 @@ dow_4wk_qtr_pub <- dow_4wk %>%
   #get the sum of waits/patients seen for each quarter
   summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
 
-
-#dow 4 week bands data for CP DQ shiny, max date set to end of latest available month
-dow_4wk2 <- dow_4wk_all %>% 
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  complete(urgency, weeks, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0)) 
-
-#quaterly 4 week bands dow data for CP DQ shiny
-dow_4wk_qtr <- dow_4wk2 %>% 
-  #keep last month of quarter for ongoing waits, all months for completed
-  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
-                ongoing_completed == "Completed")) %>% 
-  #convert monthly dates to end of quarter dates
-  mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
-  group_by(across(-`number_seen/on_list`)) %>% 
-  #get the sum of waits/patients seen for each quarter
-  summarise(`number_seen/on_list` = sum(`number_seen/on_list`)) 
-
-
-dow_large_all <-  read.xlsx("data/Distribution of Waits larger time bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+#dow large week bands data for publication, max date set to end of latest quarter
+dow_large <-  read.xlsx("data/Distribution of Waits larger time bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          weeks = as.factor(ifelse(weeks != ">104 Weeks", substr(weeks, 1, 7), "Over 104")),
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) #Rename T&O as orthopaedics
-
-#dow large week bands data for publication, max date set to end of latest quarter
-dow_large <- dow_large_all %>%
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) #Rename T&O as orthopaedics%>%
   filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, weeks, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0)) 
-
-#dow large week bands data for CP DQ shiny, max date set to the last day of latest month
-dow_large2 <- dow_large_all %>%
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  complete(urgency, weeks, date, ongoing_completed, 
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(`number_seen/on_list` = 0)) 
-
-#quaterly large week bands dow data for CP DQ shiny
-dow_large_qtr <- dow_large2 %>% 
-  #keep last month of quarter for ongoing waits, all months for completed
-  filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12), 
-                ongoing_completed == "Completed")) %>% 
-  #convert monthly dates to end of quarter dates
-  mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>% 
-  group_by(across(-`number_seen/on_list`)) %>% 
-  #get the sum of waits/patients seen for each quarter
-  summarise(`number_seen/on_list` = sum(`number_seen/on_list`))   
-
-#save rds version of monthly and quarterly dow data for CP DQ shiny
-saveRDS(dow_4wk2, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.RDS")
-saveRDS(dow_4wk_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.RDS")
-saveRDS(dow_large2, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_monthly.RDS")
-saveRDS(dow_large_qtr, file="/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_quarterly.RDS")
-
-write.xlsx(dow_4wk2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_monthly.xlsx")
-write.xlsx(dow_4wk_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_4wk_quarterly.xlsx")
-write.xlsx(dow_large2, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_monthly.xlsx")
-write.xlsx(dow_large_qtr, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/dow_large_quarterly.xlsx")
-
 
 #2.4 - Additions by HBT ----
 addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
@@ -344,28 +226,6 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
                                        0)) #Calculate proportion of total removals by removal reason
 
 
-#Save data for Excel ----
-addrem_long <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
-  complete(urgency, date, indicator,
-           nesting(nhs_board_of_treatment, specialty, patient_type),
-           fill = list(number = 0)) %>% 
-  group_by(patient_type, nhs_board_of_treatment, specialty, date, indicator) %>%
-  mutate(proportion_CP = 100*number/sum(number, na.rm=T)) %>% #Calculate proportion of indicator by CP
-  group_by(patient_type, nhs_board_of_treatment, specialty, date) %>%
-  mutate(proportion_removals = if_else(!indicator %in% c("additions_to_list", "removals_from_list"), 
-                                       100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
-                                       0)) #Calculate proportion of total removals by removal reason
-
-additions_dat <- addrem_long %>% 
-  filter(indicator == "additions_to_list") %>%
-  select(-starts_with("proportion"))
-
-write.xlsx(additions_dat, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/Additions Monthly_2.xlsx")
 
 #Quarterly additions ----
 
@@ -402,24 +262,6 @@ add_perf  <- perf_split %>% #First modify perf_split
          y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
 
   
-
-#2.4.3 - Create version for shiny app ----
-#RR <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
-#  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-#  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-#         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-#  filter(between(date, min_date, max_date2), !specialty %in% exclusions) %>%
-#  pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
-#  complete(urgency, date, indicator,
-#           nesting(nhs_board_of_treatment, specialty, patient_type),
-#           fill = list(number = 0)) %>%
-#  mutate(indicator = str_to_sentence(str_replace_all(indicator, "_", " "))) %>%
-#  rename(`NHS Board of Treatment` = nhs_board_of_treatment,
-#         Specialty = specialty,
-#         Date = date,
-#         Indicator = indicator)
-#
-#write.xlsx(RR, file = "/PHI_conf/WaitingTimes/SoT/Projects/CP MMI/CP DQ/shiny/RR Monthly.xlsx")
 
 
 #2.5 - Additions by HBR ----
