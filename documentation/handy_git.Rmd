@@ -14,14 +14,16 @@ knitr::opts_chunk$set(echo = TRUE)
 &nbsp;
 
 Description | Git Syntax
------------ | -------------
+---------------------------------------------- | -------------
 Switch to another branch | `git checkout main`
 Check branch status | `git status`
 Stage all tracked changes | `git add .`
 Commit staged changes | `git commit -a`
 Commit changes and message | `git commit -m 'your commit msg'`
 Push commits to remote branch | `git push origin branch-name`
-Merge in a feature branch | `git merge branch-name`
+Fetch latest remote changes | `git fetch origin`
+Merge changes from `main` into `feature` | `git merge origin/main`
+Merge changes from `feature` to current branch | `git merge branch-name`
 Delete branch remotely | `git push origin --delete branch-name`
 Delete branch locally | `git branch --delete branch-name`
 Delete branch from remotes | `git branch --delete --remotes origin/branch-name`

@@ -187,7 +187,11 @@ summary {
 <div id="list-of-git-commands-that-have-come-in-handy-while-working-developpers-can-add-to-the-list.-git-syntax-can-be-run-from-the-terminal-within-the-phs-rstudio-server." class="section level5">
 <h5>List of git commands that have come in handy while working, developpers can add to the list. Git syntax can be run from the Terminal within the PHS RStudio Server.</h5>
 <p> </p>
-<table>
+<table style="width:85%;">
+<colgroup>
+<col width="65%"></col>
+<col width="19%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th>Description</th>
@@ -220,16 +224,28 @@ summary {
 <td><code>git push origin branch-name</code></td>
 </tr>
 <tr class="odd">
-<td>Merge in a feature branch</td>
+<td>Fetch latest remote changes</td>
+<td><code>git fetch origin</code></td>
+</tr>
+<tr class="even">
+<td>Merge changes from <code>main</code> into <code>feature</code></td>
+<td><code>git merge origin/main</code></td>
+</tr>
+<tr class="odd">
+<td>Merge changes from <code>feature</code> to current branch</td>
 <td><code>git merge branch-name</code></td>
 </tr>
 <tr class="even">
-<td>Delete a branch remotely</td>
-<td><code>git branch --delete --remotes origin/branch-name</code></td>
+<td>Delete branch remotely</td>
+<td><code>git push origin --delete branch-name</code></td>
 </tr>
 <tr class="odd">
-<td>Delete a branch locally</td>
+<td>Delete branch locally</td>
 <td><code>git branch --delete branch-name</code></td>
+</tr>
+<tr class="even">
+<td>Delete branch from remotes</td>
+<td><code>git branch --delete --remotes origin/branch-name</code></td>
 </tr>
 </tbody>
 </table>
