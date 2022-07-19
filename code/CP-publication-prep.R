@@ -39,6 +39,8 @@ colourset = data.frame(codes = c("P1A-1B",
 linecolours <- phs_colours(c("phs-green","phs-purple","phs-blue"))
 names(linecolours) <- c("Additions", "Seen", "All removals (including patients seen)")
 
+
+
 #1.4 - Functions (move to functions file) ----
 trendbar <- function(data, spec, hb)
 {
@@ -96,6 +98,17 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 
 #2.2 - Performance ----
 #Read in the BOXI publication output, reformat dates and select correct specialties
+
+#Read in live CO data (for shiny app) to get 2019 all specs averages
+perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
+  select(- `_file`) %>%
+  filter(year(Date) =="2019", 
+         `NHS Board of Treatment` == "NHS Scotland",
+         Specialty == "All Specialties",
+         `Patient Type` == "Inpatient/Day case") %>%
+  group_by(`Ongoing/Completed`) %>%
+  summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
+  rename(Indicator = `Ongoing/Completed`)
 
 #2.2.1 - Monthly ---- 
 
@@ -168,7 +181,8 @@ dow_4wk <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IP
          weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
-#uncomment code below if dates do not parse properly 
+#uncomment code below if dates do not parse properly
+
 # #DoW ongoing waits
 # dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
 #   clean_names(use_make_names = FALSE) %>%
