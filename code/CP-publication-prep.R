@@ -104,8 +104,8 @@ perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Month
                       sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) #%>% #Rename T&O as orthopaedics
+#  rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
 
 
 #monthly data for report, July 2021 to latest complete quarter
@@ -226,7 +226,6 @@ addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IP
                                        0)) #Calculate proportion of total removals by removal reason
 
 
-
 #Quarterly additions ----
 
 addrem_qtr <- addrem %>%
@@ -261,8 +260,6 @@ add_perf  <- perf_split %>% #First modify perf_split
   mutate(y_max = roundUpNice(sum(number, na.rm=T)), #Calculate max from current data per group
          y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
 
-  
-
 
 #2.5 - Additions by HBR ----
 addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender.xlsx", sheet = "IPDC Additions HBR") %>%
@@ -276,6 +273,24 @@ addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender.xlsx
   mutate(across(c(age_group, sex), ~as.factor(.x)), #Convert age_group and sex to factors
   age_group = fct_relevel(age_group, "5-9", after = 1)) #Put level "5-9" after "0-4"
 
+#2.6 - Save data for Excel and app ----
+#1 - add_perf
+write.csv(add_perf, file = here::here("data", "processed data", "add_perf.csv"), row.names = FALSE)
+
+#2 - addrem_qtr
+#Not needed in the present analysis/output
+
+#3 - perf_qtr_split
+write.csv(perf_qtr_split, file = here::here("data", "processed data", "perf_qtr_split.csv"), row.names = FALSE)
+
+#4 - dow_4wk_qtr_pub
+write.csv(dow_4wk_qtr_pub, file = here::here("data", "processed data", "dow_4wk_qtr_pub.csv"), row.names = FALSE)
+
+#6 - addhbr
+write.csv(addhbr, file = here::here("data", "processed data", "addhbr.csv"), row.names = FALSE)
+
+#6 - add_simd
+write.csv(add_simd, file = here::here("data", "processed data", "add_simd.csv"), row.names = FALSE)
 
 #### 3 - Data wrangling ----
 
@@ -927,10 +942,11 @@ stdrate_all_qtr <- stdrate_qtr %>%
 #Graph for selected specialty ----
 
 #Function to plot the EASR 
-EASRplot <- function(df, specialty_of_interest, qtrdate) {
+EASRplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
   df %>%
     filter(specialty == specialty_of_interest,
-           date == qtrdate) %>%
+           date == qtrdate,
+           urgency %in% urgencylist) %>%
     ggplot(aes(x = fct_rev(health_board_of_residence), y = person_EASR)) +
     geom_errorbar(aes(ymin=low, ymax=high, color = fct_rev(factor(urgency, levels = colourset$codes))),
                   width = 0.2,
@@ -956,7 +972,7 @@ EASRplot <- function(df, specialty_of_interest, qtrdate) {
 }
   
 
-rate_plot <- EASRplot(stdrate_all_qtr, "All Specialties", max_date)
+rate_plot <- EASRplot(stdrate_all_qtr, "All Specialties", max_date, c("P2", "P3", "P4"))
 
 #3.4.1.B - Age-sex-deprivation direct standardisation using Scotland Population ----
 
@@ -1365,6 +1381,25 @@ fplot_ortho_as <- funnelplot_agesex(add_hb_agesex, "Orthopaedics", max_date, c("
 
 fplot_ent_as <- funnelplot_agesex(add_hb_agesex, "Ear, Nose & Throat", max_date, c("P2", "P3", "P4"))
 
+
+#3.4.1.E - Comparison of age-sex and age-sex-SIMD standardisation outcomes ----
+#Do the classifications (above/below/between) change significantly for any Boards 
+
+#Bind add_simd and add_hb_agesex, then count what categrories each HB, spec, urgency is in
+
+comparison <- add_simd %>% 
+  filter(date == max_date) %>% 
+  group_by(board, specialty, urgency) %>% 
+  mutate(status = case_when(standardisedHBRate <ci998_u & standardisedHBRate > ci998_l ~"Between control limits",
+                            standardisedHBRate >= ci998_u ~"Above control limits",
+                            standardisedHBRate <= ci998_l ~"Below control limits"),
+         type = "age-sex-simd") %>%
+  bind_rows(mutate(filter(add_hb_agesex, date == max_date), type = "age-sex")) %>%
+  group_by(board, specialty, urgency, type) %>%
+  summarise(above = sum(str_detect(status, "Above")), below = sum(str_detect(status, "Below")), between = sum(str_detect(status, "Between")))%>%
+  pivot_wider(id_cols = c(board, specialty, urgency), names_from = type, values_from = c(above, below, between))
+
+
 #3.4.2 - Additions by CP/HBR ----
 
 #Calculate proportions by CP category for each HBR, specialty, quarter
@@ -1585,7 +1620,7 @@ hbr_hbt_plot <- hbr_hbt_prop %>%
 #3.4.3 - Cross Border Flow ----
 
 #cross-border flow table
-cbf <- addhbr %>% 
+cbf_test <- addhbr %>% 
   filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude Boards
          !health_board_of_residence %in% c(NA, "OUTSIDE U.K.", "NOT KNOWN", "NO FIXED ABODE", "ENGLAND/WALES/NORTHERN IRELAND"),
          date <= max_date) %>%
@@ -1597,6 +1632,7 @@ cbf <- addhbr %>%
   filter(!specialty == "All Specialties",
          total_additions >=500) %>%
   arrange(desc(cbf_proportion))
+
 
 cbf_plot_data <- addhbr %>% 
   filter(!nhs_board_of_treatment=="NHS Scotland", #Exclude certain Boards
