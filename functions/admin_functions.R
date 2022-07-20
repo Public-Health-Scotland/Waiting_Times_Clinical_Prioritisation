@@ -31,7 +31,7 @@ get_data <- function(source_project, replace_file = FALSE){
   
   destination <-  here::here("data")
   
-  file.copy(file.path(source, list_of_files), destination, overwrite = replace_file)
+  file.copy(file.path(source, list_of_files), destination, overwrite = replace_file, recursive = TRUE)
   
 }
 
