@@ -1,5 +1,8 @@
 ####################### Waiting Times Dashboard #######################
 
+# Get packages
+source("setup.R")
+
 # UI
 ui <- fluidPage(
 
@@ -66,10 +69,6 @@ ui <- fluidPage(
 # Server
 
 server <- function(input, output) {
-
-  # Load packages and functions, and data wrangling
-  source(file.path("setup.R"), local = TRUE)$value
-  source(file.path("functions/core_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value

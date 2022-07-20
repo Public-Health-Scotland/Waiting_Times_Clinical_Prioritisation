@@ -15,5 +15,6 @@ library(lubridate)
 library(phsstyles)
 
 
-
+# Load packages and functions, and data wrangling
+source("functions/core_functions.R")
 
