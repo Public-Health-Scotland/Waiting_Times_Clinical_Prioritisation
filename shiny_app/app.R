@@ -48,23 +48,23 @@ ui <- fluidPage(
       tabPanel(title = "Waiting list activity",
                icon = icon_no_warning_fn("calendar-check"),
                value = "activity",
-               h2("Waiting list activity"),
-               p("Some text here")
+               uiOutput("waiting_list_activity_ui")
       ), # tabpanel
       ##############################################.
       # DISTRIBUTION OF WAITS PAGE ----
       ##############################################.
       tabPanel(title = "Distribution of waits",
                icon = icon_no_warning_fn("chart-area"),
-               value = "activity",
-               uiOutput("waiting_list_activity_ui")
+               value = "distribution",
+               h2("Distribution of waits"),
+               p("Some text here")
       ), # tabpanel
       ##############################################.
       # ADDITIONS BY HBR PAGE ----
       ##############################################.
       tabPanel(title = "Additions by HBR",
                icon = icon_no_warning_fn("hospital-user"),
-               value = "activity",
+               value = "additions",
                h2("Additions by health board of referral (HBR)"),
                p("Some text here")
       ) # tabpanel
@@ -78,8 +78,14 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
+  # Get plot functions
+  source(file.path("functions/waiting_list_activity_plot_functions.R"), local = TRUE)$value
+
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
+  source(file.path("pages/waiting_list_activity.R"), local = TRUE)$value
+
+
 
 }
 
