@@ -11,6 +11,10 @@ library(dplyr)
 library(magrittr)
 library(lubridate)
 
+# Plotting packages
+library(ggplot2)
+library(plotly)
+
 # PHS styling packages
 library(phsstyles)
 
