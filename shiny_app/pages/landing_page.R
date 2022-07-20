@@ -15,10 +15,10 @@ div(
                             p("waiting information goes here")
                           ) # taglist
                  ),
-                 tabPanel("Seen",
+                 tabPanel("admitted",
                           tagList(
-                            h3("Number of patients seen"),
-                            p("seen information goes here")
+                            h3("Number of patients admitted"),
+                            p("admitted information goes here")
                           ) # taglist
                  )
            ) # tabbox
@@ -48,9 +48,9 @@ div(
                          p("waiting information goes here")
                        ) # taglist
               ),
-              tabPanel("Seen",
+              tabPanel("admitted",
                        tagList(
-                         h3("Distribution of seen patients"),
+                         h3("Distribution of admitted patients"),
                          p("waiting information goes here")
                        ) # taglist
            )
@@ -78,10 +78,10 @@ output$landing_page_graphs <-  renderUI({
                                                 p("waiting information goes here")
                                               ) # taglist
                                      ),
-                                     tabPanel("Seen",
+                                     tabPanel("Admitted",
                                               tagList(
-                                                h3("Number of patients seen"),
-                                                p("seen information goes here")
+                                                h3("Number of patients admitted"),
+                                                p("admitted information goes here")
                                               ) # taglist
                                      )
              ) # tabbox
@@ -111,9 +111,9 @@ output$landing_page_graphs <-  renderUI({
                                                 p("waiting information goes here")
                                               ) # taglist
                                      ),
-                                     tabPanel("Seen",
+                                     tabPanel("Admitted",
                                               tagList(
-                                                h3("Distribution of seen patients"),
+                                                h3("Distribution of admitted patients"),
                                                 p("waiting information goes here")
                                               ) # taglist
                                      )
