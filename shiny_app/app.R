@@ -54,6 +54,9 @@ ui <- fluidPage(
                  ),
                  tabPanel("Admitted",
                           uiOutput("activity_admitted_ui")
+                 ),
+                 tabPanel("Additions",
+                          uiOutput("activity_additions_ui")
                  )
                ) # tabsetpanel
       ), # tabpanel

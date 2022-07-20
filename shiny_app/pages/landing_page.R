@@ -20,6 +20,12 @@ div(
                             h3("Number of patients admitted"),
                             p("admitted information goes here")
                           ) # taglist
+                 ),
+                 tabPanel("Additions",
+                          tagList(
+                            h3("Number of additions to list"),
+                            p("additions information goes here")
+                          ) # taglist
                  )
            ) # tabbox
                ), # column
@@ -82,6 +88,12 @@ output$landing_page_graphs <-  renderUI({
                                               tagList(
                                                 h3("Number of patients admitted"),
                                                 plots[["activity_admitted"]]
+                                              ) # taglist
+                                     ),
+                                     tabPanel("Additions",
+                                              tagList(
+                                                h3("Number of additions to list"),
+                                                plots[["activity_additions"]]
                                               ) # taglist
                                      )
              ) # tabbox
