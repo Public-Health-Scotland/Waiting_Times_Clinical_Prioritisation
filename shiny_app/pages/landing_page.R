@@ -15,7 +15,7 @@ div(
                             p("waiting information goes here")
                           ) # taglist
                  ),
-                 tabPanel("admitted",
+                 tabPanel("Admitted",
                           tagList(
                             h3("Number of patients admitted"),
                             p("admitted information goes here")
@@ -48,7 +48,7 @@ div(
                          p("waiting information goes here")
                        ) # taglist
               ),
-              tabPanel("admitted",
+              tabPanel("Admitted",
                        tagList(
                          h3("Distribution of admitted patients"),
                          p("waiting information goes here")
