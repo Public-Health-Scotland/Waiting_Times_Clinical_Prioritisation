@@ -25,7 +25,7 @@ ui <- fluidPage(
                          HTML("<html lang='en'>")
       ),
       ##############################################.
-      # OVERVIEW TAB ----
+      # OVERVIEW PAGE ----
       ##############################################.
       tabPanel(title = "Overview",
                icon = icon_no_warning_fn("circle-info"),
@@ -42,18 +42,27 @@ ui <- fluidPage(
                ) # tabsetpanel
 
                ), # tabpanel
+      ##############################################.
+      # WAITING LIST ACTIVITY PAGE ----
+      ##############################################.
       tabPanel(title = "Waiting list activity",
                icon = icon_no_warning_fn("calendar-check"),
                value = "activity",
                h2("Waiting list activity"),
                p("Some text here")
       ), # tabpanel
+      ##############################################.
+      # DISTRIBUTION OF WAITS PAGE ----
+      ##############################################.
       tabPanel(title = "Distribution of waits",
                icon = icon_no_warning_fn("chart-area"),
                value = "activity",
                h2("Distribution of waits"),
                p("Some text here")
       ), # tabpanel
+      ##############################################.
+      # ADDITIONS BY HBR PAGE ----
+      ##############################################.
       tabPanel(title = "Additions by HBR",
                icon = icon_no_warning_fn("hospital-user"),
                value = "activity",
