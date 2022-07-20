@@ -8,7 +8,7 @@ div(
 
   fluidRow(
     column(width=6,
-           shinydashboard::tabBox( width=NULL, type="pills", height="600px",
+           shinydashboard::tabBox( width=NULL, type="pills", height="200px",
                  tabPanel("Waiting",
                           tagList(
                             h3("Number of patients waiting"),
@@ -24,7 +24,7 @@ div(
            ) # tabbox
                ), # column
     column(width=6,
-           shinydashboard::box(width=NULL, height="600px",
+           shinydashboard::box(width=NULL, height="200px",
               tagList(
                 pickerInput("hbt_filter", "Select HBT ",
                                        choices = c("a", "b", "c"),
@@ -41,7 +41,7 @@ div(
   fluidRow(width=12, height="50px", br()),
 
   fluidRow(width=12,
-           shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
+           shinydashboard::tabBox( width=NULL, type="pills", height="200px", side="right",
               tabPanel("Waiting",
                        tagList(
                          h3("Distribution of waits"),
@@ -71,7 +71,7 @@ output$landing_page_graphs <-  renderUI({
 
     fluidRow(
       column(width=6,
-             shinydashboard::tabBox( width=NULL, type="pills", height="600px",
+             shinydashboard::tabBox( width=NULL, type="pills", height="500px",
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Number of patients waiting"),
@@ -87,7 +87,7 @@ output$landing_page_graphs <-  renderUI({
              ) # tabbox
       ), # column
       column(width=6,
-             shinydashboard::box(width=NULL, height="600px",
+             shinydashboard::box(width=NULL, height="500px",
                                  tagList(
                                    pickerInput("hbt_filter", "Select HBT ",
                                                choices = c("a", "b", "c"),
@@ -104,7 +104,7 @@ output$landing_page_graphs <-  renderUI({
     fluidRow(width=12, height="50px", br()),
 
     fluidRow(width=12,
-             shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="500px", side="right",
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Distribution of waits"),
