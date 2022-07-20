@@ -57,8 +57,7 @@ ui <- fluidPage(
       tabPanel(title = "Distribution of waits",
                icon = icon_no_warning_fn("chart-area"),
                value = "activity",
-               h2("Distribution of waits"),
-               p("Some text here")
+               uiOutput("waiting_list_activity_ui")
       ), # tabpanel
       ##############################################.
       # ADDITIONS BY HBR PAGE ----
