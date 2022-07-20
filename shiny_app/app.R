@@ -48,7 +48,14 @@ ui <- fluidPage(
       tabPanel(title = "Waiting list activity",
                icon = icon_no_warning_fn("calendar-check"),
                value = "activity",
-               uiOutput("waiting_list_activity_ui")
+               tabsetPanel(
+                 tabPanel("Waiting",
+                          uiOutput("activity_waiting_ui")
+                 ),
+                 tabPanel("Admitted",
+                          uiOutput("activity_admitted_ui")
+                 )
+               ) # tabsetpanel
       ), # tabpanel
       ##############################################.
       # DISTRIBUTION OF WAITS PAGE ----
