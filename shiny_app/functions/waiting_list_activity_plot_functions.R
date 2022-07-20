@@ -22,13 +22,13 @@ activity_trendplot <- function(input_data, waiting_status) {
 
   tooltip_trend <- glue("Month ending: {format(dataset$month_ending, '%b %Y')}<br>",
                         "Clinical prioritisation : {dataset$urgency}<br>",
-                        "Number of patients: {dataset$number}<br>")
+                        "Number of patients: {format(dataset$number, big.mark=',')}<br>")
 
   p <- dataset %>%
       plot_ly(x = ~month_ending) %>%
       add_bars(y = ~number,
              color = ~urgency,
-             colors = phs_colours(c("phs-green","phs-purple", "phs-blue", "phs-magenta", "phs-liberty")),
+             colors = waiting_times_palette,
              text = tooltip_trend,
              stroke = I("black"),
              hoverinfo = "text",
