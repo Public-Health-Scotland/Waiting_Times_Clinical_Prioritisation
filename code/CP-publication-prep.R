@@ -22,6 +22,7 @@ Sys.umask(002) #Used to ensure directory permissions are correct
 #1.2 - Dates ----
 min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
 max_date <- as.Date("2022-03-31")
+max_date2 <- as.Date("2022-06-30")
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -100,7 +101,7 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
 #Read in live CO data (for shiny app) to get 2019 all specs averages
-perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
+perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Snapshot BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
   select(- `_file`) %>%
   filter(year(Date) =="2019", 
          `NHS Board of Treatment` == "NHS Scotland",
@@ -113,7 +114,7 @@ perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BO
 #2.2.1 - Monthly ---- 
 
 #monthly ipdc wt data
-perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Monthly Week Flags.xlsx"),
+perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian Dental Monthly.xlsx"),
                       sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
@@ -143,7 +144,7 @@ perf_split <- perf %>%
 
 
 #2.2.2 - Quarterly ---- 
-perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly Week Flags.xlsx"), 
+perf_qtr_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian Dental Quarterly.xlsx"), 
                           sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
@@ -175,9 +176,9 @@ perf_qtr_split <- perf_qtr %>%
 #2.3 - Distribution of wait ----
 #dow 4 week bands data for publication, max date set to end of latest quarter
 
-dow_4wk <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
+dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 week bands.xlsx"), sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date = if_else(ongoing_completed == "Completed", openxlsx::convertToDate(date), dmy(date)),
+  mutate(date = openxlsx::convertToDate(date),
          weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
@@ -212,18 +213,18 @@ dow_4wk_qtr_pub <- dow_4wk %>%
   summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
 
 #dow large week bands data for publication, max date set to end of latest quarter
-dow_large <-  read.xlsx("data/Distribution of Waits larger time bands.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits larger time bands.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          weeks = as.factor(ifelse(weeks != ">104 Weeks", substr(weeks, 1, 7), "Over 104")),
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) #Rename T&O as orthopaedics%>%
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics%>%
   filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
   complete(urgency, weeks, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0)) 
 
 #2.4 - Additions by HBT ----
-addrem <- read.xlsx("data/Removal Reason excl. Lothian Dental.xlsx", sheet = "IPDC Clinical Prioritisation") %>%
+addrem <- read.xlsx(here::here("data", "Removal Reason excl. Lothian Dental.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -248,7 +249,7 @@ addrem_qtr <- addrem %>%
 
 
 #2.4.1 - long-term additions to get 2019 average ----
-add_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Live BOXI/RR Monthly.xlsx", rbind =  TRUE) %>%
+add_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Snapshot BOXI/RR Monthly.xlsx", rbind =  TRUE) %>%
   select(- `_file`) %>%
   filter(year(as.yearmon(Date, "%m %Y")) =="2019",
          `NHS Board of Treatment` == "NHS Scotland",
@@ -276,7 +277,7 @@ add_perf  <- perf_split %>% #First modify perf_split
 
 
 #2.5 - Additions by HBR ----
-addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender.xlsx", sheet = "IPDC Additions HBR") %>%
+addhbr <- read.xlsx(here::here("data", "snapshot", "Removal Reason excl. Lothian Dental by age gender SIMD.xlsx"), sheet = "IPDC Additions HBR") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -289,22 +290,37 @@ addhbr <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender.xlsx
 
 #2.6 - Save data for Excel and app ----
 #1 - add_perf
-write.csv(add_perf, file = here::here("data", "processed data", "add_perf.csv"), row.names = FALSE)
+write.csv(add_perf, file = here::here("data", "processed data", "add_perf_jun.csv"), row.names = FALSE)
+write.csv(add_perf %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mar.csv"), row.names = FALSE)
 
 #2 - addrem_qtr
 #Not needed in the present analysis/output
 
 #3 - perf_qtr_split
-write.csv(perf_qtr_split, file = here::here("data", "processed data", "perf_qtr_split.csv"), row.names = FALSE)
+write.csv(perf_qtr_split %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_qtr_split_mar.csv"), row.names = FALSE)
+write.csv(perf_qtr_split %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_qtr_split_jun.csv"), row.names = FALSE)
+
 
 #4 - dow_4wk_qtr_pub
-write.csv(dow_4wk_qtr_pub, file = here::here("data", "processed data", "dow_4wk_qtr_pub.csv"), row.names = FALSE)
+write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date), file = here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), row.names = FALSE)
+write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date2), file = here::here("data", "processed data", "dow_4wk_qtr_pub_mar.csv"), row.names = FALSE)
 
-#6 - addhbr
-write.csv(addhbr, file = here::here("data", "processed data", "addhbr.csv"), row.names = FALSE)
+#5 - addhbr
+write.csv(addhbr %>% filter(date <= max_date), file = here::here("data", "processed data", "addhbr_jun.csv"), row.names = FALSE)
+write.csv(addhbr %>% filter(date <= max_date2), file = here::here("data", "processed data", "addhbr_mar.csv"), row.names = FALSE)
 
-#6 - add_simd
-write.csv(add_simd, file = here::here("data", "processed data", "add_simd.csv"), row.names = FALSE)
+#6 - add_simd (run line 1054 onwards first!)
+write.csv(add_simd %>% filter(date <= max_date), file = here::here("data", "processed data", "add_simd_jun.csv"), row.names = FALSE)
+write.csv(add_simd %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_simd_mar.csv"), row.names = FALSE)
+
+
+#7 - hb_plotdata
+write.csv(hb_var_plotdata %>% filter(date <= max_date), file = here::here("data", "processed data", "hb_plotdata_jun.csv"), row.names = FALSE)
+write.csv(hb_var_plotdata %>% filter(date <= max_date2), file = here::here("data", "processed data", "hb_plotdata_mar.csv"), row.names = FALSE)
+
+#8 - topsix_specs
+write.csv(topsix %>% filter(date <= max_date), file = here::here("data", "processed data", "topsix_specs_jun.csv"), row.names = FALSE)
+write.csv(topsix %>% filter(date <= max_date2), file = here::here("data", "processed data", "topsix_specs_mar.csv"), row.names = FALSE)
 
 #### 3 - Data wrangling ----
 
@@ -367,7 +383,7 @@ add_stats <- addrem_qtr %>%
 
 #Calculate the proportion of admissions and ongoing waits represented by each specialty per HB, bind onto additions 
 specstats <- perf_qtr  %>% 
-  group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment) %>%
+  group_by(date, patient_type, ongoing_completed, nhs_board_of_treatment) %>%
   mutate(allspec = sum(`number_seen/on_list`[specialty=="All Specialties"],na.rm=T)) %>% #Add all specialties total added to all rows
   group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>% 
   summarise(`total_seen/on_list` = sum(`number_seen/on_list`, na.rm = T), #Calculate total seen/waiting for each specialty (sum across CP codes)
@@ -381,13 +397,22 @@ specstats <- perf_qtr  %>%
 
 
 #List of top six specialties, by number of ongoing waits
+#topsix <- specstats %>%
+#  filter(date == max_date, indicator=="Ongoing", nhs_board_of_treatment == "NHS Scotland", !specialty=="All Specialties") %>% 
+#  arrange(desc(proportion)) %>% 
+#  ungroup() %>%
+#  head(n=6) %>%
+#  select(specialty) %>%
+#  as.list()
+
 topsix <- specstats %>%
-  filter(date == max_date, indicator=="Ongoing", nhs_board_of_treatment == "NHS Scotland", !specialty=="All Specialties") %>% 
-  arrange(desc(proportion)) %>% 
-  ungroup() %>%
-  head(n=6) %>%
-  select(specialty) %>%
-  as.list()
+  filter(indicator=="Ongoing", !specialty=="All Specialties") %>%
+  arrange(desc(proportion)) %>%
+  group_by(nhs_board_of_treatment, date) %>%
+  slice(1:6) %>%
+  group_by(date, nhs_board_of_treatment) %>%
+  summarise(specialties = as.character(list(unique(specialty))))
+
 
 #Data for top six specialties 
 specstats %<>% filter(specialty %in% topsix$specialty, date == max_date)
@@ -483,22 +508,23 @@ hb_var_data <- perf_qtr_split %>%
 #Calculate proportion that is P2 to allow ordering of Boards
 hb_p2_prop <- hb_var_data %>% 
   ungroup() %>%
-  filter(indicator == "additions_to_list", date == max_date, urgency=="P2") %>% 
-  select(specialty, nhs_board_of_treatment, indicator, p2_proportion)
+  filter(indicator == "additions_to_list", urgency=="P2") %>% 
+  select(date, specialty, nhs_board_of_treatment, indicator, p2_proportion)
 
 
 #Subset data for plotting and bind on 
 hb_var_plotdata <- hb_var_data %>% 
-  filter(date == max_date,
+  filter(#date == max_date,
          indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>% 
   left_join(ungroup(hb_p2_prop)) %>% #select(ungroup(hb_p2_prop), -ongoing_completed), 
             #by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
-  arrange(indicator,-`p2_proportion`)
+  arrange(date, indicator,-`p2_proportion`)
 
 
 #Create the plot
 hb_var_plot <- hb_var_plotdata %>% 
-  filter(specialty == "All Specialties") %>%
+  filter(specialty == "All Specialties",
+         date <= max_date) %>%
   ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_proportion, .desc =FALSE), y = proportion), urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
   #scale_x_reordered() +
@@ -1025,7 +1051,7 @@ pop_simd <- read.xlsx("data/HB Population by SIMD 2020 estimate.xlsx") %>%
          sex = as.factor(sex))
 
 #Additions data by HB, sex, age group, SIMD and urgency
-add_simd <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gender SIMD.xlsx", sheet = "IPDC Additions HBR") %>%
+add_simd <- read.xlsx("data/snapshot/Removal Reason excl. Lothian Dental by age gender SIMD.xlsx", sheet = "IPDC Additions HBR") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -1164,7 +1190,7 @@ df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
            urgency %in% urgencylist) %>%
-    ggplot(aes(x = population/1000, y = standardisedHBRate, label = shortHB), group = urgency) +
+    ggplot(aes(x = pop/1000, y = standardisedHBRate, label = shortHB), group = urgency) +
     geom_point(stat="identity") +
     geom_line(aes(y = ci998_l), colour = phs_colours("phs-purple")) +
     geom_line(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
