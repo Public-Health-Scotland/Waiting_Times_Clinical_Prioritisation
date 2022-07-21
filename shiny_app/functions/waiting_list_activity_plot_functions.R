@@ -33,7 +33,7 @@ activity_trendplot <- function(input_data, waiting_status) {
              stroke = I("black"),
              hoverinfo = "text",
              name = ~urgency) %>%
-      add_lines(y = ~monthly_avg, line = list(color = "black"),
+      add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),
               text = tooltip_trend, hoverinfo = "text",
               name = "2019 monthly average") %>%
       #Layout
