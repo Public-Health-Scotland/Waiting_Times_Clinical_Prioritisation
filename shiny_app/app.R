@@ -89,6 +89,7 @@ server <- function(input, output) {
 
   # Get plot functions
   source(file.path("functions/waiting_list_activity_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/distribution_of_waits_plot_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
