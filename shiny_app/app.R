@@ -48,6 +48,7 @@ ui <- fluidPage(
       tabPanel(title = "Waiting list activity",
                icon = icon_no_warning_fn("calendar-check"),
                value = "activity",
+               h2("Waiting list activity"),
                tabsetPanel(
                  tabPanel("Waiting",
                           uiOutput("activity_waiting_ui")

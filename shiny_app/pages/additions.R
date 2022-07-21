@@ -42,7 +42,7 @@ output$additions_ui <-  renderUI({
 })
 
 plots$additions_byboard <- renderPlotly({
-  additions_trendplot_byboard(app_data[["addhbr"]],
+  additions_trendplot_byboard(app_data[["addhbr_mar"]],
                               hbt=input$hbt_filter_wpage,
                               hbr=input$hbr_filter_wpage,
                               chosen_specialty=input$specialty_filter_wpage)})

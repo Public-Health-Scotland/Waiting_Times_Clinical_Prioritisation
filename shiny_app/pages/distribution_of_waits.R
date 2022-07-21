@@ -5,7 +5,6 @@ output$distribution_waits_waiting_ui <-  renderUI({
   div(
 
     h2("Distribution of waits"),
-    p("Some text here"),
 
     fluidRow(
       column(width=4,
@@ -84,14 +83,14 @@ output$distribution_waits_admitted_ui <-  renderUI({
 
 
 plots$waits_distribution_waiting <- renderPlotly({
-  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
                           waiting_status="waiting",
                           quarter_ending="March 2022",
                           hbt="NHS Scotland",
                           chosen_specialty="All Specialties")})
 
 plots$waits_distribution_admitted <- renderPlotly({
-  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
                           waiting_status="admitted",
                           quarter_ending="March 2022",
                           hbt="NHS Scotland",
@@ -99,14 +98,14 @@ plots$waits_distribution_admitted <- renderPlotly({
 
 
 plots$waits_breakdown_waiting <- renderPlotly({
-  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
                               waiting_status="waiting",
                               quarter_ending=input$quarter_filter_w_dpage,
                               hbt=input$hbt_filter_w_dpage,
                               chosen_specialty=input$specialty_filter_w_dpage)})
 
 plots$waits_breakdown_admitted <- renderPlotly({
-  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
                           waiting_status="admitted",
                           quarter_ending=input$quarter_filter_a_dpage,
                           hbt=input$hbt_filter_a_dpage,
