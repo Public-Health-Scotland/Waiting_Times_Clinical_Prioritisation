@@ -48,7 +48,8 @@ output$activity_additions_ui <-  renderUI({
 
         h2("Distribution of additions"),
         p("Some text here"),
-        plots[["activity_additions"]]
+        plots[["activity_additions"]],
+        plots[["additions_byboard"]]
 
       ) # taglist
     ) # fluidrow
@@ -60,3 +61,10 @@ output$activity_additions_ui <-  renderUI({
 plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["add_perf"]], waiting_status = "waiting")})
 plots$activity_admitted <- renderPlotly({activity_trendplot(app_data[["add_perf"]], waiting_status = "admitted")})
 plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["add_perf"]], waiting_status = "additions")})
+
+plots$additions_byboard <- renderPlotly({additions_trendplot_byboard(app_data[["addhbr"]],
+                                                                           hbt="NHS Borders",
+                                                                           hbr="NHS BORDERS",
+                                                                           chosen_specialty="Gynaecology")})
+
+
