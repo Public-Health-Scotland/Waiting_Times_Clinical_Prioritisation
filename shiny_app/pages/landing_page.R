@@ -6,8 +6,12 @@ div(
 
   fluidRow(width=12, height="50px", br()),
 
+  fluidRow(width=12, height="100px", pickerInput("hbt_filter", "Select Health Board of Treatment ",
+                                                choices = c("a", "b", "c"),
+                                                selected = c("a"),
+                                                multiple = FALSE)),
+
   fluidRow(
-    column(width=6,
            shinydashboard::tabBox( width=NULL, type="pills", height="200px",
                  tabPanel("Waiting",
                           tagList(
@@ -28,20 +32,6 @@ div(
                           ) # taglist
                  )
            ) # tabbox
-               ), # column
-    column(width=6,
-           shinydashboard::box(width=NULL, height="200px",
-              tagList(
-                pickerInput("hbt_filter", "Select HBT ",
-                                       choices = c("a", "b", "c"),
-                                       selected = c("a"),
-                                       multiple = FALSE),
-                h3("Additions"),
-                p("Additions information goes here")
-              ) # taglist
-           ) # box
-            ) # column
-
   ), # fluidRow
 
   fluidRow(width=12, height="50px", br()),
@@ -75,8 +65,12 @@ output$landing_page_graphs <-  renderUI({
 
     fluidRow(width=12, height="50px", br()),
 
+    fluidRow(width=12, height="100px",  pickerInput("hbt_filter", "Select Health Board of Treatment ",
+                                                   choices = c("a", "b", "c"),
+                                                   selected = c("a"),
+                                                   multiple = FALSE)),
+
     fluidRow(
-      column(width=6,
              shinydashboard::tabBox( width=NULL, type="pills", height="500px",
                                      tabPanel("Waiting",
                                               tagList(
@@ -97,19 +91,6 @@ output$landing_page_graphs <-  renderUI({
                                               ) # taglist
                                      )
              ) # tabbox
-      ), # column
-      column(width=6,
-             shinydashboard::box(width=NULL, height="500px",
-                                 tagList(
-                                   pickerInput("hbt_filter", "Select HBT ",
-                                               choices = c("a", "b", "c"),
-                                               selected = c("a"),
-                                               multiple = FALSE),
-                                   h3("Additions"),
-                                   p("Additions information goes here")
-                                 ) # taglist
-             ) # box
-      ) # column
 
     ), # fluidRow
 
