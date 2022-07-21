@@ -73,9 +73,7 @@ additions_trendplot_byboard <- function(input_data,
   dataset %<>% group_by(month_ending, urgency) %>%
     summarise(tot_additions = sum(additions_to_list))
 
-  yaxis_title <-  glue("Additions to list; HBR: {hbr}; HBT: {hbt}; specialty: {chosen_specialty}")
-
-  yaxis_plots[["title"]] <- yaxis_title
+  yaxis_plots[["title"]] <- "Additions to list"
   xaxis_plots[["title"]] <- "Month ending"
 
   tooltip_trend <- glue("Month ending: {format(dataset$month_ending, '%b %Y')}<br>",

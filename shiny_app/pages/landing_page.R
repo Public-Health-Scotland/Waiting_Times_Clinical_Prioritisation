@@ -6,10 +6,10 @@ div(
 
   fluidRow(width=12, height="50px", br()),
 
-  fluidRow(width=12, height="100px", pickerInput("hbt_filter", "Select Health Board of Treatment ",
-                                                choices = c("a", "b", "c"),
-                                                selected = c("a"),
-                                                multiple = FALSE)),
+#  fluidRow(width=12, height="100px", pickerInput("hbt_filter", "Select Health Board of Treatment ",
+#                                                choices = c("a", "b", "c"),
+#                                                selected = c("a"),
+#                                                multiple = FALSE)),
 
   fluidRow(
            shinydashboard::tabBox( width=NULL, type="pills", height="200px",
@@ -65,28 +65,31 @@ output$landing_page_graphs <-  renderUI({
 
     fluidRow(width=12, height="50px", br()),
 
-    fluidRow(width=12, height="100px",  pickerInput("hbt_filter", "Select Health Board of Treatment ",
-                                                   choices = c("a", "b", "c"),
-                                                   selected = c("a"),
-                                                   multiple = FALSE)),
+  #  fluidRow(width=12, height="100px",  pickerInput("hbt_filter", "Select Health Board of Treatment ",
+  #                                                 choices = c("a", "b", "c"),
+  #                                                 selected = c("a"),
+  #                                                 multiple = FALSE)),
 
     fluidRow(
              shinydashboard::tabBox( width=NULL, type="pills", height="500px",
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Number of patients waiting"),
+                                                p("All boards and all specialties"),
                                                 plots[["activity_waiting"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Admitted",
                                               tagList(
                                                 h3("Number of patients admitted"),
+                                                p("All boards and all specialties"),
                                                 plots[["activity_admitted"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Additions",
                                               tagList(
                                                 h3("Number of additions to list"),
+                                                p("All boards and all specialties"),
                                                 plots[["activity_additions"]]
                                               ) # taglist
                                      )
