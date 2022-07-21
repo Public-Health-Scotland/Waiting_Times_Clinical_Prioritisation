@@ -8,7 +8,7 @@ output$activity_waiting_ui <-  renderUI({
 
         tagList(
 
-          h2("Distribution of waits"),
+          h2("Waiting list activity"),
           p("Some text here"),
           plots[["activity_waiting"]]
 

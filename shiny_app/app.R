@@ -66,8 +66,7 @@ ui <- fluidPage(
       tabPanel(title = "Distribution of waits",
                icon = icon_no_warning_fn("chart-area"),
                value = "distribution",
-               h2("Distribution of waits"),
-               p("Some text here")
+               uiOutput("distribution_waits_ui")
       ), # tabpanel
       ##############################################.
       # ADDITIONS BY HBR PAGE ----
@@ -94,6 +93,7 @@ server <- function(input, output) {
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
   source(file.path("pages/waiting_list_activity.R"), local = TRUE)$value
+  source(file.path("pages/distribution_of_waits.R"), local = TRUE)$value
 
 
 
