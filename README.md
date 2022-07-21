@@ -15,6 +15,10 @@ Data from BOXI must be processed for use in the shiny app and Excel output, with
 * perf_qtr_split
     + Quarterly performance data, with calculated proportions in each CP category.
 
+* topsix_specs
+    + List of top six specialties based on ongoing waits, per HBT and quarter
+    + Used to filter data for fig. 3 in draft report
+
 * hb_plotdata
     + Quarterly additions, admissions and ongoing waits by HBT, specialty and urgency, with columns for total within each HBT/specialty/date/indicator group and proportion of indicator that is in category P2
     + Used for producing facetted graphs fig. 5 and 6 in draft report.
