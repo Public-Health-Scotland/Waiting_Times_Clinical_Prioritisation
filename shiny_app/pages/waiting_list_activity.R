@@ -64,7 +64,7 @@ output$activity_additions_ui <-  renderUI({
                          selected = "All Specialties",
                          multiple = FALSE)
       )
-    ),
+    ), # fluidrow
 
     fluidRow(
 
