@@ -1,6 +1,5 @@
 ####################### Waiting List Activity Plot Functions #######################
 
-
 activity_trendplot <- function(input_data, waiting_status) {
 
   indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
@@ -22,7 +21,8 @@ activity_trendplot <- function(input_data, waiting_status) {
 
   tooltip_trend <- glue("Month ending: {format(dataset$month_ending, '%b %Y')}<br>",
                         "Clinical prioritisation : {dataset$urgency}<br>",
-                        "Number of patients: {format(dataset$number, big.mark=',')}<br>")
+                        "Number of patients: {format(dataset$number, big.mark=',')}<br>",
+                        "2019 monthly average: {format(dataset$monthly_avg, big.mark=',')}")
 
   p <- dataset %>%
       plot_ly(x = ~month_ending) %>%
@@ -33,6 +33,9 @@ activity_trendplot <- function(input_data, waiting_status) {
              stroke = I("black"),
              hoverinfo = "text",
              name = ~urgency) %>%
+      add_lines(y = ~monthly_avg, line = list(color = "black"),
+              text = tooltip_trend, hoverinfo = "text",
+              name = "2019 monthly average") %>%
       #Layout
       layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,

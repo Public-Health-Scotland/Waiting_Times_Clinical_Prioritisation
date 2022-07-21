@@ -27,11 +27,11 @@ waits_distribution_plot <- function(input_data, waiting_status, quarter_ending="
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- "Weeks waiting"
 
-  tooltip_trend <- glue("Quarter ending: {quarter_ending}",
+  tooltip_trend <- glue("Quarter ending: {quarter_ending}<br>",
                         "Weeks waiting: {dataset$weeks}<br>",
-                        "HBT: {hbt}",
+                        "HBT: {hbt}<br>",
                         "Clinical prioritisation: {dataset$urgency}<br>",
-                        "Specialty: {chosen_specialty}",
+                        "Specialty: {chosen_specialty}<br>",
                         "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")
 
   p <- dataset %>%
