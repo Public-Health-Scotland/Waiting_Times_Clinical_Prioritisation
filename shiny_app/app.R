@@ -54,9 +54,6 @@ ui <- fluidPage(
                  ),
                  tabPanel("Admitted",
                           uiOutput("activity_admitted_ui")
-                 ),
-                 tabPanel("Additions",
-                          uiOutput("activity_additions_ui")
                  )
                ) # tabsetpanel
       ), # tabpanel
@@ -78,11 +75,10 @@ ui <- fluidPage(
       ##############################################.
       # ADDITIONS BY HBR PAGE ----
       ##############################################.
-      tabPanel(title = "Additions by HBR",
+      tabPanel(title = "Additions",
                icon = icon_no_warning_fn("hospital-user"),
                value = "additions",
-               h2("Additions by health board of referral (HBR)"),
-               p("Some text here")
+               uiOutput("additions_ui")
       ) # tabpanel
 
       ) # navbar
