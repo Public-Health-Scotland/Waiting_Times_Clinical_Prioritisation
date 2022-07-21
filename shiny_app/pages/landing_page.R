@@ -12,7 +12,7 @@ div(
 #                                                multiple = FALSE)),
 
   fluidRow(
-           shinydashboard::tabBox( width=NULL, type="pills", height="200px",
+           shinydashboard::tabBox( width=NULL, type="pills", height="200px", side="right",
                  tabPanel("Waiting",
                           tagList(
                             h3("Number of patients waiting"),
@@ -71,7 +71,7 @@ output$landing_page_graphs <-  renderUI({
   #                                                 multiple = FALSE)),
 
     fluidRow(
-             shinydashboard::tabBox( width=NULL, type="pills", height="500px",
+             shinydashboard::tabBox( width=NULL, type="pills", height="500px", side="right",
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Number of patients waiting"),
@@ -104,13 +104,15 @@ output$landing_page_graphs <-  renderUI({
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Distribution of waits"),
-                                                p("waiting information goes here")
+                                                p("All boards and all specialties"),
+                                                plots[["waits_distribution_waiting"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Admitted",
                                               tagList(
                                                 h3("Distribution of admitted patients"),
-                                                p("waiting information goes here")
+                                                p("All boards and all specialties"),
+                                                plots[["waits_distribution_admitted"]]
                                               ) # taglist
                                      )
              ) # tabbox

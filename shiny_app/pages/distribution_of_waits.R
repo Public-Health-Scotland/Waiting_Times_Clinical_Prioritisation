@@ -83,6 +83,20 @@ output$distribution_waits_admitted_ui <-  renderUI({
 })
 
 
+plots$waits_distribution_waiting <- renderPlotly({
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+                          waiting_status="waiting",
+                          quarter_ending="March 2022",
+                          hbt="NHS Scotland",
+                          chosen_specialty="All Specialties")})
+
+plots$waits_distribution_admitted <- renderPlotly({
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
+                          waiting_status="admitted",
+                          quarter_ending="March 2022",
+                          hbt="NHS Scotland",
+                          chosen_specialty="All Specialties")})
+
 
 plots$waits_breakdown_waiting <- renderPlotly({
   waits_distribution_plot(app_data[["dow_4wk_qtr_pub"]],
