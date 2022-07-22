@@ -21,8 +21,8 @@ Sys.umask(002) #Used to ensure directory permissions are correct
 
 #1.2 - Dates ----
 min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
-max_date <- as.Date("2022-03-31")
-max_date2 <- as.Date("2022-06-30")
+max_date <- as.Date("2022-06-30")
+max_date2 <- as.Date("2022-03-31")
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -163,8 +163,7 @@ perf_qtr <- perf_qtr_all %>%
 
 
 #Create version of data that has proportions per CP code per month
-perf_qtr_split <- perf_qtr %>% 
-  filter(date <= max_date) %>%
+perf_qtr_split <- perf_qtr %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
                                                   100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
@@ -180,7 +179,10 @@ dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 wee
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date = openxlsx::convertToDate(date),
          weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>%
+  complete(urgency, date, ongoing_completed, weeks,
+           nesting(nhs_board_of_treatment, specialty, patient_type),
+           fill = list(`number_seen/on_list` = 0)) 
 
 #uncomment code below if dates do not parse properly
 
@@ -224,7 +226,7 @@ dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits la
            fill = list(`number_seen/on_list` = 0)) 
 
 #2.4 - Additions by HBT ----
-addrem <- read.xlsx(here::here("data", "Removal Reason excl. Lothian Dental.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
+addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian Dental by age gender SIMD.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -286,11 +288,11 @@ addhbr <- read.xlsx(here::here("data", "snapshot", "Removal Reason excl. Lothian
          !gender == "Blank") %>% #Exclude records with "Blank" gender
   rename(sex = gender) %>% #Rename to match population lookup
   mutate(across(c(age_group, sex), ~as.factor(.x)), #Convert age_group and sex to factors
-  age_group = fct_relevel(age_group, "5-9", after = 1)) #Put level "5-9" after "0-4"
+         age_group = fct_relevel(age_group, "5-9", after = 1)) #Put level "5-9" after "0-4"
 
 #2.6 - Save data for Excel and app ----
 #1 - add_perf
-write.csv(add_perf, file = here::here("data", "processed data", "add_perf_jun.csv"), row.names = FALSE)
+write.csv(add_perf %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_jun.csv"), row.names = FALSE)
 write.csv(add_perf %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mar.csv"), row.names = FALSE)
 
 #2 - addrem_qtr
@@ -324,10 +326,24 @@ write.csv(topsix %>% filter(date <= max_date2), file = here::here("data", "proce
 
 #### 3 - Data wrangling ----
 
+add_perf <- read.csv(here::here("data", "processed data", "add_perf_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+dow_4wk_qtr_pub <- read.csv(here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+addhbr <- read.csv(file = here::here("data", "processed data", "addhbr_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+hb_var_plotdata <- read.csv(here::here("data", "processed data", "hb_plotdata_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+topsix <- read.csv(file = here::here("data", "processed data", "topsix_specs_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
+add_simd <- read.csv(here::here("data", "processed data", "add_simd_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+
 #3.1 - Completed and ongoing waits ----
 
 #3.1.1 - Graph of ongoing and completed waits, by month ----
-activity_trendplot <- add_perf %>% 
+activity_trendplot_jun <- add_perf %>% 
   ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
@@ -336,8 +352,8 @@ activity_trendplot <- add_perf %>%
   scale_linetype_manual(name ="", values = c('dashed')) +
   theme_bw() +
   scale_x_date(labels = date_format("%b %y"),
-               breaks = seq(from = floor_date(min(addrem$date), "month"), 
-                            to = floor_date(max(addrem$date), "month"), by = "1 months")) +
+               breaks = seq(from = floor_date(min(add_perf$date), "month"), 
+                            to = floor_date(max(add_perf$date), "month"), by = "1 months")) +
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
@@ -346,7 +362,7 @@ activity_trendplot <- add_perf %>%
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
   facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
-             labeller = as_labeller(c(additions_to_list ="Additions to list", Ongoing = "Patients waiting", Completed = "Patients admitted") )) +
+             labeller = as_labeller(c(additions_to_list ="Additions to list \n", Ongoing = "Patients waiting \n", Completed = "Patients admitted \n") )) +
   ylab(NULL) +
   xlab("Month ending") +
   theme(text = element_text(size = 12),
@@ -364,8 +380,49 @@ activity_trendplot <- add_perf %>%
         legend.spacing= unit(0.0, "cm"),
         legend.text = element_text(size = 8))
 
-#Save this image
-ggsave("allspecs_activity_trend_monthly.png", plot = activity_trendplot, dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+
+activity_trendplot_mar <- add_perf %>%
+  filter(date <= max_date2) %>%
+  ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+  geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
+                 linetype = "2019 monthly average"), 
+             colour = "#000000") +
+  scale_linetype_manual(name ="", values = c('dashed')) +
+  theme_bw() +
+  scale_x_date(labels = date_format("%b %y"),
+               breaks = seq(from = floor_date(min(add_perf$date), "month"), 
+                            to = floor_date(max(add_perf$date), "month"), by = "1 months")) +
+  scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
+  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
+  # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
+  theme(text = element_text(size = 12))+
+  geom_blank(aes(y = y_max)) +
+  geom_blank(aes(y = y_max2)) +
+  facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
+             labeller = as_labeller(c(additions_to_list ="Additions to list \n", Ongoing = "Patients waiting \n", Completed = "Patients admitted \n") )) +
+  ylab(NULL) +
+  xlab("Month ending") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0, size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.key.height= unit(0.25, 'cm'),
+        legend.key.width= unit(0.25, 'cm'),
+        legend.margin=margin(0,0,0,0),
+        legend.spacing= unit(0.0, "cm"),
+        legend.text = element_text(size = 8))
+
+#Save these images
+ggsave("allspecs_activity_trend_monthly_mar.png", plot = activity_trendplot_mar, dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("allspecs_activity_trend_monthly_jun.png", plot = activity_trendplot_jun, dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
 #3.1.2 - Top 6 specialties by additions/admitted/waiting ----
 
@@ -382,7 +439,7 @@ add_stats <- addrem_qtr %>%
   unique()
 
 #Calculate the proportion of admissions and ongoing waits represented by each specialty per HB, bind onto additions 
-specstats <- perf_qtr  %>% 
+specstats <- perf_qtr_split  %>% 
   group_by(date, patient_type, ongoing_completed, nhs_board_of_treatment) %>%
   mutate(allspec = sum(`number_seen/on_list`[specialty=="All Specialties"],na.rm=T)) %>% #Add all specialties total added to all rows
   group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>% 
@@ -413,14 +470,13 @@ topsix <- specstats %>%
   group_by(date, nhs_board_of_treatment) %>%
   summarise(specialties = as.character(list(unique(specialty))))
 
-
-#Data for top six specialties 
-specstats %<>% filter(specialty %in% topsix$specialty, date == max_date)
+#Data for top six specialties
+specstats %<>% left_join(topsix, by=c("nhs_board_of_treatment", "date")) %>% filter(str_detect(specialties, specialty))
 
 #Proportion of total seen/waiting represented by these 6 specialties
 topsix_prop <- specstats %>%
   filter(nhs_board_of_treatment == "NHS Scotland") %>%
-  group_by(indicator) %>%
+  group_by(date, indicator) %>%
   summarise(`proportion of total` = sum(proportion))
 
 #Calculate proportion of additions that are P2 per specialty
@@ -431,10 +487,8 @@ spec_p2_prop <- addrem_qtr  %>%
   group_by(specialty) %>%
   mutate(total = sum(number, na.rm = T),
          p2_prop = sum(number[urgency == "P2"], na.rm = T)/total) %>%
-  select(indicator, specialty, number, p2_prop)# %>%
-  rename("p2_prop"="proportion_seen/on_list")
+  select(indicator, specialty, number, p2_prop) 
 
-  
 #Calculate proportion of additions by HB/spec/CP/date
 addrem_qtr_split <- addrem_qtr %>%
   group_by(nhs_board_of_treatment, specialty, indicator,date) %>%
@@ -444,13 +498,13 @@ addrem_qtr_split <- addrem_qtr %>%
 
 topsix_plot_data <- perf_qtr_split %>%
   ungroup() %>%
-  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed, urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
+  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed, 
+         urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
   mutate(proportion = proportion/100) %>%
   bind_rows(select(addrem_qtr_split, - total)) %>%
-  filter(specialty %in% topsix$specialty, 
+  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty), 
          nhs_board_of_treatment=="NHS Scotland",
-         indicator %in% c("additions_to_list", "Completed", "Ongoing"),
-         date == max_date) %>%
+         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>%
   ungroup() %>%
   left_join(select(ungroup(spec_p2_prop), -c(indicator, number)),
             by = c("specialty")) %>%
@@ -458,34 +512,38 @@ topsix_plot_data <- perf_qtr_split %>%
   arrange(indicator,-p2_prop)
 
 #Graph
-topsixplot <- topsix_plot_data %>%
-  ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = proportion), group = urgency) +
-  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
-  theme_bw() +
-  scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
-  scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
-  scale_y_continuous(labels=scales::percent) +
-  facet_wrap(~indicator, nrow=3, strip.position = "top",
-             labeller = as_labeller(c(additions_to_list = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
-  labs(x = NULL, y = NULL) +
-  theme(text = element_text(size = 12),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.spacing = unit(1, "cm"),
-        panel.border = element_blank(),
-        legend.position="bottom",
-        legend.key.height= unit(0.25, 'cm'),
-        legend.key.width= unit(0.25, 'cm'),
-        legend.margin=margin(0,0,0,0),
-        legend.spacing= unit(0.0, "cm"),
-        legend.text = element_text(size = 8))
+topsixplot <- function(date_choice) {topsix_plot_data %>%
+    filter(date == date_choice) %>%
+    group_by(nhs_board_of_treatment, date, specialty, indicator) %>%
+    ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = proportion), group = urgency) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+    theme_bw() +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    scale_y_continuous(labels=scales::percent) +
+    facet_wrap(~indicator, nrow=3, strip.position = "top",
+               labeller = as_labeller(c(additions_to_list = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
+    labs(x = NULL, y = NULL) +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.margin=margin(0,0,0,0),
+          legend.spacing= unit(0.0, "cm"),
+          legend.text = element_text(size = 8))
+}
 
-#Save this image
-ggsave("top_six_spec_plot_additions.png", plot = topsixplot, dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+#Save March and June graphs
+ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(max_date), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
+ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 #3.1.3 - HBT variation ----
 #Graph
@@ -503,7 +561,7 @@ hb_var_data <- perf_qtr_split %>%
          p2_proportion = sum(number[urgency == "P2"])/total) %>%
   group_by(nhs_board_of_treatment, indicator, specialty, urgency, date) %>%
   mutate(proportion = number/total) 
-  
+
 
 #Calculate proportion that is P2 to allow ordering of Boards
 hb_p2_prop <- hb_var_data %>% 
@@ -515,16 +573,16 @@ hb_p2_prop <- hb_var_data %>%
 #Subset data for plotting and bind on 
 hb_var_plotdata <- hb_var_data %>% 
   filter(#date == max_date,
-         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>% 
+    indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>% 
   left_join(ungroup(hb_p2_prop)) %>% #select(ungroup(hb_p2_prop), -ongoing_completed), 
-            #by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
+  #by =c("nhs_board_of_treatment", "patient_type", "specialty")) %>% 
   arrange(date, indicator,-`p2_proportion`)
 
 
 #Create the plot
-hb_var_plot <- hb_var_plotdata %>% 
+hb_var_plot <- function(date_choice) {hb_var_plotdata %>% 
   filter(specialty == "All Specialties",
-         date <= max_date) %>%
+         date == date_choice) %>%
   ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_proportion, .desc =FALSE), y = proportion), urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
   #scale_x_reordered() +
@@ -549,8 +607,15 @@ hb_var_plot <- hb_var_plotdata %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8)) +
-  coord_flip() #+
-  #theme(axis.text.y=element_markdown())
+  coord_flip() +
+  theme(axis.text.y=element_markdown())
+}
+
+
+#Save March and June graphs
+ggsave("hb_var_plot_jun.png", plot = hb_var_plot(max_date), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+ggsave("hb_var_plot_mar.png", plot = hb_var_plot(max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 #Save this image
 ggsave("hb_var_plot_2.png", dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
@@ -558,9 +623,11 @@ ggsave("hb_var_plot_2.png", dpi=300, dev='png', height=10, width=20, units="cm",
 
 #3.1.4 - HBT comparison for a particular specialty ----
 #A&A and Lanarkshire for ophthalmology?
-hb_spec_plot <- hb_var_plotdata %>% 
-  filter(specialty == "Ophthalmology",
-         nhs_board_of_treatment %in% c("NHS Dumfries & Galloway", "NHS Forth Valley")) %>%
+hb_spec_plot <- function(date_choice, spec_choice, hb_list) {hb_var_plotdata %>% 
+  filter(date == date_choice,
+         specialty == spec_choice,
+         nhs_board_of_treatment %in% hb_list) %>%
+    rowwise() %>%
   mutate(y_max = roundUpNice(total)) %>%
   ggplot(aes(x = nhs_board_of_treatment, y = number), group=urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.9) +
@@ -586,12 +653,12 @@ hb_spec_plot <- hb_var_plotdata %>%
         legend.position="bottom",
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
-        legend.text = element_text(size = 10)) #+
- # coord_flip() +
-  theme(axis.text.y=element_markdown())
+        legend.text = element_text(size = 10)) 
+}
 
-#Save this image
-ggsave("hb_comparison_ophthalmology_dg_fv.png", plot = hb_spec_plot, dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+#Save version for QE March
+ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
 
 #3.2 - Distribution of waits ----
 #3.2.1 - Barplot of number seen/waiting by 4 week intervals and CP split ----
@@ -601,8 +668,10 @@ dow_4wk_plot <- dow_4wk_qtr_pub %>%
                             weeks == "Over 104" ~">104",
                             TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
 
-dow_barplot <- dow_4wk_plot %>%
-  filter(nhs_board_of_treatment == "NHS Scotland", specialty == "All Specialties", date == max_date) %>%
+dow_barplot <- function(board_choice, specialty_choice, date_choice) {dow_4wk_plot %>%
+  filter(nhs_board_of_treatment == board_choice, 
+         specialty == specialty_choice, 
+         date == date_choice) %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
   group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
@@ -632,13 +701,17 @@ dow_barplot <- dow_4wk_plot %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8))
+}
+
 
 #Save this plot
-ggsave("dow Scotland all specs qe mar 2022.png", dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+ggsave("dow Scotland all specs qe mar 2022.png", plot = dow_barplot("NHS Scotland", "All Specialties", max_date2), dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 #3.2.2 - Barplot of two contrasting specialties (Gynae and Ophthalmology) ----
-spec_dow_bar <-  dow_4wk_plot %>%
-  filter(specialty %in% c("Urology", "Orthopaedics"), date == max_date, nhs_board_of_treatment =="NHS Scotland") %>%
+spec_dow_bar <-  function(specialty_list, date_choice, board_choice) {dow_4wk_plot %>%
+  filter(specialty %in% specialty_list, 
+         date == date_choice, 
+         nhs_board_of_treatment ==board_choice) %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
   group_by(nhs_board_of_treatment, ongoing_completed, date) %>%
@@ -671,8 +744,11 @@ spec_dow_bar <-  dow_4wk_plot %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8))
+}
 
-
+#Save plot for QE March 2022
+ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar(c("Urology", "Orthopaedics"), max_date2, "NHS Scotland"), dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+             
 #spec_dow_bar <-  dow_4wk_plot %>%
 #  filter(specialty %in% c("Urology", "Orthopaedics"), date == max_date, nhs_board_of_treatment =="NHS Scotland") %>%
 #  group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
@@ -709,13 +785,16 @@ spec_dow_bar <-  dow_4wk_plot %>%
 #
 
 #Save this plot
-ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar, dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
+#ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar, dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 
 
 #3.2.3 - Barplot of two contrasting Boards for single specialty (D&G and FV) ----
-hb_dow_bar <-  dow_4wk_plot %>%
-  filter(specialty =="Ophthalmology", date == as.Date("2022-03-31"), nhs_board_of_treatment %in% c("NHS Dumfries & Galloway", "NHS Forth Valley")) %>%
+hb_dow_bar <- function(specialty_choice, date_choice, board_list) {dow_4wk_plot %>%
+  filter(specialty == specialty_choice, 
+         date == date_choice, 
+         nhs_board_of_treatment %in% board_list) %>%
+  #filter(specialty =="Ophthalmology", date == as.Date("2022-03-31"), nhs_board_of_treatment %in% c("NHS Dumfries & Galloway", "NHS Forth Valley")) %>%
   group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
   mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
   group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
@@ -747,11 +826,13 @@ hb_dow_bar <-  dow_4wk_plot %>%
         legend.key.height= unit(0.25, 'cm'),
         legend.key.width= unit(0.25, 'cm'),
         legend.text = element_text(size = 8))
+}
 
-#Save this plot
-ggsave("dow_ophthalmology_d&g_fv_mar2022.png", plot = hb_dow_bar, dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
-#3.2.4 - Barplot showing number waiting by defined wait lengths by HBT ----
+#Save March Ophthalmology D&G and FV plot
+ggsave("dow_ophthalmology_d&g_fv_mar2022.png", plot = hb_dow_bar("Ophthalmology", max_date2, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+#3.2.4 - Barplot showing number waiting by defined wait lengths by HBT (NOT NEEDED) ----
 dow_hb <- dow_4wk %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, urgency, date) %>%
   summarise(`< 4 weeks` = sum(`number_seen/on_list`[weeks == "000-004 Weeks"], na.rm=T), 
@@ -798,7 +879,7 @@ dow_hbplot <- dow_hb %>%
         panel.grid.major.x = element_blank(),
         legend.position="bottom")
 
-#3.3 - Additions and removals ----
+#3.3 - Additions and removals (NOT NEEDED?)----
 
 #3.3.1 - Trend in additions and removals by CP (barplot) ----
 additions_barplot <- addrem %>%
@@ -886,7 +967,7 @@ pop <- readRDS(glue::glue(pop_path, "/Projections/HB2019_pop_proj_2018_2043.rds"
               mutate(board = "NHS Scotland")) %>%
   filter(year >= "2021") %>%
   mutate(age_group = as.factor(cut(age, agebreaks, agelabels, include.lowest = TRUE, right= FALSE)), 
-           sex_name = as.factor(sex_name),
+         sex_name = as.factor(sex_name),
          board = toupper(board)) %>%
   group_by(board, year, age_group, sex_name) %>%
   summarise(pop = sum(pop, na.rm =T))
@@ -1010,7 +1091,7 @@ EASRplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
     coord_flip() +
     ggtitle(paste0("Standardised addition rates for ", specialty_of_interest, ", ", max_date))
 }
-  
+
 
 rate_plot <- EASRplot(stdrate_all_qtr, "All Specialties", max_date, c("P2", "P3", "P4"))
 
@@ -1068,11 +1149,17 @@ add_simd <- read.xlsx("data/snapshot/Removal Reason excl. Lothian Dental by age 
   group_by(date=as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1), urgency, age_group, sex, simd, board, specialty) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm = T), .groups = "keep")
 
+#Create "Total" CP group
+add_simd %<>% 
+  bind_rows(add_simd %>% group_by(date, age_group, sex, simd, board, specialty) %>% 
+              summarise(additions_to_list = sum(additions_to_list, na.rm = T)) %>%
+              mutate(urgency = "Total"))
+
 add_simd_scot <- add_simd %>%
   group_by(date, urgency, age_group, sex, simd, specialty) %>%
   summarise(additions_to_list = sum(additions_to_list, na.rm=T)) %>%
   mutate(board = "NHS Scotland")
-  
+
 #*2 and 3 - Scotland crude and standardised rates----
 
 add_simd_scot %<>% 
@@ -1117,7 +1204,7 @@ add_simd %<>%
                              str_detect(board, "SHETLAND") ~"SHET",
                              str_detect(board, "TAYSIDE") ~"TAY",
                              str_detect(board, "ISLES") ~"WI")
-                             )
+  )
 
 crudeRates <- add_simd %>%
   group_by(date, specialty, urgency) %>%
@@ -1145,25 +1232,25 @@ add_simd_long <- add_simd %>%
   select(date, specialty, urgency, pop, board, shortHB, everything()) %>%
   pivot_longer(cols = c(crudeRate, additions_to_list, crudeHBRate:standardisedHBRate), names_to = "indicator", values_to = "value") %>%
   bind_rows(lines)
-  
+
 
 funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
   
-#Calculate upper and lower CIs over larger population range
+  #Calculate upper and lower CIs over larger population range
   
   plotdat <- df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
            urgency %in% urgencylist)
   
-p <- ggplot(data = plotdat[plotdat$indicator == "standardisedHBRate"], aes(x = population/1000, y = value, label = shortHB), group = urgency,colour = indicator) +
+  p <- ggplot(data = plotdat[plotdat$indicator == "standardisedHBRate"], aes(x = population/1000, y = value, label = shortHB), group = urgency,colour = indicator) +
     geom_point(stat="identity") + 
-  geom_point(data = plotdat[plotdat$indicator == "ci998_l"], aes(y = value)) +#, colour = phs_colours("phs-purple")) +
-  #geom_(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
-  #geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
-  #geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
-  #geom_line(aes(y = crudeRate)) +
-   # geom_line(aes(x = pop_seq, y = crudeRate)) +
+    geom_point(data = plotdat[plotdat$indicator == "ci998_l"], aes(y = value)) +#, colour = phs_colours("phs-purple")) +
+    #geom_(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
+    #geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    #geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
+    #geom_line(aes(y = crudeRate)) +
+    # geom_line(aes(x = pop_seq, y = crudeRate)) +
     geom_text_repel(hjust=0, vjust=0, box.padding = 0.3) +
     geom_blank(aes(y = 0)) +
     facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
@@ -1186,7 +1273,7 @@ p <- ggplot(data = plotdat[plotdat$indicator == "standardisedHBRate"], aes(x = p
 }
 
 funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
-df %>%
+  df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
            urgency %in% urgencylist) %>%
@@ -1204,35 +1291,67 @@ df %>%
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
     labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
     theme(text = element_text(size = 12),
-    strip.background = element_blank(),
-    strip.placement = "outside",
-    strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-    panel.spacing = unit(0.5, "cm"),
-    panel.border = element_blank(),
-    legend.position="bottom",
-    legend.key.height= unit(0.25, 'cm'),
-    legend.key.width= unit(0.25, 'cm'),
-    legend.text = element_text(size = 8)) +
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.spacing = unit(0.5, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8)) +
     ggtitle(paste0("Age, sex and SIMD standardised addition rates for ", specialty_of_interest, ", ", max_date))
 }
 
 
 #*6 - Create graphs for specialties of interest ----
-fplot_all <- funnelplot(add_simd, "All Specialties", max_date, c("P2", "P3", "P4"))
-  
-fplot_cardio <- funnelplot(add_simd, "Cardiology", max_date, c("P2", "P3", "P4"))  
+#All specialties
+ggsave("funnelall_specs_mar2022.png", plot = funnelplot(add_simd, "All Specialties", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
-fplot_urol <- funnelplot(add_simd, "Urology", max_date, c("P2", "P3", "P4"))  
-  
-fplot_gynae <- funnelplot(add_simd, "Gynaecology", max_date, c("P2", "P3", "P4"))  
+ggsave("funnelall_specs_jun2022.png", plot = funnelplot(add_simd, "All Specialties", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
-fplot_gs <- funnelplot(add_simd, "General Surgery", max_date, c("P2", "P3", "P4"))  
+#Cardiology
+ggsave("funnel_cardiology_mar2022.png", plot = funnelplot(add_simd, "Cardiology", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
-fplot_opto <- funnelplot(add_simd, "Ophthalmology", max_date, c("P2", "P3", "P4"))  
+ggsave("funnel_cardiology_jun2022.png", plot = funnelplot(add_simd, "Cardiology", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
-fplot_ortho <- funnelplot(add_simd, "Orthopaedics", max_date, c("P2", "P3", "P4")) 
+#Urology
+ggsave("funnel_urology_mar2022.png", plot = funnelplot(add_simd, "Urology", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
-fplot_ent <- funnelplot(add_simd, "Ear, Nose & Throat", max_date, c("P2", "P3", "P4"))  
+ggsave("funnel_urology_jun2022.png", plot = funnelplot(add_simd, "Urology", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+#Gynaecology
+ggsave("funnel_gynaecology_mar2022.png", plot = funnelplot(add_simd, "Gynaecology", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("funnel_gynaecology_jun2022.png", plot = funnelplot(add_simd, "Gynaecology", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+#General Surgery
+ggsave("funnel_gensurg_mar2022.png", plot = funnelplot(add_simd, "General Surgery", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("funnel_gensurg_jun2022.png", plot = funnelplot(add_simd, "General Surgery", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+#Ophthalmology
+ggsave("funnel_ophthalmology_mar2022.png", plot = funnelplot(add_simd, "Ophthalmology", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("funnel_ophthalmology_jun2022.png", plot = funnelplot(add_simd, "Ophthalmology", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+#Orthopaedics
+ggsave("funnel_ortho_mar2022.png", plot = funnelplot(add_simd, "Orthopaedics", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("funnel_ortho_jun2022.png", plot = funnelplot(add_simd, "Orthopaedics", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+#ENT
+ggsave("funnel_ent_mar2022.png", plot = funnelplot(add_simd, "Ear, Nose & Throat", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+       path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+
+ggsave("funnel_ent_jun2022.png", plot = funnelplot(add_simd, "Ear, Nose & Throat", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
 
 #3.4.1.D - Indirect age-sex standardisation ----
@@ -1309,7 +1428,7 @@ add_scot_agesex %<>%
 #*4 - Bind rates from Scotland onto add_simd----
 
 add_hb_agesex %<>% 
-     #  ungroup() %>%
+  #  ungroup() %>%
   left_join(pop) %>% #Join on population data
   left_join(select(add_scot_agesex, -c(board, pop, additions_to_list)), by = c("date", "sex", "age_group","specialty", "urgency", "year")) %>%
   mutate(expected_additions = standardisedRate * pop / 1000)
@@ -1383,7 +1502,7 @@ funnelplot_agesex <- function(df, specialty_of_interest, qtrdate, urgencylist) {
     geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
     geom_line(aes(y = crudeRate)) +
     geom_text_repel(hjust=0, vjust=0, point.size =5, box.padding = 0.5, max.overlaps = 5, nudge_x = .15) +#,
-#                    nudge_y = .25*min(df$ci998_u, na.rm=T)/max(df$crudeRate, na.rm=T)) +
+    #                    nudge_y = .25*min(df$ci998_u, na.rm=T)/max(df$crudeRate, na.rm=T)) +
     geom_blank(aes(y = 0)) +
     facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
     theme_bw() +
@@ -1440,7 +1559,7 @@ comparison <- add_simd %>%
   pivot_wider(id_cols = c(board, specialty, urgency), names_from = type, values_from = c(above, below, between))
 
 
-#3.4.2 - Additions by CP/HBR ----
+#3.4.2 - Additions by CP/HBR (FIRST PART SUPERCEDED BY FUNNEL PLOTS) ----
 
 #Calculate proportions by CP category for each HBR, specialty, quarter
 add_prop <- addhbr %>%
@@ -1501,11 +1620,11 @@ topsix_hbr <- add_prop %>%
          date == max_date) %>%
   mutate(specialty = fct_reorder(specialty,p2_proportion, .desc=TRUE)) %>%
   #ungroup() %>%
- # group_by(specialty) %>%
+  # group_by(specialty) %>%
   # 2. Arrange by
   #   i.  facet group
   #   ii. bar height
-#  arrange(board) %>%
+  #  arrange(board) %>%
   # 3. Add order column of row numbers
   mutate(order = row_number()) %>%
   ggplot(aes(x = fct_rev(board), y = `proportion`, order = p2_proportion),
