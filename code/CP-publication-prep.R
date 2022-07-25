@@ -315,6 +315,10 @@ write.csv(addhbr %>% filter(date <= max_date2), file = here::here("data", "proce
 write.csv(add_simd %>% filter(date <= max_date), file = here::here("data", "processed data", "add_simd_jun.csv"), row.names = FALSE)
 write.csv(add_simd %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_simd_mar.csv"), row.names = FALSE)
 
+#6 - add_simd_long (run line 1054 onwards first!)
+write.csv(add_simd_long %>% filter(date <= max_date), file = here::here("data", "processed data", "add_simd_long_jun.csv"), row.names = FALSE)
+write.csv(add_simd_long %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_simd_long_mar.csv"), row.names = FALSE)
+
 
 #7 - hb_plotdata
 write.csv(hb_var_plotdata %>% filter(date <= max_date), file = here::here("data", "processed data", "hb_plotdata_jun.csv"), row.names = FALSE)
@@ -1210,83 +1214,181 @@ crudeRates <- add_simd %>%
   group_by(date, specialty, urgency) %>%
   summarise(crudeRate = unique(crudeRate))
 
-pop_seq <- seq(10000, roundUpNice(max(plotdat$pop)), 70000)
+#pop_seq <- seq(10000, roundUpNice(max(add_simd$pop)), 10000)
+pop_seq <- round(2^(seq(11.5,20.5,0.1)),0)
 
 lines <- expand_grid(crudeRates, pop_seq) %>%
   rename(pop = pop_seq) %>%
   mutate(board = "",
-         shortHB = "",
+         shortHB = "NA",
          ci95_l = 1000 * ((crudeRate/1000) - (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
          ci95_u = 1000 * ((crudeRate/1000) + (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
          ci998_l = 1000 * ((crudeRate/1000) - (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
          ci998_u = 1000 * ((crudeRate/1000) + (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         crudeRate2 = crudeRate,
          standardisedHBRate = ci95_l,
          standardisedHBRate2 = ci95_u,
          standardisedHBRate3 = ci998_l,
          standardisedHBRate4 = ci998_u,
          expected_additions = crudeRate*(pop/1000)
   ) %>%
-  pivot_longer(cols = c(crudeRate, ci95_l:standardisedHBRate4), names_to = "indicator", values_to = "value")
+  pivot_longer(cols = c(crudeRate, ci95_l:standardisedHBRate4), names_to = "indicator", values_to = "value") %>%
+  mutate(indicator = if_else(str_detect(indicator, "standardisedHB"), "standardisedHBRate", indicator))
 
 add_simd_long <- add_simd %>%
   select(date, specialty, urgency, pop, board, shortHB, everything()) %>%
   pivot_longer(cols = c(crudeRate, additions_to_list, crudeHBRate:standardisedHBRate), names_to = "indicator", values_to = "value") %>%
-  bind_rows(lines)
+  bind_rows(lines) %>%
+  mutate(shortHB = if_else(indicator == "standardisedHBRate", shortHB, "NA"),
+         indicator = if_else(indicator == "crudeRate", "standardisedHBRate", indicator),
+         size = if_else(shortHB=="NA",0,0.2),
+         alpha=if_else(size==0, 0, 1),
+         col = case_when( #Add colours as new column
+           str_detect(indicator, "998") ~ phs_colours("phs-purple"),
+           str_detect(indicator, "95") ~ phs_colours("phs-blue"),
+           TRUE ~"black"
+         ),
+         name = case_when( #Add names for legend
+           str_detect(indicator, "998") ~ "Control limits",
+           str_detect(indicator, "95") ~ "Warning limits",
+           indicator == "standardisedHBRate" ~"Health Board of residence rate",
+           indicator == "crudeRate2" ~"Scotland rate",
+           TRUE ~"Scotland rate"
+         ),
+         line = case_when( #Add linetype
+           str_detect(indicator, "998") ~ "solid",
+           str_detect(indicator, "95") ~ "dashed",
+           indicator =="crudeRate2" ~ "dotted",
+           TRUE ~ "blank"
+         ))
 
 
-funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
-  
-  #Calculate upper and lower CIs over larger population range
+
+fplotR <- function(df, specialty_of_interest, qtrdate, urgencylist, legend_choice) {
   
   plotdat <- df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
            urgency %in% urgencylist)
   
-  p <- ggplot(data = plotdat[plotdat$indicator == "standardisedHBRate"], aes(x = population/1000, y = value, label = shortHB), group = urgency,colour = indicator) +
-    geom_point(stat="identity") + 
-    geom_point(data = plotdat[plotdat$indicator == "ci998_l"], aes(y = value)) +#, colour = phs_colours("phs-purple")) +
-    #geom_(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
-    #geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
-    #geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
-    #geom_line(aes(y = crudeRate)) +
-    # geom_line(aes(x = pop_seq, y = crudeRate)) +
-    geom_text_repel(hjust=0, vjust=0, box.padding = 0.3) +
-    geom_blank(aes(y = 0)) +
-    facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
-    theme_bw() +
-    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
-    labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
-    theme(text = element_text(size = 12),
-          strip.background = element_blank(),
-          strip.placement = "outside",
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-          panel.spacing = unit(0.5, "cm"),
-          panel.border = element_blank(),
-          legend.position="bottom",
-          legend.key.height= unit(0.25, 'cm'),
-          legend.key.width= unit(0.25, 'cm'),
-          legend.text = element_text(size = 8)) +
-    ggtitle(paste0("Age, sex and SIMD standardised addition rates for ", specialty_of_interest, ", ", max_date))
+  pd_y <- subset(plotdat, !shortHB=="NA")
   
-  p
+  pd_n <- anti_join(plotdat, pd_y)
+  
+  if(legend_choice == "yes"){   
+
+ggplot(data = plotdat, aes(x = pop/1000, y = value,   alpha = alpha, colour = name, linetype = line), group = urgency ,
+       label = shortHB) + 
+  geom_line(data = subset(pd_n, !indicator %in% c("additions_to_list", "SOR", "crudeHBRate") & !line =="blank"),
+             aes(alpha = if_else(indicator=="standardisedHBRate" & !shortHB=="",0,1), group = indicator), 
+             #size =2, 
+             stat="identity") + 
+  geom_text_repel2(data = subset(pd_n, !indicator %in% c("additions_to_list", "SOR", "crudeHBRate")),
+                   seed = 1, 
+                   box.padding = 0.5,
+                   max.overlaps = 500,
+                   aes(label = shortHB), 
+                   force_pull = 20,
+                   show.legend = FALSE) + 
+  geom_point(data =subset(pd_y, indicator =="standardisedHBRate" & !shortHB=="NA"),
+             size =2, 
+             stat="identity") +
+  geom_text_repel2(data = subset(pd_y, indicator =="standardisedHBRate"),
+                   seed = 2, 
+                   aes(label = shortHB), 
+                   box.padding = 0.5,
+                   force_pull = 0.5,
+                   min.segment.length = 1,
+                   max.overlaps = 500,
+                   show.legend = FALSE) + 
+  facet_wrap(~urgency, scales = "free", ncol = 3) +
+  scale_alpha_identity() +
+  scale_linetype_identity() +
+  scale_x_continuous(labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE), expand = expansion(mult = 0.1)) +
+  theme_bw() +
+  labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
+  theme(text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(angle = 0,hjust = 0,size = 12, face = "bold"),
+        panel.spacing = unit(0.5, "cm"),
+        panel.border = element_blank(),
+        legend.position= "bottom",
+        legend.title = element_blank(),
+        legend.key.height= unit(0.5, 'cm'),
+        legend.key.width= unit(0.5, 'cm'),
+        legend.text = element_text(size = 10)) +
+  scale_colour_manual(values = pal,
+                      guide = guide_legend(override.aes = list(
+                        linetype = c("blank", "dotted","dashed", "solid"),
+                        shape = c(16, NA, NA, NA))))
+  }
+  
+  else{
+    ggplot(data = plotdat, aes(x = pop/1000, y = value,   alpha = alpha, colour = name, linetype = line), group = urgency ,
+           label = shortHB) + 
+      geom_line(data = subset(pd_n, !indicator %in% c("additions_to_list", "SOR", "crudeHBRate") & !line =="blank"),
+                aes(alpha = if_else(indicator=="standardisedHBRate" & shortHB=="",0,1), group = indicator), 
+                #size =2, 
+                stat="identity") + 
+      geom_text_repel2(data = subset(pd_n, !indicator %in% c("additions_to_list", "SOR", "crudeHBRate")),
+                       seed = 1,  
+                       box.padding = 0.5,
+                       max.overlaps = 500,
+                       aes(label = shortHB), 
+                       force_pull = 20,
+                       show.legend = FALSE) + 
+      geom_point(data =subset(pd_y, indicator =="standardisedHBRate" & !shortHB=="NA"),
+                 size =2, 
+                 stat="identity") +
+      geom_text_repel2(data = subset(pd_y, indicator =="standardisedHBRate"),
+                       seed = 2, 
+                       aes(label = shortHB), 
+                       box.padding = 0.5,
+                       force_pull = 0.5,
+                       min.segment.length = 1,
+                       max.overlaps = 500,
+                       show.legend = FALSE) + 
+      facet_wrap(~urgency, scales = "free", ncol = 3) +
+      scale_alpha_identity() +
+      scale_linetype_identity() +
+      scale_x_continuous(labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE), expand = expansion(mult = 0.1)) +
+      theme_bw() +
+      labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
+      theme(text = element_text(size = 12),
+            strip.background = element_blank(),
+            strip.placement = "outside",
+            strip.text.x = element_text(angle = 0,hjust = 0,size = 12, face = "bold"),
+            panel.spacing = unit(0.5, "cm"),
+            panel.border = element_blank(),
+            legend.position= "none",
+            legend.title = element_blank(),
+            legend.key.height= unit(0.5, 'cm'),
+            legend.key.width= unit(0.5, 'cm'),
+            legend.text = element_text(size = 10)) +
+      scale_colour_manual(values = pal,
+                          guide = guide_legend(override.aes = list(
+                            linetype = c("blank", "dotted","dashed", "solid"),
+                            shape = c(16, NA, NA, NA))))
+  }
 }
+
 
 funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
   df %>%
     filter(specialty == specialty_of_interest,
            date == qtrdate,
            urgency %in% urgencylist) %>%
-    ggplot(aes(x = pop/1000, y = standardisedHBRate, label = shortHB), group = urgency) +
+    ggplot(aes(x = pop/1000, y = standardisedHBRate, label = shortHB), group = fct_relevel(factor(urgency), "Total", after = 0)) +
     geom_point(stat="identity") +
     geom_line(aes(y = ci998_l), colour = phs_colours("phs-purple")) +
     geom_line(aes(y = ci998_u), colour = phs_colours("phs-purple")) +
     geom_line(aes(y = ci95_l), linetype = "dashed", colour = phs_colours("phs-blue")) +
     geom_line(aes(y = ci95_u), linetype = "dashed", colour = phs_colours("phs-blue")) +
     geom_line(aes(y = crudeRate)) +
-    geom_text_repel(hjust=0, vjust=0, box.padding = 0.5, max.overlaps = 20) +
+    geom_text_repel(hjust=0, vjust=0, box.padding = 0.1, max.overlaps = 20) +
     geom_blank(aes(y = 0)) +
-    facet_wrap(~urgency, scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
+    facet_wrap(~fct_relevel(factor(urgency), "Total", after = 0), scales = "free", ncol = if_else(length(urgencylist) >3, 2, 3)) +
     theme_bw() +
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
     labs(x = "Population/1,000", y = "Standardised Rate (per 1,000 population)") +
@@ -1306,7 +1408,7 @@ funnelplot <- function(df, specialty_of_interest, qtrdate, urgencylist) {
 
 #*6 - Create graphs for specialties of interest ----
 #All specialties
-ggsave("funnelall_specs_mar2022.png", plot = funnelplot(add_simd, "All Specialties", max_date2, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm", 
+ggsave("funnelall_specs_mar2022.png", plot = fplotR(add_simd_long, "All Specialties", max_date2, c("P2", "P3", "P4")), dpi=300, dev='png', height=15, width=25, units="cm", 
        path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 ggsave("funnelall_specs_jun2022.png", plot = funnelplot(add_simd, "All Specialties", max_date, c("Total","P2", "P3", "P4")), dpi=300, dev='png', height=15, width=20, units="cm",  path = here::here("..","R plots", "Snapshot plots", "June 2022"))
