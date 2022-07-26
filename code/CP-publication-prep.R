@@ -93,16 +93,16 @@ exclusions_path <- here::here("..", "..", "..", #Takes us back up to SoT folder
                               "Data", 
                               "Spec Exclusions.xlsx")
 
-exclusions <- read.xlsx(exclusions_path, sheet = "IPDC") %>%
+exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
   as.list(Specialties)
 
 
 #2.2 - Performance ----
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
-#Read in live CO data (for shiny app) to get 2019 all specs averages
-perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Snapshot BOXI/CO Monthly.xlsx", rbind =  TRUE) %>%
-  select(- `_file`) %>%
+#Read in publication performance data to get 2019 all specs averages
+perf_2019 <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   filter(year(Date) =="2019", 
          `NHS Board of Treatment` == "NHS Scotland",
          Specialty == "All Specialties",
@@ -110,6 +110,22 @@ perf_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Snapsho
   group_by(`Ongoing/Completed`) %>%
   summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
   rename(Indicator = `Ongoing/Completed`)
+
+#Read in publication performance data to get 2019 individual specs averages
+perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
+  filter(year(Date) =="2019", 
+         `Patient Type` == "Inpatient/Day case",
+         !Specialty %in% exclusions$Specialties) %>%
+  complete(Date = unique(Date), #Note have to complete all dates to be able to calculate quarterly average
+           nesting(Specialty,`Ongoing/Completed`, `Patient Type`, `NHS Board of Treatment`),  
+           fill = list(`Number Seen/On list`=0, `Waited/Waiting over 12 Weeks` =0, `Waited/Waiting over 52 Weeks`=0, `Waited/Waiting over 78 Weeks`=0,
+                       `Waited/Waiting over 104 Weeks`=0, Median = NA, `90th Percentile`=NA)) %>%
+  group_by(`NHS Board of Treatment`,`Ongoing/Completed`, Specialty) %>%
+  summarise(monthly_avg =  replace_na(round_half_up(sum(`Number Seen/On list`, na.rm=T)/12,0),0),
+            quarterly_avg = replace_na(round_half_up(mean(`Number Seen/On list`, na.rm = T),0),0)) %>%
+  rename(Indicator = `Ongoing/Completed`)
+  
 
 #2.2.1 - Monthly ---- 
 
@@ -124,10 +140,11 @@ perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian 
 
 #monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_26_weeks = 0,
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
@@ -141,6 +158,11 @@ perf_split <- perf %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
 
+#Create version for Excel with monthly/qtrly averages
+perf_avg <- perf_split %>% 
+  left_join(perf_2019_specs, 
+            by = c("nhs_board_of_treatment" = "NHS Board of Treatment", "ongoing_completed" = "Indicator", "specialty" = "Specialty")) %>%
+  mutate(across(c(monthly_avg, quarterly_avg), ~ replace_na(.x,0)))
 
 
 #2.2.2 - Quarterly ---- 
@@ -152,12 +174,13 @@ perf_qtr_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Loth
 
 #data for report up to latest complete quarter
 perf_qtr <- perf_qtr_all %>% 
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
   filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
                 ongoing_completed == "Completed")) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
+                       waited_waiting_over_26_weeks = 0,
                        waited_waiting_over_52_weeks = 0,
                        waited_waiting_over_104_weeks = 0)) 
 
@@ -207,7 +230,8 @@ dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 wee
 #quarterly 4 week bands dow data for publication
 dow_4wk_qtr_pub <- dow_4wk %>%
   filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
-                ongoing_completed == "Completed")) %>%
+                ongoing_completed == "Completed"),
+         !specialty %in% exclusions$Specialties) %>%
   #convert monthly dates to end of quarter dates
   mutate(date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
   group_by(across(-`number_seen/on_list`)) %>%
@@ -220,7 +244,7 @@ dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits la
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          weeks = as.factor(ifelse(weeks != ">104 Weeks", substr(weeks, 1, 7), "Over 104")),
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics%>%
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
   complete(urgency, weeks, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0)) 
@@ -230,7 +254,7 @@ addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian 
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions) %>%
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
   pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
   complete(urgency, date, indicator,
            nesting(nhs_board_of_treatment, specialty, patient_type),
@@ -283,7 +307,8 @@ addhbr <- read.xlsx(here::here("data", "snapshot", "Removal Reason excl. Lothian
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions,
+  filter(between(date, min_date, max_date), 
+         !specialty %in% exclusions$Specialties,
          !age_group == "Blank", #Exclude records with "Blank" age
          !gender == "Blank") %>% #Exclude records with "Blank" gender
   rename(sex = gender) %>% #Rename to match population lookup
@@ -1140,7 +1165,7 @@ add_simd <- read.xlsx("data/snapshot/Removal Reason excl. Lothian Dental by age 
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions,
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties,
          !age_group == "Blank", #Exclude records with "Blank" age
          !gender == "Blank",
          !is.na(simd)) %>% #Exclude records with no SIMD
@@ -1190,7 +1215,11 @@ add_simd %<>%
             crudeHBRate = 1000 * sum(additions_to_list)/sum(pop),
             SOR = sum(additions_to_list)/sum(expected_additions)) %>%
   mutate(ci95_l = 1000 * ((crudeRate/1000) - (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         #ci95_l = SOR - (1.96*(100 * sqrt(additions_to_list)/expected_additions)),
          ci95_u = 1000 * ((crudeRate/1000) + (1.96*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
+         #ci95_u = SOR + (1.96*(100 * sqrt(additions_to_list)/expected_additions)),
+         ci998_l = SOR - (3.091*(100 * sqrt(additions_to_list)/expected_additions)),
+         ci998_u = SOR - (3.091*(100 * sqrt(additions_to_list)/expected_additions)),
          ci998_l = 1000 * ((crudeRate/1000) - (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
          ci998_u = 1000 * ((crudeRate/1000) + (3.091*sqrt((1/pop)*((crudeRate/1000)*(1-(crudeRate/1000)))))),
          standardisedHBRate = SOR * crudeRate,
@@ -1496,7 +1525,7 @@ add_hb_agesex <- read.xlsx("data/Removal Reason excl. Lothian Dental by age gend
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
-  filter(between(date, min_date, max_date), !specialty %in% exclusions,
+  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties,
          !age_group == "Blank", #Exclude records with "Blank" age
          !gender == "Blank", #Exclude records with no sex
          !health_board_of_residence %in% c("ENGLAND/WALES/NORTHERN IRELAND", "NOT KNOWN", "NO FIXED ABODE", "OUTSIDE U.K.", NA)) %>% #Exclude non-Scottish residents
