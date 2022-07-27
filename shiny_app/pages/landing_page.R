@@ -72,15 +72,21 @@ output$landing_page_ui <-  renderUI({
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Distribution of waits"),
-                                                p("All boards and all specialties"),
-                                                plots[["waits_distribution_waiting"]]
+                                                pickerInput("quarter_filter_waits_w", "3. Select quarter",
+                                                            choices = c("September 2021", "December 2021", "March 2022"),
+                                                            selected = "March 2022",
+                                                            multiple = FALSE),
+                                                plots[["waits_breakdown_waiting"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Admitted",
                                               tagList(
                                                 h3("Distribution of admitted patients"),
-                                                p("All boards and all specialties"),
-                                                plots[["waits_distribution_admitted"]]
+                                                pickerInput("quarter_filter_waits_a", "3. Select quarter",
+                                                            choices = c("September 2021", "December 2021", "March 2022"),
+                                                            selected = "March 2022",
+                                                            multiple = FALSE),
+                                                plots[["waits_breakdown_admitted"]]
                                               ) # taglist
                                      )
              ) # tabbox
@@ -93,6 +99,8 @@ output$landing_page_ui <-  renderUI({
 
 })
 
+
+## Activity plots
 plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
                                                            waiting_status = "waiting",
                                                            hbt="NHS Scotland",
@@ -105,5 +113,20 @@ plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["add_perf
                                                              waiting_status = "additions",
                                                              hbt="NHS Scotland",
                                                              timescale="monthly")})
+
+
+## Distribution of waits plots
+
+plots$waits_breakdown_waiting <- renderPlotly({
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
+                          waiting_status="waiting",
+                          quarter_ending=input$quarter_filter_waits_w,
+                          hbt=input$hbt_filter)})
+
+plots$waits_breakdown_admitted <- renderPlotly({
+  waits_distribution_plot(app_data[["dow_4wk_qtr_pub_mar"]],
+                          waiting_status="admitted",
+                          quarter_ending=input$quarter_filter_waits_a,
+                          hbt=input$hbt_filter)})
 
 
