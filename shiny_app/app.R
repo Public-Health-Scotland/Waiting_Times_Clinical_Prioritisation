@@ -30,8 +30,8 @@ ui <- fluidPage(
       tabPanel(title = "Overview",
                icon = icon_no_warning_fn("circle-info"),
                value = "overview",
-               h1("Waiting times dashboard"),
 
+               h1("Waiting times dashboard"),
                uiOutput("landing_page_ui")
 
                ), # tabpanel
@@ -41,7 +41,9 @@ ui <- fluidPage(
       tabPanel(title = "Specialties",
                icon = icon_no_warning_fn("stethoscope"),
                value = "specialties",
-               h2("Specialties")
+
+               h2("Specialties"),
+               uiOutput("specialties_ui")
 
       ), # tabpanel
       ##############################################.
@@ -64,9 +66,11 @@ server <- function(input, output) {
 
   # Get plot functions
   source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/specialties_plot_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
+  source(file.path("pages/specialties.R"), local = TRUE)$value
 
 
 

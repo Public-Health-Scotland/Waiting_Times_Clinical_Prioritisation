@@ -11,14 +11,16 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12,
              shinydashboard::box(width=NULL, height="100px",
               column(width=6,
-                     pickerInput("hbt_filter", "1. Select Health Board of Treatment ",
-                                 choices = unique(app_data[["dow_4wk_qtr_pub"]]$nhs_board_of_treatment),
+                     pickerInput("hbt_filter",
+                                 "1. Select Health Board of Treatment ",
+                                 choices = unique(app_data[["dow_4wk_qtr_pub_mar"]]$nhs_board_of_treatment),
                                  selected = "NHS Scotland",
                                 # pickerOptions = list(liveSearch = TRUE, showTick=TRUE),
                                  multiple = FALSE)
                   ), # column
               column(width=6,
-                     radioButtons("timescale_choice", "2. Select timescale ",
+                     radioButtons("timescale_choice",
+                                  "2. Select timescale ",
                                  choices = c("monthly", "quarterly"),
                                  selected = "monthly",
                                  inline=TRUE)
@@ -68,7 +70,7 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12, height="50px", br()),
 
     fluidRow(width=12,
-             shinydashboard::tabBox( width=NULL, type="pills", height="500px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Distribution of waits"),
@@ -76,7 +78,12 @@ output$landing_page_ui <-  renderUI({
                                                             choices = c("September 2021", "December 2021", "March 2022"),
                                                             selected = "March 2022",
                                                             multiple = FALSE),
-                                                plots[["waits_breakdown_waiting"]]
+                                                column(8,
+                                                       plots[["waits_breakdown_waiting"]]
+                                                ), # column
+                                                column(4,
+                                                       p("Total figs")
+                                                       )
                                               ) # taglist
                                      ),
                                      tabPanel("Admitted",

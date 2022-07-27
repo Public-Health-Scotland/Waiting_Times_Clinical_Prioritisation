@@ -12,3 +12,11 @@ load_rds_file <- function(rds){
 icon_no_warning_fn = function(icon_name) {
   icon(icon_name, verify_fa=FALSE)
 }
+
+# Get date string for quarter given long form
+get_quarter_date <- function(longform_date){
+  datestring <- case_when(longform_date == "September 2021" ~ "2021-09-30",
+                          longform_date == "December 2021" ~ "2021-12-31",
+                          longform_date == "March 2022" ~ "2022-03-31")
+  return(datestring)
+}
