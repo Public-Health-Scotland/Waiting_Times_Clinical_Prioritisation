@@ -32,7 +32,7 @@ ui <- fluidPage(
                value = "overview",
                h1("Waiting times dashboard"),
 
-               uiOutput("landing_page_graphs")
+               uiOutput("landing_page_ui")
 
                ), # tabpanel
       ##############################################.
@@ -63,13 +63,12 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   # Get plot functions
-  source(file.path("functions/waiting_list_activity_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
   source(file.path("functions/distribution_of_waits_plot_functions.R"), local = TRUE)$value
   source(file.path("functions/additions_plot_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
-  source(file.path("pages/waiting_list_activity.R"), local = TRUE)$value
   source(file.path("pages/distribution_of_waits.R"), local = TRUE)$value
   source(file.path("pages/additions.R"), local = TRUE)$value
 

@@ -1,6 +1,6 @@
 ####################### Landing Page (Overview) #######################
 
-output$landing_page_graphs <-  renderUI({
+output$landing_page_ui <-  renderUI({
 
   div(
 
@@ -92,4 +92,18 @@ output$landing_page_graphs <-  renderUI({
 
 
 })
+
+plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+                                                           waiting_status = "waiting",
+                                                           hbt="NHS Scotland",
+                                                           timescale="monthly")})
+plots$activity_admitted <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+                                                            waiting_status = "admitted",
+                                                            hbt="NHS Scotland",
+                                                            timescale="monthly")})
+plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+                                                             waiting_status = "additions",
+                                                             hbt="NHS Scotland",
+                                                             timescale="monthly")})
+
 
