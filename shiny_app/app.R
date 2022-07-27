@@ -36,45 +36,23 @@ ui <- fluidPage(
 
                ), # tabpanel
       ##############################################.
-      # WAITING LIST ACTIVITY PAGE ----
+      # SPECIALTY VARIATION PAGE ----
       ##############################################.
-      tabPanel(title = "Waiting list activity",
-               icon = icon_no_warning_fn("calendar-check"),
-               value = "activity",
-               h2("Waiting list activity"),
-               tabsetPanel(
-                 tabPanel("Waiting",
-                          uiOutput("activity_waiting_ui")
-                 ),
-                 tabPanel("Admitted",
-                          uiOutput("activity_admitted_ui")
-                 )
-               ) # tabsetpanel
-      ), # tabpanel
-      ##############################################.
-      # DISTRIBUTION OF WAITS PAGE ----
-      ##############################################.
-      tabPanel(title = "Distribution of waits",
-               icon = icon_no_warning_fn("chart-area"),
-               value = "distribution",
-               tabsetPanel(
-                 tabPanel("Waiting",
-                          uiOutput("distribution_waits_waiting_ui")
-                 ),
-                 tabPanel("Admitted",
-                          uiOutput("distribution_waits_admitted_ui")
-                 )
-               ) # tabsetpanel
-      ), # tabpanel
-      ##############################################.
-      # ADDITIONS BY HBR PAGE ----
-      ##############################################.
-      tabPanel(title = "Additions",
-               icon = icon_no_warning_fn("hospital-user"),
-               value = "additions",
-               uiOutput("additions_ui")
-      ) # tabpanel
+      tabPanel(title = "Specialties",
+               icon = icon_no_warning_fn("stethoscope"),
+               value = "specialties",
+               h2("Specialties")
 
+      ), # tabpanel
+      ##############################################.
+      # NOTES PAGE ----
+      ##############################################.
+      tabPanel(title = "Notes",
+               icon = icon_no_warning_fn("file-lines"),
+               value = "notes",
+               h2("Notes")
+
+      ) # tabpanel
       ) # navbar
     ) # taglist
 ) # ui fluidpage
