@@ -20,7 +20,7 @@ shiny_data_folder <- "shiny_app/data/"
 copy_to_shiny_data <- function(csv){
   # Given a .csv file name in processed_data_folder
   # copies it across to an .rds file in shiny_data_folder
-  readfile <- read_csv(paste0(processed_data_folder, csv))
+  readfile <- readr::read_csv(paste0(processed_data_folder, csv))
   saveRDS(readfile, paste0(shiny_data_folder, gsub(".csv", ".rds", csv)))
 }
 
