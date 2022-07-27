@@ -1,74 +1,42 @@
 ####################### Landing Page (Overview) #######################
 
-output$landing_page_info <-  renderUI({
-
-div(
-
-  fluidRow(width=12, height="50px", br()),
-
-#  fluidRow(width=12, height="100px", pickerInput("hbt_filter", "Select Health Board of Treatment ",
-#                                                choices = c("a", "b", "c"),
-#                                                selected = c("a"),
-#                                                multiple = FALSE)),
-
-  fluidRow(
-           shinydashboard::tabBox( width=NULL, type="pills", height="200px", side="right",
-                 tabPanel("Waiting",
-                          tagList(
-                            h3("Number of patients waiting"),
-                            p("waiting information goes here")
-                          ) # taglist
-                 ),
-                 tabPanel("Admitted",
-                          tagList(
-                            h3("Number of patients admitted"),
-                            p("admitted information goes here")
-                          ) # taglist
-                 ),
-                 tabPanel("Additions",
-                          tagList(
-                            h3("Number of additions to list"),
-                            p("additions information goes here")
-                          ) # taglist
-                 )
-           ) # tabbox
-  ), # fluidRow
-
-  fluidRow(width=12, height="50px", br()),
-
-  fluidRow(width=12,
-           shinydashboard::tabBox( width=NULL, type="pills", height="200px", side="right",
-              tabPanel("Waiting",
-                       tagList(
-                         h3("Distribution of waits"),
-                         p("waiting information goes here")
-                       ) # taglist
-              ),
-              tabPanel("Admitted",
-                       tagList(
-                         h3("Distribution of admitted patients"),
-                         p("waiting information goes here")
-                       ) # taglist
-           )
-    ) # tabbox
-  ), # fluidRow
-
-  fluidRow(width=12, height="50px", br())
-
-) # div
-
-})
-
 output$landing_page_graphs <-  renderUI({
 
   div(
 
     fluidRow(width=12, height="50px", br()),
 
-  #  fluidRow(width=12, height="100px",  pickerInput("hbt_filter", "Select Health Board of Treatment ",
-  #                                                 choices = c("a", "b", "c"),
-  #                                                 selected = c("a"),
-  #                                                 multiple = FALSE)),
+
+    # Filters and toggles
+    fluidRow(width=12,
+             shinydashboard::box(width=NULL, height="100px",
+              column(width=6,
+                     pickerInput("hbt_filter", "1. Select Health Board of Treatment ",
+                                 choices = unique(app_data[["dow_4wk_qtr_pub"]]$nhs_board_of_treatment),
+                                 selected = "NHS Scotland",
+                                # pickerOptions = list(liveSearch = TRUE, showTick=TRUE),
+                                 multiple = FALSE)
+                  ), # column
+              column(width=6,
+                     radioButtons("timescale_choice", "2. Select timescale ",
+                                 choices = c("monthly", "quarterly"),
+                                 selected = "monthly",
+                                 inline=TRUE)
+                  ) # column
+             ) # box
+    ),
+
+    # BANs
+    fluidRow(width=12,
+             shinydashboard::box(width=NULL, height="200px",
+                                 tagList(
+
+                                   h3("BANs"),
+                                   p("Some numbers go here")
+
+                                 ) # taglist
+                                 ) # box
+             ), # fluidrow
 
     fluidRow(
              shinydashboard::tabBox( width=NULL, type="pills", height="500px", side="right",

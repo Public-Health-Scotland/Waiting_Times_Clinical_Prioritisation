@@ -32,14 +32,7 @@ ui <- fluidPage(
                value = "overview",
                h1("Waiting times dashboard"),
 
-               tabsetPanel(
-                 tabPanel("Info",
-                          uiOutput("landing_page_info")
-                          ),
-                 tabPanel("Graphs",
-                          uiOutput("landing_page_graphs")
-                          )
-               ) # tabsetpanel
+               uiOutput("landing_page_graphs")
 
                ), # tabpanel
       ##############################################.
