@@ -1,14 +1,24 @@
 ####################### Waiting List Activity Plot Functions #######################
 
-activity_trendplot <- function(input_data, waiting_status) {
+activity_trendplot <- function(input_data, waiting_status,
+                               hbt="NHS Scotland",
+                               timescale="monthly") {
 
+  # Waiting status
   indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
                          waiting_status == "admitted" ~ "Completed",
                          waiting_status == "additions" ~ "additions_to_list",
                          TRUE ~ "")
 
-  dataset <- input_data %>% mutate(month_ending = floor_date(date, "month")) %>%
-    filter(indicator == indicator_string) %>%
+  if (timescale == "monthly"){
+    dataset <- input_data %>% mutate(date_plot = floor_date(date, "month"))
+  } else {
+    dataset <- input_data %>% mutate(date_plot = date)
+  }
+
+ dataset %<>%
+    filter(indicator == indicator_string,
+           nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
   yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
@@ -16,16 +26,20 @@ activity_trendplot <- function(input_data, waiting_status) {
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
 
-  yaxis_plots[["title"]] <- yaxis_title
-  xaxis_plots[["title"]] <- "Month ending"
+  xaxis_title <- case_when(timescale == "monthly" ~ "Month ending",
+                           timescale == "quarterly" ~ "Quarter ending",
+                           TRUE ~ "")
 
-  tooltip_trend <- glue("Month ending: {format(dataset$month_ending, '%b %Y')}<br>",
+  yaxis_plots[["title"]] <- yaxis_title
+  xaxis_plots[["title"]] <- xaxis_title
+
+  tooltip_trend <- glue("{xaxis_title}: {format(dataset$date_plot, '%b %Y')}<br>",
                         "Clinical prioritisation : {dataset$urgency}<br>",
                         "Number of patients: {format(dataset$number, big.mark=',')}<br>",
                         "2019 monthly average: {format(dataset$monthly_avg, big.mark=',')}")
 
   p <- dataset %>%
-      plot_ly(x = ~month_ending) %>%
+      plot_ly(x = ~date_plot) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,

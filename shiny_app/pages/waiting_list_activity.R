@@ -55,9 +55,18 @@ output$activity_admitted_ui <-  renderUI({
 })
 
 
-plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]], waiting_status = "waiting")})
-plots$activity_admitted <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]], waiting_status = "admitted")})
-plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]], waiting_status = "additions")})
+plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["hb_plotdata_mar"]],
+                                                           waiting_status = "waiting",
+                                                           hbt="NHS Scotland",
+                                                           timescale="quarterly")})
+plots$activity_admitted <- renderPlotly({activity_trendplot(app_data[["hb_plotdata_mar"]],
+                                                            waiting_status = "admitted",
+                                                            hbt="NHS Scotland",
+                                                            timescale="quarterly")})
+plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["hb_plotdata_mar"]],
+                                                             waiting_status = "additions",
+                                                             hbt="NHS Scotland",
+                                                             timescale="quarterly")})
 
 
 
