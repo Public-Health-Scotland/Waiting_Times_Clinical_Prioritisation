@@ -81,13 +81,6 @@ th, td {
 .btn:checked{background-color:#9F9BC2; border: 2px solid #C5C3DA;
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 8px 20px 0 rgba(0,0,0,0.19);}
 
-/* background of selectize input boxes */
-.shiny-input-container:not(.shiny-input-container-inline) {
-    width: 500px;
-    max-width: 100%;
-    background-color: #C5C3DA;
-}
-
 /* title of selectize input boxes*/
 label {
     display: inline-block;
