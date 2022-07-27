@@ -74,13 +74,9 @@ waits_distribution_plot <- function(input_data, waiting_status, quarter_ending="
                                 waiting_status == "admitted" ~ "Completed",
                                 TRUE ~ "")
 
-  qend <- case_when(quarter_ending == "September 2021" ~ "2021-09-30",
-                    quarter_ending == "December 2021" ~ "2021-12-31",
-                    quarter_ending == "March 2022" ~ "2022-03-31")
-
   dataset <- input_data %>%
     filter(ongoing_completed == indicator_string,
-           date == qend,
+           date == get_quarter_date(quarter_ending),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )

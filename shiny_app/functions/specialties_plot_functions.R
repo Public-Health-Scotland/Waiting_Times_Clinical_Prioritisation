@@ -16,4 +16,74 @@ topsix_specs <- function(qend, hbt){
 
 }
 
+## Faceted activity graph
 
+activity_specs <- function(input_data,
+                           qend="March 2022",
+                           hbt="NHS Scotland",
+                           specialties=c("All Specialties")) {
+
+
+
+  dataset <- input_data %>%
+    filter(nhs_board_of_treatment == hbt,
+           date == get_quarter_date(qend),
+           specialty %in% specialties) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
+
+  #tooltip_trend <- glue("Quarter ending: {format(dataset$date, '%b %Y')}<br>",
+  #                      "HBT: {dataset$nhs_board_of_treatment}<br>",
+  #                      "Specialty: {dataset$specialty}<br>",
+  #                      "Clinical prioritisation : {dataset$urgency}<br>",
+  #                      "Proportion of patients: {paste0(round(100*dataset$proportion, 2), '%')}<br>")
+
+  facets <- unique(dataset$indicator)
+
+  p <- ggplot(dataset, aes(x=specialty, y=100*proportion, group=urgency)) +
+    geom_bar(stat="identity", aes(fill=urgency)) +
+    scale_fill_manual(values = waiting_times_palette) +
+    facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
+               labeller = as_labeller(c(additions_to_list ="Additions to list \n",
+                                        Ongoing = "Patients waiting \n",
+                                        Completed = "Patients admitted \n") ))
+
+  plotlyp <- ggplotly(p, tooltip = c("state"))%>%
+    #Layout
+    layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
+           yaxis = yaxis_plots, xaxis = xaxis_plots,
+           paper_bgcolor = "#F0EFF3",
+           legend = list(x = 100, y = 0.5), #position of legend
+           barmode = "stack") %>% #split by group
+    # leaving only save plot button
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+
+  return(plotlyp)
+
+
+}
+
+
+create_specplot_facet <- function(ind, ds, ttt){
+
+  plot <- ds %>%
+    filter(indicator==ind) %>%
+    plot_ly(x=~specialty) %>%
+    add_bars(y=~100*proportion,
+             color=~urgency,
+             colors=waiting_times_palette,
+           #  text=ttt,
+             stroke=I("black"),
+             hoverinfo="text",
+             name=~urgency)
+
+  return(plot)
+
+}
+
+get_facet_title <- function(ind){
+  title <- case_when(ind == "additions_to_list" ~ "Additions to list",
+                     ind == "Completed" ~ "Patients admitted",
+                     ind == "Ongoing" ~ "Patients waiting")
+
+  return(title)
+}

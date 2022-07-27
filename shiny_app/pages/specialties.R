@@ -26,10 +26,37 @@ output$specialties_ui <-  renderUI({
                                                      multiple = FALSE)
                                  ), # column
                                  column(width=4,
-                                        uiOutput("specialty_picker")
+                                        pickerInput("specialty_filter",
+                                                    "3. Select specialties ",
+                                                    choices = unique(app_data[["hb_plotdata_mar"]]$specialty),
+                                                    selected = c("Orthopaedics", "General Surgery",
+                                                                 "Opthalmology", "Urology",
+                                                                 "Ear, Nose & Throat", "Gynaecology"),
+                                                    options = pickerOptions(
+                                                      liveSearch=TRUE,
+                                                      maxOptions = 6,
+                                                      maxOptionsText="Choose up to six options"),
+
+                                                    multiple = TRUE)
                                  ) # column
              ) # box
-    )
+    ), # fluidrow
+
+    fluidRow(width=12,
+             shinydashboard::tabBox( width=NULL, type="pills", height="1000px", side="right",
+                                     tabPanel("Activity",
+                                              tagList(
+                                                h3("Activity"),
+                                                plots[["activity_facet_plot"]]
+                                              ) # taglist
+                                     ),
+                                     tabPanel("Distribution of waits",
+                                              tagList(
+                                                h3("Distribution of waits")
+                                              ) # taglist
+                                     )
+             ) # tabbox
+    ) # fluidRow
 
   ) # div
 
@@ -37,18 +64,19 @@ output$specialties_ui <-  renderUI({
 })
 
 
-output$specialty_picker <-  renderUI({
-
-  pickerInput("specialty_filter",
-            "3. Select specialties ",
-            choices = unique(app_data[["hb_plotdata_mar"]]$specialty),
-            selected = topsix_specs(input$quarter_end_spec,
-                                    input$hbt_filter_spec),
-            #options = pickerOptions(
-            #liveSearch=TRUE,
-            #maxOptions = 6,
-            #maxOptionsText="Choose up to six options"),
-            multiple = TRUE)
-
-
+observe({
+  if( (!is.null(input$quarter_end_spec) & (!is.null(input$hbt_filter_spec))) ) {
+    updateSelectInput(session, "specialty_filter",
+                      selected = topsix_specs(input$quarter_end_spec,
+                                              input$hbt_filter_spec) )
+  }
 })
+
+
+
+## Plots
+
+plots$activity_facet_plot <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata"]],
+                                                    qend=input$quarter_end_spec,
+                                                    hbt=input$hbt_filter_spec,
+                                                    specialties=input$specialty_filter)})

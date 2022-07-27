@@ -62,7 +62,7 @@ ui <- fluidPage(
 # ----------------------------------------------------------------------
 # Server
 
-server <- function(input, output) {
+server <- function(input, output, session) {
 
   # Get plot functions
   source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
