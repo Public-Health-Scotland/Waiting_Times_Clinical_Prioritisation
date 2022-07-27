@@ -46,3 +46,4 @@ plots$additions_byboard <- renderPlotly({
                               hbt=input$hbt_filter_wpage,
                               hbr=input$hbr_filter_wpage,
                               chosen_specialty=input$specialty_filter_wpage)})
+
