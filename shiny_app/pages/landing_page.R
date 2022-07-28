@@ -93,7 +93,12 @@ output$landing_page_ui <-  renderUI({
                                                             choices = c("September 2021", "December 2021", "March 2022"),
                                                             selected = "March 2022",
                                                             multiple = FALSE),
-                                                plots[["waits_breakdown_admitted"]]
+                                                column(8,
+                                                       plots[["waits_breakdown_admitted"]]
+                                                ), # column
+                                                column(4,
+                                                       p("Total figs")
+                                                )
                                               ) # taglist
                                      )
              ) # tabbox
@@ -111,17 +116,17 @@ output$landing_page_ui <-  renderUI({
 plots$activity_waiting <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                                              monthly=app_data[["add_perf_mon_mar"]]),
                                                            waiting_status = "waiting",
-                                                           hbt="NHS Scotland",
+                                                           hbt=input$hbt_filter,
                                                            timescale=input$timescale_choice)})
 plots$activity_admitted <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                                                  monthly=app_data[["add_perf_mon_mar"]]),
                                                             waiting_status = "admitted",
-                                                            hbt="NHS Scotland",
+                                                            hbt=input$hbt_filter,
                                                             timescale=input$timescale_choice)})
 plots$activity_additions <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                                                   monthly=app_data[["add_perf_mon_mar"]]),
                                                              waiting_status = "additions",
-                                                             hbt="NHS Scotland",
+                                                             hbt=input$hbt_filter,
                                                              timescale=input$timescale_choice)})
 
 
