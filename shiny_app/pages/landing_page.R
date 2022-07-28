@@ -111,6 +111,8 @@ output$landing_page_ui <-  renderUI({
 
 })
 
+timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
+                          "quarterly" = get_month(unique(app_data[["perf_qtr_split_mar"]]$date)))
 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
@@ -121,21 +123,19 @@ observeEvent(
   handlerExpr={
 
   if( !is.null(input$timescale_choice) ) {
-    updateSelectInput(session, inputId="timescale_filter_waits_w",
+    updatePickerInput(session, inputId="timescale_filter_waits_w",
                       label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
                                         input$timescale_choice=="quarterly" ~ "3. Select quarter"),
                       selected = "March 2022",
-                      choices = case_when(input$timescale_choice=="monthly" ~ get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                                          input$timescale_choice=="quarterly" ~ get_month(unique(app_data[["perf_qtr_split_mar"]]$date)))
+                      choices = timescale_choices[[input$timescale_choice]]
                       )
 
     updatePickerInput(session, inputId="timescale_filter_waits_a",
-                      label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
-                                        input$timescale_choice=="quarterly" ~ "3. Select quarter"),
-                      selected = "March 2022",
-                      choices = case_when(input$timescale_choice=="monthly" ~ get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                                          input$timescale_choice=="quarterly" ~ get_month(unique(app_data[["perf_qtr_split_mar"]]$date)))
-    )
+                        label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
+                                          input$timescale_choice=="quarterly" ~ "3. Select quarter"),
+                        selected = "March 2022",
+                        choices = timescale_choices[[input$timescale_choice]]
+      )
   }
 
   }
