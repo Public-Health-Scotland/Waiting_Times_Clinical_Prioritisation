@@ -51,8 +51,10 @@ activity_specs <- function(input_data,
     scale_y_continuous(labels = scales::percent) +
     xlab("") +
     ylab("") +
+    theme_minimal() +
     theme(legend.position = "bottom",
-          legend.title = element_blank()) +
+          legend.title = element_blank(),
+          strip.text = element_text(colour = phs_colours("phs-purple"), size=12)) +
     facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
                labeller = as_labeller(c(additions_to_list ="Additions to list \n",
                                         Ongoing = "Patients waiting \n",
