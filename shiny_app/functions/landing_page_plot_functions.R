@@ -99,7 +99,6 @@ waits_distribution_plot <- function(input_data, waiting_status,
                                 waiting_status == "admitted" ~ "Completed",
                                 TRUE ~ "")
 
-
   dataset <- input_data[[timescale]] %>%
     filter(ongoing_completed == indicator_string,
            date == get_short_date(time_chunk_end),
@@ -118,12 +117,12 @@ waits_distribution_plot <- function(input_data, waiting_status,
 
   time_name = case_when(timescale == "monthly" ~ "Month", timescale == "quarterly" ~ "Quarter")
 
-  #tooltip_trend <- glue("{time_name} ending: {time_chunk_end}<br>",
-  #                      "Weeks waiting: {dataset$weeks}<br>",
-  #                      "HBT: {hbt}<br>",
-  #                      "Clinical prioritisation: {dataset$urgency}<br>",
-  #                      "Specialty: {chosen_specialty}<br>",
-  #                      "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")
+  tooltip_trend <- glue("{time_name} ending: {time_chunk_end}<br>",
+                        "Weeks waiting: {dataset$weeks}<br>",
+                        "HBT: {hbt}<br>",
+                        "Clinical prioritisation: {dataset$urgency}<br>",
+                        "Specialty: {chosen_specialty}<br>",
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")
 
 
   p <- dataset %>%
@@ -131,7 +130,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
     add_bars(y = ~`number_seen/on_list`,
              color = ~urgency,
              colors = waiting_times_palette,
-     #        text = tooltip_trend,
+             text = tooltip_trend,
              stroke = I("black"),
              hoverinfo = "text",
              name = ~urgency) %>%

@@ -22,7 +22,7 @@ output$landing_page_ui <-  renderUI({
                      radioButtons("timescale_choice",
                                   "2. Select timescale ",
                                  choices = c("monthly", "quarterly"),
-                                 selected = "quarterly",
+                                 selected = "monthly",
                                  inline=TRUE)
                   ) # column
              ) # box
@@ -92,8 +92,7 @@ output$landing_page_ui <-  renderUI({
                                                             choices = NULL,
                                                             selected = NULL),
                                                 column(8,
-                                                       p()
-                                             #          plots[["waits_breakdown_admitted"]]
+                                                       plots[["waits_breakdown_admitted"]]
                                                 ), # column
                                                 column(4,
                                                        p("Total figs")
@@ -166,18 +165,18 @@ plots$activity_additions <- renderPlotly({activity_trendplot(list(quarterly=app_
 
 plots$waits_breakdown_waiting <- renderPlotly({
    waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                                monthly=app_data[["dow_4wk_mon_pub_mar"]]),
+                                monthly=app_data[["dow_4wk_mon_mar"]]),
                            waiting_status="waiting",
                            timescale=input$timescale_choice,
                            time_chunk_end=input$timescale_filter_waits_w,
                            hbt=input$hbt_filter)})
-#
-# plots$waits_breakdown_admitted <- renderPlotly({
-#   waits_distribution_plot(list(quarterly=app_data[["perf_qtr_split_mar"]],
-#                                monthly=app_data[["perf_mon_split_mar"]]),
-#                           waiting_status="admitted",
-#                           timescale=input$timescale_choice,
-#                           quarter_ending=input$quarter_filter_waits_a,
-#                           hbt=input$hbt_filter)})
-#
-#
+
+plots$waits_breakdown_admitted <- renderPlotly({
+  waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
+                               monthly=app_data[["dow_4wk_mon_mar"]]),
+                          waiting_status="admitted",
+                          timescale=input$timescale_choice,
+                          time_chunk_end=input$timescale_filter_waits_a,
+                          hbt=input$hbt_filter)})
+
+

@@ -77,7 +77,7 @@ activity_specs <- function(input_data,
 }
 
 # --------------------------------------------------------------------------
-## Faceted qaits graph
+## Faceted waits graph
 
 waits_specs <- function(input_data,
                            qend="March 2022",
