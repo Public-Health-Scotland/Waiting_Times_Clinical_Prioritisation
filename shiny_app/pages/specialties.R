@@ -53,7 +53,9 @@ output$specialties_ui <-  renderUI({
                                      ),
                                      tabPanel("Distribution of waits",
                                               tagList(
-                                                h3("Distribution of waits")
+                                                h3("Distribution of waits"),
+                                                br(),
+                                                plots[["waits_facet_plot"]]
                                               ) # taglist
                                      )
              ) # tabbox
@@ -65,9 +67,11 @@ output$specialties_ui <-  renderUI({
 })
 
 
+# This makes sure that specialty_filter default options update based off HBT and quarter
 observe({
   if( (!is.null(input$quarter_end_spec) & (!is.null(input$hbt_filter_spec))) ) {
     updateSelectInput(session, "specialty_filter",
+                      # topsix_specs is defined in specialties_plot_functions
                       selected = topsix_specs(input$quarter_end_spec,
                                               input$hbt_filter_spec) )
   }
@@ -77,7 +81,13 @@ observe({
 
 ## Plots
 
-plots$activity_facet_plot <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata"]],
+plots$activity_facet_plot <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata_mar"]],
                                                     qend=input$quarter_end_spec,
                                                     hbt=input$hbt_filter_spec,
                                                     specialties=input$specialty_filter)})
+
+
+plots$waits_facet_plot <- renderPlotly({waits_specs(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
+                                                          qend=input$quarter_end_spec,
+                                                          hbt=input$hbt_filter_spec,
+                                                          specialties=input$specialty_filter)})

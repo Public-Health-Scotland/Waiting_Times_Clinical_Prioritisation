@@ -93,6 +93,7 @@ waits_distribution_plot <- function(input_data, waiting_status, quarter_ending="
                                 waiting_status == "admitted" ~ "Completed",
                                 TRUE ~ "")
 
+
   dataset <- input_data %>%
     filter(ongoing_completed == indicator_string,
            date == get_quarter_date(quarter_ending),

@@ -20,3 +20,15 @@ get_quarter_date <- function(longform_date){
                           longform_date == "March 2022" ~ "2022-03-31")
   return(datestring)
 }
+
+# Transforms e.g. 2021-09-30 to September 2021
+get_month <- function(short_date){
+  long_date <- format(as.Date(short_date, format="%Y-%d-%m"), "%B %Y")
+  return(long_date)
+}
+
+# Transforms e.g. September 2021 to 2021-09-30
+get_short_date <- function(monthyear){
+  short_date <- rollforward(as.Date(paste0("01 ", monthyear), "%d %B %Y"))
+  return(short_date)
+}
