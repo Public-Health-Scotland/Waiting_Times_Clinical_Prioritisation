@@ -45,21 +45,21 @@ output$landing_page_ui <-  renderUI({
                                      tabPanel("Waiting",
                                               tagList(
                                                 h3("Number of patients waiting"),
-                                                p("All boards and all specialties"),
+                                                br(),
                                                 plots[["activity_waiting"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Admitted",
                                               tagList(
                                                 h3("Number of patients admitted"),
-                                                p("All boards and all specialties"),
+                                                br(),
                                                 plots[["activity_admitted"]]
                                               ) # taglist
                                      ),
                                      tabPanel("Additions",
                                               tagList(
                                                 h3("Number of additions to list"),
-                                                p("All boards and all specialties"),
+                                                br(),
                                                 plots[["activity_additions"]]
                                               ) # taglist
                                      )
@@ -108,18 +108,21 @@ output$landing_page_ui <-  renderUI({
 
 
 ## Activity plots
-plots$activity_waiting <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+plots$activity_waiting <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                                             monthly=app_data[["add_perf_mon_mar"]]),
                                                            waiting_status = "waiting",
                                                            hbt="NHS Scotland",
-                                                           timescale="monthly")})
-plots$activity_admitted <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+                                                           timescale=input$timescale_choice)})
+plots$activity_admitted <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                                                 monthly=app_data[["add_perf_mon_mar"]]),
                                                             waiting_status = "admitted",
                                                             hbt="NHS Scotland",
-                                                            timescale="monthly")})
-plots$activity_additions <- renderPlotly({activity_trendplot(app_data[["add_perf_mar"]],
+                                                            timescale=input$timescale_choice)})
+plots$activity_additions <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                                                  monthly=app_data[["add_perf_mon_mar"]]),
                                                              waiting_status = "additions",
                                                              hbt="NHS Scotland",
-                                                             timescale="monthly")})
+                                                             timescale=input$timescale_choice)})
 
 
 ## Distribution of waits plots
