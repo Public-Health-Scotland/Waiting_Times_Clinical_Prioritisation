@@ -39,17 +39,24 @@ activity_specs <- function(input_data,
 
   facets <- unique(dataset$indicator)
 
-  p <- ggplot(dataset, aes(x=specialty, y=100*proportion, group=urgency)) +
-    geom_bar(stat="identity", aes(fill=urgency)) +
+  p <- ggplot(dataset, aes(x=specialty, y=proportion, group=urgency)) +
+    geom_col(aes(fill = urgency),
+             position = position_stack(reverse = TRUE)) +
     scale_fill_manual(values = waiting_times_palette) +
+    scale_y_continuous(labels = scales::percent) +
+    xlab("") +
+    ylab("") +
+    theme(legend.position = "bottom",
+          legend.title = element_blank()) +
     facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
                labeller = as_labeller(c(additions_to_list ="Additions to list \n",
                                         Ongoing = "Patients waiting \n",
                                         Completed = "Patients admitted \n") ))
 
-  plotlyp <- ggplotly(p, tooltip = c("state"))%>%
+
+  plotlyp <- ggplotly(p, tooltip = c("state"), height=600)%>%
     #Layout
-    layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
+    layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = "#F0EFF3",
            legend = list(x = 100, y = 0.5), #position of legend
