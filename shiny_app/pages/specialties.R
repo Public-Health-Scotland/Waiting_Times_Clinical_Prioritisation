@@ -47,6 +47,7 @@ output$specialties_ui <-  renderUI({
                                      tabPanel("Activity",
                                               tagList(
                                                 h3("Activity"),
+                                                br(),
                                                 plots[["activity_facet_plot"]]
                                               ) # taglist
                                      ),

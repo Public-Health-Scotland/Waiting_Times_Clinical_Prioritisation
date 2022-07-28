@@ -31,15 +31,20 @@ activity_specs <- function(input_data,
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
-  #tooltip_trend <- glue("Quarter ending: {format(dataset$date, '%b %Y')}<br>",
-  #                      "HBT: {dataset$nhs_board_of_treatment}<br>",
-  #                      "Specialty: {dataset$specialty}<br>",
-  #                      "Clinical prioritisation : {dataset$urgency}<br>",
-  #                      "Proportion of patients: {paste0(round(100*dataset$proportion, 2), '%')}<br>")
+  tooltip_trend <- glue("Quarter ending: {format(dataset$date, '%b %Y')}<br>",
+                        "HBT: {dataset$nhs_board_of_treatment}<br>",
+                        "Specialty: {dataset$specialty}<br>",
+                        "Clinical prioritisation : {dataset$urgency}<br>",
+                        "Proportion of patients: {paste0(round(100*dataset$proportion, 2), '%')}<br>")
 
   facets <- unique(dataset$indicator)
 
-  p <- ggplot(dataset, aes(x=specialty, y=proportion, group=urgency)) +
+  p <- ggplot(dataset, aes(x=specialty, y=proportion, group=urgency,
+                           text = paste(
+                             '</br>Specialty: ', specialty,
+                             '</br>Urgency: ', urgency,
+                             '</br>Percentage: ', paste0(round(100*proportion, 2), '%'))
+                           )) +
     geom_col(aes(fill = urgency),
              position = position_stack(reverse = TRUE)) +
     scale_fill_manual(values = waiting_times_palette) +
@@ -54,7 +59,7 @@ activity_specs <- function(input_data,
                                         Completed = "Patients admitted \n") ))
 
 
-  plotlyp <- ggplotly(p, tooltip = c("state"), height=600)%>%
+  plotlyp <- ggplotly(p, height=600, tooltip=c("text"))%>%
     #Layout
     layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
@@ -70,27 +75,4 @@ activity_specs <- function(input_data,
 }
 
 
-create_specplot_facet <- function(ind, ds, ttt){
 
-  plot <- ds %>%
-    filter(indicator==ind) %>%
-    plot_ly(x=~specialty) %>%
-    add_bars(y=~100*proportion,
-             color=~urgency,
-             colors=waiting_times_palette,
-           #  text=ttt,
-             stroke=I("black"),
-             hoverinfo="text",
-             name=~urgency)
-
-  return(plot)
-
-}
-
-get_facet_title <- function(ind){
-  title <- case_when(ind == "additions_to_list" ~ "Additions to list",
-                     ind == "Completed" ~ "Patients admitted",
-                     ind == "Ongoing" ~ "Patients waiting")
-
-  return(title)
-}
