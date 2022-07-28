@@ -103,12 +103,16 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
 #Read in publication performance data to get 2019 all specs averages
 perf_2019 <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
-  filter(year(Date) =="2019", 
-         `NHS Board of Treatment` == "NHS Scotland",
-         Specialty == "All Specialties",
-         `Patient Type` == "Inpatient/Day case") %>%
-  group_by(`Ongoing/Completed`) %>%
-  summarise(monthly_avg = round(mean(`Number Seen/On list`),0)) %>%
+  filter(year(Date) =="2019",
+         #    `NHS Board of Treatment` == "NHS Scotland",
+         Specialty == "All Specialties") %>%
+  #     `Patient Type` == "Inpatient/Day case") %>%
+  group_by(`NHS Board of Treatment`, `Ongoing/Completed`, Specialty) %>%
+  summarise(monthly_avg =  replace_na(round_half_up(sum(`Number Seen/On list`, na.rm=T)/12,0),0),
+            quarterly_avg = if_else(`Ongoing/Completed` == "Completed",
+                                    replace_na(round_half_up(mean(`Number Seen/On list`, na.rm = T),0),0),
+                                    replace_na(round_half_up(sum(`Number Seen/On list`, na.rm=T)/12,0),0)) #Quarterly avg for ongoing == monthly avg
+            )%>%
   rename(Indicator = `Ongoing/Completed`)
 
 #Read in publication performance data to get 2019 individual specs averages
@@ -123,7 +127,9 @@ perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, 
                        `Waited/Waiting over 104 Weeks`=0, Median = NA, `90th Percentile`=NA)) %>%
   group_by(`NHS Board of Treatment`,`Ongoing/Completed`, Specialty) %>%
   summarise(monthly_avg =  replace_na(round_half_up(sum(`Number Seen/On list`, na.rm=T)/12,0),0),
-            quarterly_avg = replace_na(round_half_up(mean(`Number Seen/On list`, na.rm = T),0),0)) %>%
+            quarterly_avg = if_else(`Ongoing/Completed` == "Completed",
+                                    replace_na(round_half_up(mean(`Number Seen/On list`, na.rm = T),0),0),
+                                    replace_na(round_half_up(sum(`Number Seen/On list`, na.rm=T)/12,0),0))) %>%
   rename(Indicator = `Ongoing/Completed`)
   
 
@@ -134,8 +140,7 @@ perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian 
                       sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) #%>% #Rename T&O as orthopaedics
-#  rename("waited_waiting_over_52_weeks"="waited_waiting_over_54_weeks") #temp fix for typo
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))  #Rename T&O as orthopaedics
 
 
 #monthly data for report, July 2021 to latest complete quarter
@@ -163,6 +168,13 @@ perf_avg <- perf_split %>%
   left_join(perf_2019_specs, 
             by = c("nhs_board_of_treatment" = "NHS Board of Treatment", "ongoing_completed" = "Indicator", "specialty" = "Specialty")) %>%
   mutate(across(c(monthly_avg, quarterly_avg), ~ replace_na(.x,0)))
+
+#Completeness per month
+perf_comp <- perf %>%
+  group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
+  summarise(completeness = round(100*sum(`number_seen/on_list`[!urgency=="Other"], na.rm=T)/sum(`number_seen/on_list`, na.rm=T),2)) %>%
+  filter(specialty == "All Specialties") %>%
+  rename(indicator = ongoing_completed)
 
 
 #2.2.2 - Quarterly ---- 
@@ -250,7 +262,8 @@ dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits la
            fill = list(`number_seen/on_list` = 0)) 
 
 #2.4 - Additions by HBT ----
-addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian Dental by age gender SIMD.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
+addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian Dental by age gender SIMD.xlsx"), 
+                    sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format 
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
@@ -266,6 +279,18 @@ addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian 
                                        100* number/sum(number[!indicator %in% c("additions_to_list", "removals_from_list")]),
                                        0)) #Calculate proportion of total removals by removal reason
 
+#Additions only for Excel MI
+add_mon <- addrem %>% 
+  filter(indicator == "additions_to_list") %>%
+  select(-proportion_removals)
+
+add_comp <- addrem %>%
+  filter(specialty == "All Specialties",
+         indicator == "additions_to_list") %>%
+  select(patient_type, indicator, nhs_board_of_treatment, specialty, date, completeness = proportion_CP)
+
+total_comp <- bind_rows(add_comp, perf_comp) %>%
+  select(patient_type,indicator,nhs_board_of_treatment, specialty, date, completeness)
 
 #Quarterly additions ----
 
@@ -275,31 +300,71 @@ addrem_qtr <- addrem %>%
 
 
 #2.4.1 - long-term additions to get 2019 average ----
-add_2019 <- import_list("/PHI_conf/WaitingTimes/SoT/Projects/R Shiny DQ/Snapshot BOXI/RR Monthly.xlsx", rbind =  TRUE) %>%
-  select(- `_file`) %>%
-  filter(year(as.yearmon(Date, "%m %Y")) =="2019",
-         `NHS Board of Treatment` == "NHS Scotland",
-         Specialty == "All Specialties",
-         `Patient Type` == "Inpatient/Day case") %>%
-  select(`Additions to list`) %>%
+add_2019 <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv", stringsAsFactors = FALSE, check.names = FALSE) %>%
+#  select(- `_file`) %>%
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
+  filter(year(Date) =="2019",
+     #    `NHS Board of Treatment` == "NHS Scotland",
+         Specialty == "All Specialties") %>%
+    #     `Patient Type` == "Inpatient/Day case") %>%
+  group_by(`NHS Board of Treatment`, Specialty) %>%
   summarise(Indicator = "additions_to_list",
-            monthly_avg = round(mean(`Additions to list`),0))
+            monthly_avg =  replace_na(round_half_up(sum(`Additions to list`, na.rm=T)/12,0),0),
+            quarterly_avg = replace_na(round_half_up(mean(`Additions to list`, na.rm = T),0),0))
+
+add_2019_specs <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv", stringsAsFactors = FALSE, check.names = FALSE) %>%
+  #  select(- `_file`) %>%
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
+  filter(year(Date) =="2019") %>%#,
+         #    `NHS Board of Treatment` == "NHS Scotland",
+         #Specialty == "All Specialties") %>%
+  #     `Patient Type` == "Inpatient/Day case") %>%
+  group_by(`NHS Board of Treatment`, Specialty) %>%
+  summarise(Indicator = "additions_to_list",
+            monthly_avg =  replace_na(round_half_up(sum(`Additions to list`, na.rm=T)/12,0),0),
+            quarterly_avg = replace_na(round_half_up(mean(`Additions to list`, na.rm = T),0),0))
+
+
+#Additions only for Excel MI
+add_mon <- addrem %>% 
+  filter(indicator == "additions_to_list") %>%
+  select(-proportion_removals) %>%
+  bind_rows(addrem %>% 
+              filter(indicator == "additions_to_list") %>%
+              select(-proportion_removals) %>%
+              group_by(date, nhs_board_of_treatment, patient_type, specialty,indicator) %>%
+              summarise(number = sum(number, na.rm = T)) %>%
+              mutate(urgency = "Total")) %>%
+  left_join(select(add_2019_specs, -quarterly_avg), by = c("nhs_board_of_treatment" = "NHS Board of Treatment","specialty" = "Specialty", "indicator"="Indicator"))
+
 
 #2.4.2 - Create 2019 average combined lookup and combined data for additions, completed, waiting ----
 
 avg_2019 <- bind_rows(add_2019, perf_2019)
 
-add_perf  <- perf_split %>% #First modify perf_split
+add_perf_monthly  <- perf_split %>% #First modify perf_split
   rename(indicator = ongoing_completed,
          number = `number_seen/on_list`) %>%
-  select(-c(waited_waiting_over_52_weeks:y_max)) %>%
+  select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   bind_rows(select(addrem %>% filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
-  filter(specialty=="All Specialties",
-         nhs_board_of_treatment=="NHS Scotland") %>%
-  left_join(avg_2019, by=c("indicator" = "Indicator")) %>% #Then bind on monthly averages from 2019
+  filter(specialty=="All Specialties") %>%
+  left_join(select(avg_2019, -quarterly_avg), by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
   group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
   mutate(y_max = roundUpNice(sum(number, na.rm=T)), #Calculate max from current data per group
          y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
+
+add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
+  rename(indicator = ongoing_completed,
+         number = `number_seen/on_list`) %>%
+  select(-c(waited_waiting_over_26_weeks:y_max)) %>%
+  bind_rows(select(addrem_qtr %>% 
+                     filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
+  filter(specialty=="All Specialties") %>%
+  left_join(select(avg_2019, -monthly_avg), by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
+  group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
+  mutate(y_max = roundUpNice(sum(number, na.rm=T)), #Calculate max from current data per group
+         y_max2 = roundUpNice(max(quarterly_avg))) #Calculate max from 2019 data per group
+
 
 
 #2.5 - Additions by HBR ----
@@ -317,45 +382,70 @@ addhbr <- read.xlsx(here::here("data", "snapshot", "Removal Reason excl. Lothian
 
 #2.6 - Save data for Excel and app ----
 #1 - add_perf
-write.csv(add_perf %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_jun.csv"), row.names = FALSE)
-write.csv(add_perf %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mar.csv"), row.names = FALSE)
+#write.csv(add_perf %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_jun.csv"), row.names = FALSE)
+#write.csv(add_perf %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mar.csv"), row.names = FALSE)
 
-#2 - addrem_qtr
-#Not needed in the present analysis/output
+#1A - add_perf_monthly
+write.csv(add_perf_monthly %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_mon_jun.csv"), row.names = FALSE)
+write.csv(add_perf_monthly %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mon_mar.csv"), row.names = FALSE)
 
-#3 - perf_qtr_split
+#1B - add_perf_quarterly
+write.csv(add_perf_quarterly %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_qtr_jun.csv"), row.names = FALSE)
+write.csv(add_perf_quarterly %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_qtr_mar.csv"), row.names = FALSE)
+
+
+#2 - add_mon (for Excel)
+write.csv(add_mon %>% filter(date <= max_date), file = here::here("data", "processed data", "add_mon_jun.csv"), row.names = FALSE)
+write.csv(add_mon %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_mon_mar.csv"), row.names = FALSE)
+
+
+#3A - perf_qtr_split
 write.csv(perf_qtr_split %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_qtr_split_mar.csv"), row.names = FALSE)
 write.csv(perf_qtr_split %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_qtr_split_jun.csv"), row.names = FALSE)
 
+#3B - perf_split
+write.csv(perf_split %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_mon_split_mar.csv"), row.names = FALSE)
+write.csv(perf_split %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_mon_split_jun.csv"), row.names = FALSE)
 
-#4 - dow_4wk_qtr_pub
+#4 - perf_avg
+write.csv(perf_avg %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_avg_mar.csv"), row.names = FALSE)
+write.csv(perf_avg %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_avg_jun.csv"), row.names = FALSE)
+
+#5 - total_comp ("All Specialties" completeness for Excel MI)
+write.csv(total_comp %>% filter(date <= max_date), file = here::here("data", "processed data", "total_comp_jun.csv"), row.names = FALSE)
+write.csv(total_comp %>% filter(date <= max_date2), file = here::here("data", "processed data", "total_comp_mar.csv"), row.names = FALSE)
+
+#6 - dow_4wk_qtr_pub
 write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date), file = here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), row.names = FALSE)
 write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date2), file = here::here("data", "processed data", "dow_4wk_qtr_pub_mar.csv"), row.names = FALSE)
 
-#5 - addhbr
+#6B - dow_4wk_mon
+write.csv(dow_4wk %>% filter(date <= max_date), file = here::here("data", "processed data", "dow_4wk_mon_jun.csv"), row.names = FALSE)
+write.csv(dow_4wk %>% filter(date <= max_date2), file = here::here("data", "processed data", "dow_4wk_mon_mar.csv"), row.names = FALSE)
+
+#7 - addhbr
 write.csv(addhbr %>% filter(date <= max_date), file = here::here("data", "processed data", "addhbr_jun.csv"), row.names = FALSE)
 write.csv(addhbr %>% filter(date <= max_date2), file = here::here("data", "processed data", "addhbr_mar.csv"), row.names = FALSE)
 
-#6 - add_simd (run line 1054 onwards first!)
+#8 - add_simd (run line 1054 onwards first!)
 write.csv(add_simd %>% filter(date <= max_date), file = here::here("data", "processed data", "add_simd_jun.csv"), row.names = FALSE)
 write.csv(add_simd %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_simd_mar.csv"), row.names = FALSE)
 
-#6 - add_simd_long (run line 1054 onwards first!)
+#9 - add_simd_long (run line 1054 onwards first!)
 write.csv(add_simd_long %>% filter(date <= max_date), file = here::here("data", "processed data", "add_simd_long_jun.csv"), row.names = FALSE)
 write.csv(add_simd_long %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_simd_long_mar.csv"), row.names = FALSE)
 
-
-#7 - hb_plotdata
+#10 - hb_plotdata
 write.csv(hb_var_plotdata %>% filter(date <= max_date), file = here::here("data", "processed data", "hb_plotdata_jun.csv"), row.names = FALSE)
 write.csv(hb_var_plotdata %>% filter(date <= max_date2), file = here::here("data", "processed data", "hb_plotdata_mar.csv"), row.names = FALSE)
 
-#8 - topsix_specs
+#11 - topsix_specs
 write.csv(topsix %>% filter(date <= max_date), file = here::here("data", "processed data", "topsix_specs_jun.csv"), row.names = FALSE)
 write.csv(topsix %>% filter(date <= max_date2), file = here::here("data", "processed data", "topsix_specs_mar.csv"), row.names = FALSE)
 
 #### 3 - Data wrangling ----
 
-add_perf <- read.csv(here::here("data", "processed data", "add_perf_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
 
 perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
 
