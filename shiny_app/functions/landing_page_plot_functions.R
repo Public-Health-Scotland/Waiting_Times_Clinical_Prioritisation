@@ -22,7 +22,7 @@ activity_trendplot <- function(input_data, waiting_status,
  dataset %<>%
     filter(indicator == indicator_string,
            nhs_board_of_treatment == hbt) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
    select(cols_to_keep) %>%
    unique()
 
@@ -37,6 +37,7 @@ activity_trendplot <- function(input_data, waiting_status,
 
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- xaxis_title
+  xaxis_plots[["type"]] <- "category" #display only quarters on quaterly plot axis
 
   if(timescale == "monthly"){
 
@@ -55,7 +56,7 @@ activity_trendplot <- function(input_data, waiting_status,
 
 
   p <- dataset %>%
-      plot_ly(x = ~date_plot) %>%
+      plot_ly(x = ~get_month(date_plot), height = 800) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
@@ -86,6 +87,8 @@ activity_trendplot <- function(input_data, waiting_status,
 
 
 }
+
+
 
 # ----------------------------------------------------------------------------
 ## Distribution of waits

@@ -41,29 +41,15 @@ output$landing_page_ui <-  renderUI({
              ), # fluidrow
 
     fluidRow(
-             shinydashboard::tabBox( width=NULL, type="pills", height="500px", side="right",
-                                     tabPanel("Waiting",
-                                              tagList(
-                                                h3("Number of patients waiting"),
-                                                br(),
-                                                plots[["activity_waiting"]]
-                                              ) # taglist
-                                     ),
-                                     tabPanel("Admitted",
-                                              tagList(
-                                                h3("Number of patients admitted"),
-                                                br(),
-                                                plots[["activity_admitted"]]
-                                              ) # taglist
-                                     ),
-                                     tabPanel("Additions",
-                                              tagList(
-                                                h3("Number of additions to list"),
-                                                br(),
-                                                plots[["activity_additions"]]
-                                              ) # taglist
-                                     )
-             ) # tabbox
+             shinydashboard::box( width=NULL, height="900px", side="right",
+                                     
+                                     tagList(
+                                       h3("Number of Patients Waiting, Admitted and Seen"),
+                                       br(),
+                                       plots[["activity_stacked"]])
+                                    
+                                   
+             ) # box
 
     ), # fluidRow
 
@@ -144,22 +130,29 @@ observeEvent(
 
 
 ## Activity plots
-plots$activity_waiting <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                                             monthly=app_data[["add_perf_mon_mar"]]),
-                                                           waiting_status = "waiting",
-                                                           hbt=input$hbt_filter,
-                                                           timescale=input$timescale_choice)})
-plots$activity_admitted <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                                                 monthly=app_data[["add_perf_mon_mar"]]),
-                                                            waiting_status = "admitted",
-                                                            hbt=input$hbt_filter,
-                                                            timescale=input$timescale_choice)})
-plots$activity_additions <- renderPlotly({activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                                                  monthly=app_data[["add_perf_mon_mar"]]),
-                                                             waiting_status = "additions",
-                                                             hbt=input$hbt_filter,
-                                                             timescale=input$timescale_choice)})
+plots$activity_stacked <- renderPlotly({
+  p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                   monthly=app_data[["add_perf_mon_mar"]]),
+                              waiting_status = "waiting",
+                              hbt=input$hbt_filter,
+                              timescale=input$timescale_choice)
+  p2<- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                   monthly=app_data[["add_perf_mon_mar"]]),
+                              waiting_status = "admitted",
+                              hbt=input$hbt_filter,
+                              timescale=input$timescale_choice)
+  p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                   monthly=app_data[["add_perf_mon_mar"]]),
+                              waiting_status = "additions",
+                              hbt=input$hbt_filter,
+                              timescale=input$timescale_choice)
+    
+  subplot(style(p1, showlegend = FALSE),
+          style(p2, showlegend = FALSE),
+          p3, nrows = 3, shareX = TRUE)
 
+
+})
 
 ## Distribution of waits plots
 
