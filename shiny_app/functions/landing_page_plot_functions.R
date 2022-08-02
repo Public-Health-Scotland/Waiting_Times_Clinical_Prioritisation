@@ -53,10 +53,9 @@ activity_trendplot <- function(input_data, waiting_status,
                           "Number of patients: {format(dataset$number, big.mark=',')}<br>")
   }
 
-
-
+  
   p <- dataset %>%
-      plot_ly(x = ~get_month(date_plot), height = 800) %>%
+      plot_ly(x = ~get_month(date_plot), height = 900) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
@@ -129,7 +128,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
 
 
   p <- dataset %>%
-    plot_ly(x = ~weeks) %>%
+    plot_ly(x = ~weeks, height = 600) %>%
     add_bars(y = ~`number_seen/on_list`,
              color = ~urgency,
              colors = waiting_times_palette,

@@ -41,14 +41,13 @@ output$landing_page_ui <-  renderUI({
              ), # fluidrow
 
     fluidRow(
-             shinydashboard::box( width=NULL, height="900px", side="right",
+             shinydashboard::box( width=NULL, height="1000px", side="right",
                                      
                                      tagList(
                                        h3("Number of Patients Waiting, Admitted and Seen"),
                                        br(),
                                        plots[["activity_stacked"]])
                                     
-                                   
              ) # box
 
     ), # fluidRow
@@ -56,36 +55,24 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12, height="50px", br()),
 
     fluidRow(width=12,
-             shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
-                                     tabPanel("Waiting",
-                                              tagList(
-                                                h3("Distribution of waits"),
-                                                pickerInput("timescale_filter_waits_w", "3. Select month",
-                                                            choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                                                            selected = "March 2022"),
-                                                column(8,
-                                                       plots[["waits_breakdown_waiting"]]
-                                                ), # column
-                                                column(4,
-                                                       p("Total figs")
-                                                       )
-                                              ) # taglist
-                                     ),
-                                     tabPanel("Admitted",
-                                              tagList(
-                                                h3("Distribution of admitted patients"),
-                                                pickerInput("timescale_filter_waits_a", "3. Select month",
-                                                            choices = NULL,
-                                                            selected = NULL),
-                                                column(8,
-                                                       plots[["waits_breakdown_admitted"]]
-                                                ), # column
-                                                column(4,
-                                                       p("Total figs")
-                                                )
-                                              ) # taglist
-                                     )
-             ) # tabbox
+             shinydashboard::box( width=NULL, type="pills", height="800px", side="right",
+                                    column(12, 
+                                           tagList(
+                                             h3("Distribution of Patients Waiting and Admitted"),
+                                             pickerInput("timescale_filter_waits_f", "3. Select month",
+                                                         choices = NULL,
+                                                         selected = NULL)
+                                           ),
+                                    br(),
+                                    column(8,
+                                           plots[["waits_breakdown_facets"]] #facetted DoW plot
+                                    ), #column
+                                    column(4,
+                                           p("Total figs")
+                                    ) # column
+                                  ) #taglist           
+                                    
+             ) # box
     ), # fluidRow
 
     fluidRow(width=12, height="50px", br())
@@ -107,19 +94,14 @@ observeEvent(
   handlerExpr={
 
   if( !is.null(input$timescale_choice) ) {
-    updatePickerInput(session, inputId="timescale_filter_waits_w",
+    
+        updatePickerInput(session, inputId="timescale_filter_waits_f",
                       label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
                                         input$timescale_choice=="quarterly" ~ "3. Select quarter"),
                       selected = "March 2022",
                       choices = timescale_choices[[input$timescale_choice]]
-                      )
-
-    updatePickerInput(session, inputId="timescale_filter_waits_a",
-                        label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
-                                          input$timescale_choice=="quarterly" ~ "3. Select quarter"),
-                        selected = "March 2022",
-                        choices = timescale_choices[[input$timescale_choice]]
-      )
+    )
+    
   }
 
   }
@@ -131,45 +113,57 @@ observeEvent(
 
 ## Activity plots
 plots$activity_stacked <- renderPlotly({
+  
+  #plot patients waiting
   p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
+  #plot patients admitted
   p2<- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
+  #plot additions to the list
   p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
-    
-  subplot(style(p1, showlegend = FALSE),
+  
+  #make facets  
+  subplot(style(p1, showlegend = FALSE), #keep one legend for all plots
           style(p2, showlegend = FALSE),
-          p3, nrows = 3, shareX = TRUE)
+          p3, nrows = 3, shareX = TRUE, #share axis between plots
+          titleY = TRUE) #keep subplot titles
 
 
 })
 
 ## Distribution of waits plots
 
-plots$waits_breakdown_waiting <- renderPlotly({
-   waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                                monthly=app_data[["dow_4wk_mon_mar"]]),
-                           waiting_status="waiting",
-                           timescale=input$timescale_choice,
-                           time_chunk_end=input$timescale_filter_waits_w,
-                           hbt=input$hbt_filter)})
-
-plots$waits_breakdown_admitted <- renderPlotly({
-  waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                               monthly=app_data[["dow_4wk_mon_mar"]]),
-                          waiting_status="admitted",
-                          timescale=input$timescale_choice,
-                          time_chunk_end=input$timescale_filter_waits_a,
-                          hbt=input$hbt_filter)})
-
-
+plots$waits_breakdown_facets <- renderPlotly({
+  
+  #DoW plot patients waiting
+  p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
+                                      monthly=app_data[["dow_4wk_mon_mar"]]),
+                                 waiting_status="waiting",
+                                 timescale=input$timescale_choice,
+                                 time_chunk_end=input$timescale_filter_waits_f,
+                                 hbt=input$hbt_filter)
+  
+  #DoW plot patients admitted
+  p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
+                                     monthly=app_data[["dow_4wk_mon_mar"]]),
+                                waiting_status="admitted",
+                                timescale=input$timescale_choice,
+                                time_chunk_end=input$timescale_filter_waits_f,
+                                hbt=input$hbt_filter)
+  
+  #make facets
+  subplot(style(p4, showlegend = FALSE),p5,
+          nrows = 2, titleY = TRUE, shareX = TRUE)
+  
+})
