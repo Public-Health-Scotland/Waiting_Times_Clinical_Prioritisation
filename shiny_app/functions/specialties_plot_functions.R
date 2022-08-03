@@ -4,7 +4,7 @@
 topsix_specs <- function(qend, hbt){
 
  specs <- app_data[["topsix_specs_mar"]] %>%
-          filter(date==get_quarter_date(qend),
+          filter(date==get_short_date(qend),
              nhs_board_of_treatment==hbt) %>%
           select("specialties") %>% .[[1]] %>%
           strsplit(split = '\"') %>%
@@ -27,7 +27,7 @@ activity_specs <- function(input_data,
 
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
-           date == get_quarter_date(qend),
+           date == get_short_date(qend),
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
@@ -82,7 +82,7 @@ waits_specs <- function(input_data,
 
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
-           date == get_quarter_date(qend),
+           date == get_short_date(qend),
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
