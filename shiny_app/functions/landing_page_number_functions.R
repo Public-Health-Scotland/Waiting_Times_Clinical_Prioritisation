@@ -15,10 +15,11 @@ median_byurgency_table <- function(input_data,
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
     select(urgency, median, `90th_percentile`) %>%
     unique() %>%
-    dplyr::rename("Median" = "median",
+    dplyr::rename("Urgency" = "urgency",
+                  "Median" = "median",
                   "90th percentile" = "90th_percentile")
 
-    dataset <- setNames(data.frame(t(dataset[,-1])), dataset$urgency)
+    #dataset <- setNames(data.frame(t(dataset[,-1])), dataset$urgency)
 
   return(dataset)
 
