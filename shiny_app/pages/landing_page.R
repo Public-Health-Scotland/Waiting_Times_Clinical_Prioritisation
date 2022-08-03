@@ -44,7 +44,7 @@ output$landing_page_ui <-  renderUI({
              shinydashboard::box( width=NULL, height="1000px", side="right",
 
                                      tagList(
-                                       h3("Number of Patients Waiting, Admitted and Seen"),
+                                       h3("Number of patients waiting, admitted and seen"),
                                        br(),
                                        plots[["activity_stacked"]])
 
@@ -58,17 +58,18 @@ output$landing_page_ui <-  renderUI({
              shinydashboard::box( width=NULL, type="pills", height="800px", side="right",
                                     column(12,
                                            tagList(
-                                             h3("Distribution of Patients Waiting and Admitted"),
+                                             h3("Distribution of patients waiting and admitted"),
                                              pickerInput("timescale_filter_waits_f", "3. Select month",
-                                                         choices = NULL,
-                                                         selected = NULL)
+                                                         choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
+                                                         selected = "March 2022")
                                            ),
                                     br(),
-                                    column(8,
-                                           plots[["waits_breakdown_facets"]] #facetted DoW plot
+                                    column(6,
+                                           plots[["waits_breakdown_facets"]] # facetted DoW plot
                                     ), #column
-                                    column(4,
-                                           p("Total figs")
+                                    column(6,
+                                           p("Total figs"),
+                                           numbers[["median"]]
                                     ) # column
                                   ) #taglist
 
@@ -165,5 +166,21 @@ plots$waits_breakdown_facets <- renderPlotly({
   # make facets
   subplot(style(p4, showlegend = FALSE), p5,
           nrows = 2, titleY = TRUE, shareX = TRUE)
+
+})
+
+
+
+## Distribution of waits numbers
+
+numbers$median <- DT::renderDataTable({
+
+    info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_mar"]],
+                          monthly=app_data[["perf_mon_split_mar"]]),
+                     timescale=input$timescale_choice,
+                     time_chunk_end=input$timescale_filter_waits_f,
+                     hbt=input$hbt_filter)
+                 )
+
 
 })

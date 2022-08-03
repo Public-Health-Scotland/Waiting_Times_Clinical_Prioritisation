@@ -62,3 +62,63 @@ stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.1) {
 
   gg
 }
+
+
+# Function to format a given entry in a table
+format_entry <- function(x, dp=0, perc=F){
+  # x (numeric, char): entry
+  # dp (int): number of decimal places
+  # perc (bool): whether to add % afterwards
+
+  # First strip any existing commas and whitespace out
+  x <- gsub(",", "", x)
+  x <- gsub(" ", "", x)
+
+  # Try to convert entry to numeric, if failed return NULL
+  numx <- tryCatch(as.numeric(x),
+                   warning = function(w) NULL)
+
+  # Format entry if numeric
+  if (!is.null(numx)){
+    numx <- formatC(numx, format="f", big.mark = ",", digits=dp)
+    if (perc){
+      numx <- paste0(numx, "%")
+    }
+    return (numx)
+  } else {
+    # If entry cannot be converted to numeric, return original entry i.e. "*"
+    return(x)
+  }
+}
+
+# Generic data table
+info_table <- function(input_data_table,
+                          add_separator_cols = NULL
+){
+
+  # Add column formatting
+
+  for (i in add_separator_cols){
+    input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
+  }
+
+  dt <- DT::datatable(input_data_table, style = 'bootstrap',
+                      class = 'table-bordered table-condensed',
+                      rownames = TRUE,
+                      options = list(paging=FALSE,
+                                     searching=FALSE,
+                                     info=FALSE,
+                                     dom = 't',
+                                     autoWidth = TRUE,
+                                     # style header
+                                     initComplete = htmlwidgets::JS(
+                                       "function(settings, json) {",
+                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "}")),
+
+                      filter = "top")
+
+  return(dt)
+
+
+}

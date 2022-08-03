@@ -51,12 +51,12 @@ bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
                      'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
                      'hoverClosestCartesian')
 
-# Creating list of reactiveValues to store the plots in so that they can be accessed when needed.
+# Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
 # Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R
 # And it is bad practice to call output$ objects from within another output$. In this case it leads
 # to mysterious rendering errors due to breaking the reactive dependency tree.
 plots <- reactiveValues()
-
+numbers <- reactiveValues()
 
 
 

@@ -69,8 +69,9 @@ server <- function(input, output, session) {
   # Get navigation buttons
   source(file.path("functions/navigation_buttons.R"), local = TRUE)$value
 
-  # Get plot functions
+  # Get plot & number functions
   source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/landing_page_number_functions.R"), local = TRUE)$value
   source(file.path("functions/specialties_plot_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
