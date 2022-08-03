@@ -31,7 +31,10 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("circle-info"),
                value = "intro",
 
-               h1("Waiting times dashboard")
+               h1("Welcome to the dashboard"),
+               p("Some caveats"),
+               br(),
+               p("Navigation boxes to take you to the differnet tabs")
 
       ), # tabpanel
       ##############################################.
