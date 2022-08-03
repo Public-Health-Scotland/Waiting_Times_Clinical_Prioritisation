@@ -33,7 +33,7 @@ get_pretty_weeks <- function(ugly_weeks){
 
 # Move x and y axis labels of ggplotly so they don't overlap plot
 # (Function from https://stackoverflow.com/questions/42763280/r-ggplot-and-plotly-axis-margin-wont-change)
-stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.1) {
+stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.09) {
   ann <- gg[['x']][['layout']][['annotations']] %>%
     tibble::enframe() %>%
     mutate(value = purrr::map(value, as_tibble)) %>%
