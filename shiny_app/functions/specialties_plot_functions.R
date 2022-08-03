@@ -59,7 +59,8 @@ activity_specs <- function(input_data,
     #Layout
     layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
-           paper_bgcolor = "#F0EFF3",
+           paper_bgcolor = phs_colours("phs-liberty-10"),
+           plot_bgcolor = phs_colours("phs-liberty-10"),
            legend = list(x = 100, y = 0.5), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button
@@ -123,7 +124,8 @@ waits_specs <- function(input_data,
     #Layout
     layout(margin = list(l=100, r=100, b=160, t=50, pad=0), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
-           paper_bgcolor = "#F0EFF3",
+           paper_bgcolor = phs_colours("phs-liberty-10"),
+           plot_bgcolor = phs_colours("phs-liberty-10"),
            legend = list(orientation = "h", xref="paper", yref="paper",
                          xanchor="center", yanchor="center",
                          x=0.5, y=-0.15), #position of legend

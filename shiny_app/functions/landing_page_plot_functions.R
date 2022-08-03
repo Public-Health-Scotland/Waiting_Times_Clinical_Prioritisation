@@ -76,7 +76,8 @@ activity_trendplot <- function(input_data, waiting_status,
       #Layout
      p %<>%  layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
-           paper_bgcolor = "#F0EFF3",
+           paper_bgcolor = phs_colours("phs-liberty-10"),
+           plot_bgcolor = phs_colours("phs-liberty-10"),
            legend = list(x = 100, y = 0.5), #position of legend
            barmode = "stack") %>% #split by group
       # leaving only save plot button
@@ -141,7 +142,8 @@ waits_distribution_plot <- function(input_data, waiting_status,
     #Layout
     layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
-           paper_bgcolor = "#F0EFF3",
+           paper_bgcolor = phs_colours("phs-liberty-10"),
+           plot_bgcolor = phs_colours("phs-liberty-10"),
            legend = list(x = 100, y = 0.5), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button
