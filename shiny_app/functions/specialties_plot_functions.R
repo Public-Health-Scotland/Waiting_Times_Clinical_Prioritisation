@@ -110,8 +110,7 @@ waits_specs <- function(input_data,
     xlab("Weeks waiting") +
     ylab("Number seen / on list") +
     theme_minimal() +
-    theme(legend.position = "bottom",
-          legend.title = element_blank(),
+    theme(legend.title = element_blank(),
           strip.text.x = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
           strip.text.y = element_text(colour = phs_colours("phs-purple"), size=12, angle=360),
           axis.text.x = element_text(angle=70, size=12),
@@ -126,6 +125,17 @@ waits_specs <- function(input_data,
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
+           # Explanation of this legend nightmare:
+           # -------------------------------------
+           # 1. orientation h means horizontal i.e. the legend reads left to right
+           # 2. paper means that the reference scale for x/y axes are set to [0,1]
+           #    where 0 is left/bottom and 1 is right/top, respectively
+           #    (numbers outwith this interval are outwith the plot area)
+           # 3. anchors set to center means that the centre of the legend is its
+           #    reference point
+           # 4. x and y are the locations of the centre of the legend on this paper scale
+           #    i.e. legend x is in middle of plot and legend y is 15% of plot's size below
+           #    the plot
            legend = list(orientation = "h", xref="paper", yref="paper",
                          xanchor="center", yanchor="center",
                          x=0.5, y=-0.15), #position of legend
