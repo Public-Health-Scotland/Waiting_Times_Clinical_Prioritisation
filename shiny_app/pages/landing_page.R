@@ -54,28 +54,46 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12, height="50px", br()),
 
     fluidRow(width=12,
-             shinydashboard::box( width=NULL, type="pills", height="800px", side="right",
-                                    column(12,
-                                           tagList(
-                                             h3("Distribution of patients waiting and admitted"),
-                                             pickerInput("timescale_filter_waits_f", "3. Select month",
-                                                         choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                                                         selected = "March 2022")
-                                           ),
-                                    br(),
-                                    column(7,
-                                           plots[["waits_breakdown_facets"]] # facetted DoW plot
-                                    ), #column
-                                    column(5,
-                                           # shunting table down to make it more centred
-                                           br(), br(),
-                                           actionButton("btn_modal_median",
-                                                        "What is the median?",
-                                                        icon = icon('question-circle')),
-                                           br(), br(), br(),
-                                           numbers[["median_table_output"]]
-                                    ) # column
-                                  ) #taglist
+             shinydashboard::box( width=NULL, height="100px",
+                                  tagList(
+                                    h3("Distribution of patients waiting and admitted"),
+                                    pickerInput("timescale_filter_waits_f", "3. Select month",
+                                                choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
+                                                selected = "March 2022")
+                                              ) # pickerInput
+             ) # box
+    ),
+
+    fluidRow(width=12, height="50px", shinydashboard::box(width=NULL, height="50px", br())),
+
+    fluidRow(width=12,
+             shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
+
+                                     tabPanel("Charts",
+                                              tagList(
+                                                column(7,
+                                                             plots[["waits_breakdown_facets"]] # facetted DoW plot
+                                              ), #column
+                                              column(5,
+                                                     # shunting table down to make it more centred
+                                                     br(), br(),
+                                                     actionButton("btn_modal_median",
+                                                                  "What is the median?",
+                                                                  icon = icon('question-circle')),
+                                                     br(), br(), br(),
+                                                     numbers[["median_table_output"]]
+                                              ) # column
+                                              ) #taglist
+
+                                      ), # tabpanel
+
+                                     tabPanel("Data",
+                                              tagList(
+                                                p("data goes here")
+                                              ) #taglist
+
+                                     ) # tabpanel
+
 
              ) # box
     ), # fluidRow
