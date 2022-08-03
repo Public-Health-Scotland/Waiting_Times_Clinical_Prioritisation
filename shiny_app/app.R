@@ -59,11 +59,11 @@ ui <- fluidPage(
       ##############################################.
       # HEALTH BOARD RESIDENCE PAGE ----
       ##############################################.
-      tabPanel(title = "Health Board of Residence",
+      tabPanel(title = "Health Board of Treatment",
                icon = icon_no_warning_fn("people-roof"),
-               value = "hbr",
+               value = "hbt",
 
-               h2("Health Board of Residence")
+               h2("Health Board of Treatment")
 
       ), # tabpanel
       ##############################################.
