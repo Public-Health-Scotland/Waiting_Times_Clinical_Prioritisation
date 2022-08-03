@@ -41,6 +41,7 @@ ui <- fluidPage(
       tabPanel(title = "Specialties",
                icon = icon_no_warning_fn("stethoscope"),
                value = "specialties",
+
                h2("Specialties"),
                uiOutput("specialties_ui")
 
@@ -51,6 +52,7 @@ ui <- fluidPage(
       tabPanel(title = "Notes",
                icon = icon_no_warning_fn("file-lines"),
                value = "notes",
+
                h2("Notes")
 
       ) # tabpanel

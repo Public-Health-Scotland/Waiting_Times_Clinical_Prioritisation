@@ -110,19 +110,22 @@ waits_specs <- function(input_data,
     theme(legend.position = "bottom",
           legend.title = element_blank(),
           strip.text = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
-          axis.text.x = element_text(angle=70, vjust=0.5, size=12)) +
+          axis.text.x = element_text(angle=70, size=12),
+          axis.title.x = element_text(margin=margin(t=500)),
+          axis.title.y = element_text(margin=margin(r=500))) +
     facet_grid(specialty ~ ongoing_completed,  scales="free_y", labeller = label_wrap_gen())
 
 
-  plotlyp <- ggplotly(p, height=1000, tooltip=c("text"))%>%
+  plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%
     #Layout
-    layout(margin = list(l=100, r=100, b=50, t=50, pad=0), #to avoid labels getting cut out
+    layout(margin = list(l=100, r=100, b=160, t=50, pad=0), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = "#F0EFF3",
            legend = list(x = 100, y = 0.5), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button
-    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove ) %>%
+    stop_axis_title_overlap()
 
   return(plotlyp)
 
