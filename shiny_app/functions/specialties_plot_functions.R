@@ -116,12 +116,14 @@ waits_specs <- function(input_data,
           axis.text.x = element_text(angle=70, size=12),
           axis.title.x = element_text(margin=margin(t=500)),
           axis.title.y = element_text(margin=margin(r=500))) +
-    facet_grid(specialty ~ ongoing_completed,  scales="free_y", labeller = label_wrap_gen())
+    facet_grid(specialty ~ ongoing_completed,  scales="free_y",
+               # This wraps the facet label text to fit it on the plot
+               labeller = label_wrap_gen(width=10))
 
 
   plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%
     #Layout
-    layout(margin = list(l=100, r=100, b=160, t=50, pad=0), #to avoid labels getting cut out
+    layout(margin = list(l=100, r=150, b=160, t=50, pad=0), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
