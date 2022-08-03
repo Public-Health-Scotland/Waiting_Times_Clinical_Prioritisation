@@ -42,12 +42,12 @@ output$landing_page_ui <-  renderUI({
 
     fluidRow(
              shinydashboard::box( width=NULL, height="1000px", side="right",
-                                     
+
                                      tagList(
                                        h3("Number of Patients Waiting, Admitted and Seen"),
                                        br(),
                                        plots[["activity_stacked"]])
-                                    
+
              ) # box
 
     ), # fluidRow
@@ -56,7 +56,7 @@ output$landing_page_ui <-  renderUI({
 
     fluidRow(width=12,
              shinydashboard::box( width=NULL, type="pills", height="800px", side="right",
-                                    column(12, 
+                                    column(12,
                                            tagList(
                                              h3("Distribution of Patients Waiting and Admitted"),
                                              pickerInput("timescale_filter_waits_f", "3. Select month",
@@ -70,8 +70,8 @@ output$landing_page_ui <-  renderUI({
                                     column(4,
                                            p("Total figs")
                                     ) # column
-                                  ) #taglist           
-                                    
+                                  ) #taglist
+
              ) # box
     ), # fluidRow
 
@@ -94,14 +94,14 @@ observeEvent(
   handlerExpr={
 
   if( !is.null(input$timescale_choice) ) {
-    
+
         updatePickerInput(session, inputId="timescale_filter_waits_f",
                       label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
                                         input$timescale_choice=="quarterly" ~ "3. Select quarter"),
                       selected = "March 2022",
                       choices = timescale_choices[[input$timescale_choice]]
     )
-    
+
   }
 
   }
@@ -113,31 +113,31 @@ observeEvent(
 
 ## Activity plots
 plots$activity_stacked <- renderPlotly({
-  
-  #plot patients waiting
+
+  # plot patients waiting
   p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
-  #plot patients admitted
-  p2<- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
+  # plot patients admitted
+  p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
-  #plot additions to the list
+  # plot additions to the list
   p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
-  
-  #make facets  
-  subplot(style(p1, showlegend = FALSE), #keep one legend for all plots
+
+  # make facets
+  subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
           style(p2, showlegend = FALSE),
-          p3, nrows = 3, shareX = TRUE, #share axis between plots
-          titleY = TRUE) #keep subplot titles
+          p3, nrows = 3, shareX = TRUE, # share axis between plots
+          titleY = TRUE) # keep subplot titles
 
 
 })
@@ -145,25 +145,25 @@ plots$activity_stacked <- renderPlotly({
 ## Distribution of waits plots
 
 plots$waits_breakdown_facets <- renderPlotly({
-  
-  #DoW plot patients waiting
+
+  # DoW plot patients waiting
   p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
                                       monthly=app_data[["dow_4wk_mon_mar"]]),
                                  waiting_status="waiting",
                                  timescale=input$timescale_choice,
                                  time_chunk_end=input$timescale_filter_waits_f,
                                  hbt=input$hbt_filter)
-  
-  #DoW plot patients admitted
+
+  # DoW plot patients admitted
   p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
                                      monthly=app_data[["dow_4wk_mon_mar"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
-  
-  #make facets
-  subplot(style(p4, showlegend = FALSE),p5,
+
+  # make facets
+  subplot(style(p4, showlegend = FALSE), p5,
           nrows = 2, titleY = TRUE, shareX = TRUE)
-  
+
 })
