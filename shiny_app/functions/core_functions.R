@@ -92,6 +92,37 @@ format_entry <- function(x, dp=0, perc=F){
 }
 
 # Generic data table
+make_table <- function(input_data_table,
+                       add_separator_cols = NULL,
+                       rows_to_display = 20
+){
+
+  # Add column formatting
+  for (i in add_separator_cols){
+    input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
+  }
+
+  dt <- DT::datatable(input_data_table, style = 'bootstrap',
+                      class = 'table-bordered table-condensed',
+                      rownames = FALSE,
+                      filter="top",
+                      options = list(pageLength = rows_to_display,
+                                     dom = 'tip',
+                                     autoWidth = TRUE,
+                                     # style header
+                                     initComplete = htmlwidgets::JS(
+                                       "function(settings, json) {",
+                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "}")))
+
+
+  return(dt)
+
+
+}
+
+# Mini data table for summary stats
 info_table <- function(input_data_table,
                        add_separator_cols = NULL
 ){
@@ -114,12 +145,8 @@ info_table <- function(input_data_table,
                                        "function(settings, json) {",
                                        "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
                                        "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "}"))) #%>%
-   # DT::formatStyle(
-  #    1, target="cell",
-  #    backgroundColor = phs_colours("phs-purple-30"),
-  #    color = phs_colours("phs-purple")
-  #  )
+                                       "}")))
+
 
   return(dt)
 

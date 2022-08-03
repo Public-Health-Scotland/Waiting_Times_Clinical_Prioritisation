@@ -28,25 +28,24 @@ output$landing_page_ui <-  renderUI({
              ) # box
     ),
 
-    # BANs
-    fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="200px",
-                                 tagList(
-
-                                   h3("BANs"),
-                                   p("Some numbers go here")
-
-                                 ) # taglist
-                                 ) # box
-             ), # fluidrow
 
     fluidRow(
-             shinydashboard::box( width=NULL, height="1000px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="1000px", side="right",
 
-                                     tagList(
-                                       h3("Number of patients waiting, admitted and seen"),
-                                       br(),
-                                       plots[["activity_stacked"]])
+                                     tabPanel("Charts",
+                                              tagList(
+                                                h3("Number of patients waiting, admitted and seen"),
+                                                br(),
+                                                plots[["activity_stacked"]])
+                                     ),
+
+                                     tabPanel("Data",
+                                              tagList(
+                                                h3("Number of patients waiting, admitted and seen"),
+                                                br(),
+                                                numbers[["activity_table_output"]])
+                                     )
+
 
              ) # box
 
@@ -74,7 +73,7 @@ output$landing_page_ui <-  renderUI({
                                                         "What is the median?",
                                                         icon = icon('question-circle')),
                                            br(), br(), br(),
-                                           numbers[["median"]]
+                                           numbers[["median_table_output"]]
                                     ) # column
                                   ) #taglist
 
@@ -174,11 +173,22 @@ plots$waits_breakdown_facets <- renderPlotly({
 
 })
 
+## Activity numbers
+numbers$activity_table_output <- DT::renderDataTable({
+
+  make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_mar"]],
+                                 monthly=app_data[["add_perf_mon_mar"]]),
+                            hbt=input$hbt_filter,
+                            timescale=input$timescale_choice),
+             # These columns have thousand separator added
+             add_separator_cols = c(4,5))
+
+})
 
 
 ## Distribution of waits numbers
 
-numbers$median <- DT::renderDataTable({
+numbers$median_table_output <- DT::renderDataTable({
 
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_mar"]],
                           monthly=app_data[["perf_mon_split_mar"]]),
