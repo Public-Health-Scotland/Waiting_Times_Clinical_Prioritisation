@@ -25,13 +25,23 @@ ui <- fluidPage(
                          HTML("<html lang='en'>")
       ),
       ##############################################.
+      # INTRO PAGE ----
+      ##############################################.
+      tabPanel(title = "Introduction",
+               icon = icon_no_warning_fn("circle-info"),
+               value = "intro",
+
+               h1("Waiting times dashboard")
+
+      ), # tabpanel
+      ##############################################.
       # OVERVIEW PAGE ----
       ##############################################.
       tabPanel(title = "Overview",
-               icon = icon_no_warning_fn("circle-info"),
+               icon = icon_no_warning_fn("magnifying-glass-chart"),
                value = "overview",
 
-               h1("Waiting times dashboard"),
+               h1("Overview"),
                uiOutput("landing_page_ui")
 
                ), # tabpanel
@@ -44,6 +54,26 @@ ui <- fluidPage(
 
                h2("Specialties"),
                uiOutput("specialties_ui")
+
+      ), # tabpanel
+      ##############################################.
+      # HEALTH BOARD RESIDENCE PAGE ----
+      ##############################################.
+      tabPanel(title = "Health Board of Residence",
+               icon = icon_no_warning_fn("people-roof"),
+               value = "hbr",
+
+               h2("Health Board of Residence")
+
+      ), # tabpanel
+      ##############################################.
+      # DATA PAGE ----
+      ##############################################.
+      tabPanel(title = "Download data",
+               icon = icon_no_warning_fn("file-arrow-down"),
+               value = "data",
+
+               h2("Download data")
 
       ), # tabpanel
       ##############################################.
