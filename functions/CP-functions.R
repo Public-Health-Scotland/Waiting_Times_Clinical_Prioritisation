@@ -35,3 +35,23 @@ highlight = function(x, pat, color="black", family="") {
 
 #Example usage:
 # scale_x_discrete(labels= function(x) highlight(x, "NHS Scotland", "black")) + ...
+
+#3 - Function to modify gg_x_repel to be aware of other repel layers ----
+# Wrapper of ggrepel::geom_text_repel
+geom_text_repel2 <- function(...) {
+  layer <- ggrepel::geom_text_repel(...)
+  layer$ggrepel <- TRUE
+  class(layer) <- c("ggrepel", class(layer))
+  return(layer)
+}
+
+ggplot_add.ggrepel <- function(object, plot, object_name) {
+  if (any(do.call(c, lapply(plot$layer, function(x) x$ggrepel)))) {
+    warning(
+      "There is more than one ggrepel layers. ",
+      "This may cause overlap of labels"
+    )
+  }
+  # Optionally, one may modify `object` here.
+  NextMethod("ggplot_add")
+}
