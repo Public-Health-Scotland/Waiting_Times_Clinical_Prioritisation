@@ -100,7 +100,7 @@ th, td {
 .radio:checked{
   background-color: var(--phs-purple-30);
   border: var(--phs-purple-30);
-  accent-color:
+  accent-color: var(--phs-purple);
   }
 
 
@@ -157,4 +157,37 @@ a {
     text-decoration: none;
     background-color: var(--phs-teal-50);
     outline: 0;
+}
+
+/* data table page selectors */
+
+.pagination > li > a
+{
+    background-color: var(--phs-liberty-10);
+    color: var(--phs-purple);
+    transition: background-color .3s;
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover
+{
+    color:var(--phs-purple);
+    background-color: var(--phs-teal-50);
+    border-color: var(--phs-teal-80);
+    border-radius: 5px;
+}
+
+.pagination > .active > a
+{
+    color: var(--phs-purple);
+    background-color: var(--phs-teal-50) !Important;
+    border: solid 1px var(--phs-teal-50) !Important;
+}
+
+.pagination > .active > a:hover
+{
+    background-color: var(--phs-teal-50) !Important;
+    border: solid 1px var(--phs-teal-50);
 }

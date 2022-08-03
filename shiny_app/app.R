@@ -60,7 +60,7 @@ ui <- fluidPage(
 
       ), # tabpanel
       ##############################################.
-      # HEALTH BOARD RESIDENCE PAGE ----
+      # HEALTH BOARD TREATMENT PAGE ----
       ##############################################.
       tabPanel(title = "Health Board of Treatment",
                icon = icon_no_warning_fn("people-roof"),
