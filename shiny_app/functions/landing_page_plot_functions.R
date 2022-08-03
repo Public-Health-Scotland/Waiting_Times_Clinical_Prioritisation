@@ -53,7 +53,7 @@ activity_trendplot <- function(input_data, waiting_status,
                           "Number of patients: {format(dataset$number, big.mark=',')}<br>")
   }
 
-  
+
   p <- dataset %>%
       plot_ly(x = ~get_month(date_plot), height = 900) %>%
       add_bars(y = ~number,
@@ -106,7 +106,8 @@ waits_distribution_plot <- function(input_data, waiting_status,
            date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+           weeks = get_pretty_weeks(weeks)) %>%
     select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency) %>%
     unique()
 

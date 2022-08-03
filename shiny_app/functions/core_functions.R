@@ -24,3 +24,9 @@ get_short_date <- function(monthyear){
   short_date <- rollforward(as.Date(paste0("01 ", monthyear), "%d %B %Y"))
   return(short_date)
 }
+
+# Transform weeks waiting labels from e.g. 000-004 to "0-4"
+get_pretty_weeks <- function(ugly_weeks){
+  pretty_weeks <- gsub("\\b0+\\B", "", ugly_weeks)
+  return(pretty_weeks)
+}
