@@ -6,6 +6,7 @@
   --phs-blue: #0078D4;
   --phs-teal-50: #8FBFC2;
   --phs-teal-80: #4B999D;
+  --phs-purple-80: #655E9D;
   --phs-purple-30: #C5C3DA;
   --phs-magenta-30: #E1C7DF;
   --phs-liberty-10: #F0EFF3;
@@ -57,10 +58,10 @@ body {
 .navbar-default .navbar-nav > li > a {color: var(--white);}
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover {
     color: var(--white);
-    background-color: var(--phs-purple);
+    background-color: var(--phs-purple-80);
 }
 .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-    color: var(--white);     background-color: var(--phs-purple);}
+    color: var(--white);     background-color: var(--phs-purple-80);}
 
 /* Style hyperlinks */
 .externallink {color: var(--phs-purple); font-weight: bold;}
