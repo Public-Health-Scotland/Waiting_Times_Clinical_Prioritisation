@@ -42,6 +42,7 @@ activity_specs <- function(input_data,
     geom_col(aes(fill = urgency),
              position = position_stack(reverse = TRUE)) +
     scale_fill_manual(values = waiting_times_palette) +
+    scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 10)) +
     scale_y_continuous(labels = scales::percent) +
     xlab("") +
     ylab("") +
