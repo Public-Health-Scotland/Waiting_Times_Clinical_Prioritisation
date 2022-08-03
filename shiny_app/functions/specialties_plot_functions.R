@@ -87,7 +87,9 @@ waits_specs <- function(input_data,
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks),
            seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
-                                      ongoing_completed == "Completed" ~ "Number seen"))
+                                      ongoing_completed == "Completed" ~ "Number seen")) %>%
+    mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
+           )
 
 
   facets <- unique(dataset$specialty)

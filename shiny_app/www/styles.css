@@ -69,7 +69,7 @@ body {
 /* Border tables - th, td puts within the table as well */
 .border-table{border:1px solid var(--phs-purple);}
 th, td {
-  border: 1px solid var(--phs-purple)-30;
+  border: 1px solid var(--phs-purple-30);
   padding-right: 1px;
 }
 .container-fluid {
@@ -83,22 +83,23 @@ th, td {
 .btn{ background-color: var(--phs-teal-50); color: black; background-image:none; border: 2px solid var(--phs-purple);
   border-radius: 10px;
 }
-.btn:hover{background-color:#9F9BC2; border: 2px solid var(--phs-purple)-30;
+.btn:hover{background-color:#9F9BC2; border: 2px solid var(--phs-purple-30);
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 8px 20px 0 rgba(0,0,0,0.19);
 }
-.btn:focus{background-color:#9F9BC2; border: 2px solid var(--phs-purple)-30;
+.btn:focus{background-color:#9F9BC2; border: 2px solid var(--phs-purple-30);
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 8px 20px 0 rgba(0,0,0,0.19);}
-.btn:active{background-color:#9F9BC2; border: 2px solid var(--phs-purple)-30;
+.btn:active{background-color:#9F9BC2; border: 2px solid var(--phs-purple-30);
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 8px 20px 0 rgba(0,0,0,0.19);}
-.btn:checked{background-color:#9F9BC2; border: 2px solid var(--phs-purple)-30;
+.btn:checked{background-color:#9F9BC2; border: 2px solid var(--phs-purple-30);
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 8px 20px 0 rgba(0,0,0,0.19);}
 
 
 /* checkbox radio buttons */
 
 .radio:checked{
-  background-color: var(--phs-purple)-30;
-  border: var(--phs-purple)-30;
+  background-color: var(--phs-purple-30);
+  border: var(--phs-purple-30);
+  accent-color:
   }
 
 
@@ -119,7 +120,7 @@ a {
 /* Collapsable panels */
 .panel-default>.panel-heading {
     color: var(--black);
-    background-color: var(--phs-magenta-30);
+    background-color: var(--phs-purple-30);
     border-color: var(--phs-liberty-10);
 }
 .bold-style {

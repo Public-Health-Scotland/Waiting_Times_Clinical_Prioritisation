@@ -108,6 +108,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks)) %>%
+    mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
     select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency) %>%
     unique()
 
