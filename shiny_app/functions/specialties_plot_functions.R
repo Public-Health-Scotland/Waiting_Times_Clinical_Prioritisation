@@ -85,17 +85,20 @@ waits_specs <- function(input_data,
            date == get_short_date(qend),
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
-           weeks = get_pretty_weeks(weeks))
+           weeks = get_pretty_weeks(weeks),
+           seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
+                                      ongoing_completed == "Completed" ~ "Number seen"))
 
 
   facets <- unique(dataset$specialty)
 
+
   p <- ggplot(dataset, aes(x=weeks, y=`number_seen/on_list`, group=urgency,
-                           text = paste(
+                           text = paste0(
                              '</br>Weeks waiting: ', weeks,
                              '</br>Specialty: ', specialty,
                              '</br>Urgency: ', urgency,
-                             '</br>Number seen/on list: ', format(`number_seen/on_list`, big.mark=","))
+                             '</br>', seen_or_on_list, ': ', format(`number_seen/on_list`, big.mark=","))
   )) +
     geom_col(aes(fill = urgency),
              position = position_stack(reverse = TRUE)) +
@@ -113,7 +116,7 @@ waits_specs <- function(input_data,
 
   plotlyp <- ggplotly(p, height=1000, tooltip=c("text"))%>%
     #Layout
-    layout(margin = list(l=100, r=100, b=50, t=50, pad=8), #to avoid labels getting cut out
+    layout(margin = list(l=100, r=100, b=50, t=50, pad=0), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = "#F0EFF3",
            legend = list(x = 100, y = 0.5), #position of legend
