@@ -5,6 +5,7 @@ library(shiny)
 library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
+library(shinyBS)
 
 # Data wrangling packages
 library(dplyr)

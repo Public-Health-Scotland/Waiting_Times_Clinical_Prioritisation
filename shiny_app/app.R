@@ -53,7 +53,8 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("file-lines"),
                value = "notes",
 
-               h2("Notes")
+               h2("Notes"),
+               uiOutput("notes_ui")
 
       ) # tabpanel
       ) # navbar
@@ -65,6 +66,9 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
+  # Get navigation buttons
+  source(file.path("functions/navigation_buttons.R"), local = TRUE)$value
+
   # Get plot functions
   source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
   source(file.path("functions/specialties_plot_functions.R"), local = TRUE)$value
@@ -72,6 +76,7 @@ server <- function(input, output, session) {
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
   source(file.path("pages/specialties.R"), local = TRUE)$value
+  source(file.path("pages/notes.R"), local = TRUE)$value
 
 
 
