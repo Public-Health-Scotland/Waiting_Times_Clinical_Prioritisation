@@ -31,10 +31,10 @@ get_pretty_weeks <- function(ugly_weeks){
   return(pretty_weeks)
 }
 
-# Move x and y axis labels so they don't overlap plot
+# Move x and y axis labels of ggplotly so they don't overlap plot
 # (Function from https://stackoverflow.com/questions/42763280/r-ggplot-and-plotly-axis-margin-wont-change)
 stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.1) {
-  wip <- gg[['x']][['layout']][['annotations']] %>%
+  ann <- gg[['x']][['layout']][['annotations']] %>%
     tibble::enframe() %>%
     mutate(value = purrr::map(value, as_tibble)) %>%
     tidyr::unnest(cols = c(value)) %>%
@@ -46,18 +46,18 @@ stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.1) {
     select(name, text, x, y) %>%
     unique()
 
-  if (nrow(wip) == 2) {
-    for (i in 1:nrow(wip)) {
-      if (wip$x[i] == 0.50) {
-        gg[['x']][['layout']][['annotations']][[1]][['y']] <- wip$y[i]
+  if (nrow(ann) == 2) {
+    for (i in 1:nrow(ann)) {
+      if (ann$x[i] == 0.50) {
+        gg[['x']][['layout']][['annotations']][[1]][['y']] <- ann$y[i]
       } else {
-        gg[['x']][['layout']][['annotations']][[2]][['x']] <- wip$x[i]
+        gg[['x']][['layout']][['annotations']][[2]][['x']] <- ann$x[i]
       }
     }
-  } else if (wip$y == 0.5) {
-    gg[['x']][['layout']][['annotations']][[1]][['x']] <- wip$x
+  } else if (ann$y == 0.5) {
+    gg[['x']][['layout']][['annotations']][[1]][['x']] <- ann$x
   } else {
-    gg[['x']][['layout']][['annotations']][[1]][['y']] <- wip$y
+    gg[['x']][['layout']][['annotations']][[1]][['y']] <- ann$y
   }
 
   gg
