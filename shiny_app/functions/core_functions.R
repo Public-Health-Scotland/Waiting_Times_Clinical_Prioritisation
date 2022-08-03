@@ -93,18 +93,17 @@ format_entry <- function(x, dp=0, perc=F){
 
 # Generic data table
 info_table <- function(input_data_table,
-                          add_separator_cols = NULL
+                       add_separator_cols = NULL
 ){
 
   # Add column formatting
-
   for (i in add_separator_cols){
     input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
   }
 
   dt <- DT::datatable(input_data_table, style = 'bootstrap',
                       class = 'table-bordered table-condensed',
-                      rownames = TRUE,
+                      rownames = FALSE,
                       options = list(paging=FALSE,
                                      searching=FALSE,
                                      info=FALSE,
@@ -114,9 +113,13 @@ info_table <- function(input_data_table,
                                      initComplete = htmlwidgets::JS(
                                        "function(settings, json) {",
                                        "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "}")),
-
-                      filter = "top")
+                                       "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "}"))) #%>%
+   # DT::formatStyle(
+  #    1, target="cell",
+  #    backgroundColor = phs_colours("phs-purple-30"),
+  #    color = phs_colours("phs-purple")
+  #  )
 
   return(dt)
 

@@ -19,10 +19,10 @@ median_byurgency_table <- function(input_data,
                   "Median" = "median",
                   "90th percentile" = "90th_percentile")
 
-    #dataset <- setNames(data.frame(t(dataset[,-1])), dataset$urgency)
-
   return(dataset)
 
 
 
 }
+
+

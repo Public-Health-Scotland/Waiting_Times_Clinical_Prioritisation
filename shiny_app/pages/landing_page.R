@@ -64,11 +64,16 @@ output$landing_page_ui <-  renderUI({
                                                          selected = "March 2022")
                                            ),
                                     br(),
-                                    column(6,
+                                    column(7,
                                            plots[["waits_breakdown_facets"]] # facetted DoW plot
                                     ), #column
-                                    column(6,
-                                           p("Total figs"),
+                                    column(5,
+                                           # shunting table down to make it more centred
+                                           br(), br(),
+                                           actionButton("btn_modal_median",
+                                                        "What is the median?",
+                                                        icon = icon('question-circle')),
+                                           br(), br(), br(),
                                            numbers[["median"]]
                                     ) # column
                                   ) #taglist
