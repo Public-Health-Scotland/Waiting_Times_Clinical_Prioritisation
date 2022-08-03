@@ -111,7 +111,8 @@ waits_specs <- function(input_data,
     theme_minimal() +
     theme(legend.position = "bottom",
           legend.title = element_blank(),
-          strip.text = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
+          strip.text.x = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
+          strip.text.y = element_text(colour = phs_colours("phs-purple"), size=12, angle=360),
           axis.text.x = element_text(angle=70, size=12),
           axis.title.x = element_text(margin=margin(t=500)),
           axis.title.y = element_text(margin=margin(r=500))) +
@@ -123,7 +124,9 @@ waits_specs <- function(input_data,
     layout(margin = list(l=100, r=100, b=160, t=50, pad=0), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = "#F0EFF3",
-           legend = list(x = 100, y = 0.5), #position of legend
+           legend = list(orientation = "h", xref="paper", yref="paper",
+                         xanchor="center", yanchor="center",
+                         x=0.5, y=-0.15), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove ) %>%
