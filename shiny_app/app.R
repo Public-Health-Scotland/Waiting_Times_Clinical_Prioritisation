@@ -112,6 +112,7 @@ server <- function(input, output, session) {
   source(file.path("functions/landing_page_number_functions.R"), local = TRUE)$value
   source(file.path("functions/specialties_plot_functions.R"), local = TRUE)$value
   source(file.path("functions/hbt_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/data_download_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
