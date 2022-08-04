@@ -69,7 +69,7 @@ output$hbt_ui <-  renderUI({
                                               tagList(
                                                 h3("Distribution of waits"),
                                                 br(),
-                                                #plots[["waits_facet_plot"]],
+                                                plots[["waits_facet_plot_hbt"]],
                                                 linebreaks(35),
                                                 materialSwitch(inputId = "show_data_waits_hbt",
                                                                label = "Show data",
@@ -79,8 +79,7 @@ output$hbt_ui <-  renderUI({
                                                 conditionalPanel(
                                                   # Condition is in javascript
                                                   condition = "input.show_data_waits_hbt == true",
-                                                  p("Numbers here")#,
-                                                 # numbers[["spec_waits_table_output"]]
+                                                  numbers[["spec_waits_table_output_hbt"]]
                                                 )
                                               ) # taglist
                                      )
@@ -96,17 +95,6 @@ output$hbt_ui <-  renderUI({
 })
 
 
-# This makes sure that specialty_filter default options update based off HBT and quarter
-#observe({
-#  if( (!is.null(input$quarter_end_spec_hbt) & (!is.null(input$hbt_filter_hbt))) ) {
-#    updateSelectInput(session, "spec_filter_hbt",
-#                      # topsix_specs is defined in specialties_plot_functions
-#                      selected = topsix_specs(input$quarter_end_spec,
-#                                              input$hbt_filter_spec) )
-#  }
-#})
-
-
 
 ## Plots
 
@@ -116,10 +104,10 @@ plots$activity_facet_plot_hbt <- renderPlotly({activity_specs_hbt(input_data=app
                                                           specialty_choice=input$spec_filter_hbt)})
 
 
-#plots$waits_facet_plot_hbt <- renderPlotly({waits_specs_hbt(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
-#                                                            qend=input$quarter_end_spec_hbt,
-#                                                            hbts=input$hbt_filter_hbt,
-#                                                            specialty_choice=input$spec_filter_hbt)})
+plots$waits_facet_plot_hbt <- renderPlotly({waits_specs_hbt(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
+                                                           qend=input$quarter_end_spec_hbt,
+                                                           hbts=input$hbt_filter_hbt,
+                                                           specialty_choice=input$spec_filter_hbt)})
 
 
 
@@ -138,14 +126,14 @@ numbers$spec_activity_table_output_hbt <- DT::renderDataTable({
 })
 
 
-# numbers$spec_waits_table_output_hbt <- DT::renderDataTable({
-#
-#   make_table(spec_waits_table_hbt(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
-#                                   qend=input$quarter_end_spec_hbt,
-#                                   hbts=input$hbt_filter_hbt,
-#                                   specialty_choice=input$spec_filter_hbt),
-#              # These columns have thousand separator added
-#              add_separator_cols = c(6),
-#              rows_to_display = 10)
-#
-# })
+numbers$spec_waits_table_output_hbt <- DT::renderDataTable({
+
+  make_table(spec_waits_table_hbt(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
+                                  qend=input$quarter_end_spec_hbt,
+                                  hbts=input$hbt_filter_hbt,
+                                  specialty_choice=input$spec_filter_hbt),
+             # These columns have thousand separator added
+             add_separator_cols = c(6),
+             rows_to_display = 10)
+
+})
