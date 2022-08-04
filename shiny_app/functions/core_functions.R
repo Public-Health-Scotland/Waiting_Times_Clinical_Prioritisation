@@ -8,6 +8,9 @@ load_rds_file <- function(rds){
   app_data[[gsub(".rds", "", rds)]] <<- readRDS(paste0("data/", rds))
 }
 
+# Add n linebreaks
+linebreaks <- function(n){HTML(strrep(br(), n))}
+
 # Remove warnings from icons ----
 icon_no_warning_fn = function(icon_name) {
   icon(icon_name, verify_fa=FALSE)

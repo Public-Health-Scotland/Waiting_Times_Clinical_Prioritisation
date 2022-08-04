@@ -49,6 +49,7 @@ activity_specs <- function(input_data,
     theme_minimal() +
     theme(legend.position = "bottom",
           legend.title = element_blank(),
+          axis.text.x = element_text(colour = phs_colours("phs-purple")),
           strip.text = element_text(colour = phs_colours("phs-purple"), size=12)) +
     facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
                labeller = as_labeller(c(additions_to_list ="Additions to list \n",
@@ -151,6 +152,64 @@ waits_specs <- function(input_data,
 
 
 }
+
+# --------------------------------------------------------------------------
+## Data tables
+
+spec_activity_table <-  function(input_data,
+                                 qend="March 2022",
+                                 hbt="NHS Scotland",
+                                 specialties=c("All Specialties")) {
+
+
+  dataset <- input_data %>%
+    filter(nhs_board_of_treatment == hbt,
+           date == get_short_date(qend),
+           specialty %in% specialties) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    select(date, indicator, nhs_board_of_treatment, specialty, urgency, number) %>%
+    dplyr::rename("Quarter ending" = "date",
+                  "Waiting status" = "indicator",
+                  "Health Board of Treatment" = "nhs_board_of_treatment",
+                  "Specialty" = "specialty",
+                  "Clinical Prioritisation" = "urgency",
+                  "Count" = "number")
+
+
+  return(dataset)
+
+
+}
+
+spec_waits_table <- function(input_data,
+                             qend="March 2022",
+                             hbt="NHS Scotland",
+                             specialties=c("All Specialties")) {
+
+
+
+  dataset <- input_data %>%
+    filter(nhs_board_of_treatment == hbt,
+           date == get_short_date(qend),
+           specialty %in% specialties) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+           weeks = get_pretty_weeks(weeks),
+           seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
+                                       ongoing_completed == "Completed" ~ "Number seen")) %>%
+    mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
+    ) %>%
+    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, `number_seen/on_list`) %>%
+    dplyr::rename("Quarter ending" = "date",
+                  "Waiting status" = "ongoing_completed",
+                  "Health Board of Treatment" = "nhs_board_of_treatment",
+                  "Specialty" = "specialty",
+                  "Clinical Prioritisation" = "urgency",
+                  "Count" = "number_seen/on_list")
+
+  return(dataset)
+
+}
+
 
 
 
