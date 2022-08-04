@@ -18,8 +18,11 @@ activity_specs_hbt <- function(input_data,
   facets <- unique(dataset$indicator)
 
   # Check that there is enough data to be displayed, otherwise throw error to user
+
+  # Checking there are 1 or more facets and the dataset is not entirely populated by zeros
   validate(
-    need(length(facets)>=1 , "There are no entries matching your selection. Please choose again.")
+    need(((length(facets)>=1) & (unique(dataset$number) != 0)),
+         "There are no entries matching your selection. Please choose again.")
   )
 
   p <- ggplot(dataset, aes(x=nhs_board_of_treatment, y=proportion, group=urgency,
