@@ -191,3 +191,11 @@ a {
     background-color: var(--phs-teal-50) !Important;
     border: solid 1px var(--phs-teal-50);
 }
+
+/* data table */
+
+.table > .tbody > tr.active th,
+.table > .tbody > tr.active td{
+    background-color: var(--phs-purple);
+    color: var(--white);
+}

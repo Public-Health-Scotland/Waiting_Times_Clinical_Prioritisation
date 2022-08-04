@@ -89,7 +89,7 @@ output$landing_page_ui <-  renderUI({
 
                                      tabPanel("Data",
                                               tagList(
-                                                p("data goes here")
+                                                numbers[["waits_table_output"]]
                                               ) #taglist
 
                                      ) # tabpanel
@@ -206,6 +206,7 @@ numbers$activity_table_output <- DT::renderDataTable({
 
 ## Distribution of waits numbers
 
+# Median and 90th percentile
 numbers$median_table_output <- DT::renderDataTable({
 
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_mar"]],
@@ -215,5 +216,21 @@ numbers$median_table_output <- DT::renderDataTable({
                      hbt=input$hbt_filter)
                  )
 
+
+})
+
+
+
+# Raw data table
+numbers$waits_table_output <- DT::renderDataTable({
+
+  make_table(waits_table(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
+                              monthly=app_data[["dow_4wk_mon_mar"]]),
+                            hbt=input$hbt_filter,
+                            time_chunk_end=input$timescale_filter_waits_f,
+                            timescale=input$timescale_choice),
+             # These columns have thousand separator added
+             add_separator_cols = c(3),
+             rows_to_display = 10)
 
 })
