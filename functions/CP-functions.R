@@ -55,3 +55,43 @@ ggplot_add.ggrepel <- function(object, plot, object_name) {
   # Optionally, one may modify `object` here.
   NextMethod("ggplot_add")
 }
+
+
+# 4. ----------------------------------------------------------------------
+
+
+trendbar <- function(data, spec, hb)
+{
+  data %>% filter(specialty==spec,
+                  nhs_board_of_treatment==hb
+  ) %>%
+    ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+    theme_bw() +
+    scale_x_date(labels = date_format("%b %y"),
+                 breaks = seq(from = floor_date(min(addrem$date), "month"), 
+                              to = floor_date(max(addrem$date), "month"), by = "1 months")) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
+    geom_blank(aes(y = y_max)) +
+    facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
+               labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients seen") )) +
+    ylab(NULL) +
+    xlab("Month ending") +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(), 
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom")
+}
+
+
+# 5. Function to highlight particular axis labels (e.g. NHS Scotland)  -----
+
+highlight = function(x, pat, color="black", family="") {
+  ifelse(grepl(pat, x), glue("<b style='font-family:{family}; color:{color}'>{x}</b>"), x)
+}
