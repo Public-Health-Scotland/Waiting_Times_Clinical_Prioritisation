@@ -66,7 +66,8 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("people-roof"),
                value = "hbt",
 
-               h2("Health Board of Treatment")
+               h2("Health Board of Treatment"),
+               uiOutput("hbt_ui")
 
       ), # tabpanel
       ##############################################.
@@ -109,10 +110,12 @@ server <- function(input, output, session) {
   source(file.path("functions/landing_page_plot_functions.R"), local = TRUE)$value
   source(file.path("functions/landing_page_number_functions.R"), local = TRUE)$value
   source(file.path("functions/specialties_plot_functions.R"), local = TRUE)$value
+  source(file.path("functions/hbt_plot_functions.R"), local = TRUE)$value
 
   # Get content for individual pages
   source(file.path("pages/landing_page.R"), local = TRUE)$value
   source(file.path("pages/specialties.R"), local = TRUE)$value
+  source(file.path("pages/hbt.R"), local = TRUE)$value
   source(file.path("pages/notes.R"), local = TRUE)$value
 
 

@@ -44,9 +44,10 @@ body {
   transition-delay: 0;
 }
 
-/* to avoid red text error messages in the whole app, take out for testing*/
+/* to avoid red text error messages in the whole app, take out for testing
 .shiny-output-error { visibility: hidden; }
 .shiny-output-error:before { visibility: hidden; }
+*/
 
 /* Style sidebars/well panels */
 .well {background-color:var(--white); border: 0 solid var(--phs-blue);
