@@ -20,9 +20,8 @@ source("functions/CP-functions.R")
 Sys.umask(002) #Used to ensure directory permissions are correct
 
 #1.2 - Dates ----
-min_date <- as.Date("2021-07-30") #Start date of September 2021 - check if this is needed or if the date filter in BOXI worked
-max_date <- as.Date("2022-06-30")
-max_date2 <- as.Date("2022-03-31")
+# max_date <- as.Date("2022-06-30")
+# max_date2 <- as.Date("2022-03-31")
 
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
@@ -41,60 +40,16 @@ linecolours <- phs_colours(c("phs-green","phs-purple","phs-blue"))
 names(linecolours) <- c("Additions", "Seen", "All removals (including patients seen)")
 
 
-
-#1.4 - Functions (move to functions file) ----
-trendbar <- function(data, spec, hb)
-{
-  data %>% filter(specialty==spec,
-                  nhs_board_of_treatment==hb
-  ) %>%
-    ggplot(aes(x =floor_date(date, "month"), y = `number_seen/on_list`), group = ongoing_completed) +
-    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
-    theme_bw() +
-    scale_x_date(labels = date_format("%b %y"),
-                 breaks = seq(from = floor_date(min(addrem$date), "month"), 
-                              to = floor_date(max(addrem$date), "month"), by = "1 months")) +
-    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
-    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
-    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
-    geom_blank(aes(y = y_max)) +
-    facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
-               labeller = as_labeller(c(Ongoing = "Patients waiting", Completed = "Patients seen") )) +
-    ylab(NULL) +
-    xlab("Month ending") +
-    theme(text = element_text(size = 12),
-          strip.background = element_blank(),
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-          panel.spacing = unit(1, "cm"),
-          panel.border = element_blank(),
-          panel.grid.minor.x = element_blank(), 
-          panel.grid.major.x = element_blank(),
-          legend.position="bottom")
-}
-
-
-# Function to highlight particular axis labels (e.g. NHS Scotland) 
-highlight = function(x, pat, color="black", family="") {
-  ifelse(grepl(pat, x), glue("<b style='font-family:{family}; color:{color}'>{x}</b>"), x)
-}
-
-
-
 #### 2 - Import data ----
 
 #2.1 - Specialty exclusions ----
 #Use the latest specialty exclusions list from the publication folder
 
-exclusions_path <- here::here("..", "..", "..", #Takes us back up to SoT folder
-                              "Publications",
-                              "Inpatient, Day case and Outpatient Stage of Treatment Waiting Times",
-                              "Publication R Script", 
-                              "Publication", 
-                              "Data", 
-                              "Spec Exclusions.xlsx")
+exclusions_path <- here::here("data", "Spec Exclusions.xlsx")
 
-exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
+exclusions <- read.xlsx(test_path, sheet = "IPDC", na.strings = "") %>%
   as.list(Specialties)
+
 
 
 #2.2 - Performance ----
@@ -104,9 +59,7 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
 perf_2019 <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   filter(year(Date) =="2019",
-         #    `NHS Board of Treatment` == "NHS Scotland",
          Specialty == "All Specialties") %>%
-  #     `Patient Type` == "Inpatient/Day case") %>%
   group_by(`NHS Board of Treatment`, `Ongoing/Completed`, Specialty) %>%
   summarise(monthly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed", sum(`Number Seen/On list`, na.rm=T)/12, mean(`Number Seen/On list`, na.rm=T)),0),0),
             quarterly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed", mean(`Number Seen/On list`, na.rm=T), mean(`Number Seen/On list`, na.rm=T)),0),0))%>%
@@ -118,13 +71,8 @@ perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, 
   mutate(Date = as.Date(Date, format = "%d/%m/%Y"), 
          `Number Seen/On list` = as.numeric(`Number Seen/On list`)) %>%
   filter(year(Date) =="2019",
-        # `Patient Type` == "Inpatient/Day case",
          !Specialty %in% exclusions$Specialties) %>%
   ungroup() %>%
-  #complete(Date = unique(Date), #Note have to complete all dates to be able to calculate quarterly average
-   #        nesting(Specialty,`Ongoing/Completed`, `Patient Type`, `NHS Board of Treatment`),  
-    #       fill = list(`Number Seen/On list`=0, `Waited/Waiting over 12 Weeks` =0, `Waited/Waiting over 52 Weeks`=0, `Waited/Waiting over 78 Weeks`=0,
-     #                  `Waited/Waiting over 104 Weeks`=0, Median = NA, `90th Percentile`=NA)) %>%
   group_by(`NHS Board of Treatment`,`Ongoing/Completed`, Specialty) %>%
   summarise(monthly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed", 
                                                        sum(`Number Seen/On list`, na.rm=T)/12, 
@@ -148,7 +96,7 @@ perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian 
 
 #monthly data for report, July 2021 to latest complete quarter
 perf <- perf_all %>%
-  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
+  filter(!specialty %in% exclusions$Specialties) %>%
   complete(urgency, date, ongoing_completed, 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0,
@@ -189,7 +137,7 @@ perf_qtr_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Loth
 
 #data for report up to latest complete quarter
 perf_qtr <- perf_qtr_all %>% 
-  filter(between(date, min_date, max_date), !specialty %in% exclusions$Specialties) %>%
+  filter(!specialty %in% exclusions$Specialties) %>%
   filter(ifelse(ongoing_completed == "Ongoing", month(date) %in% c(3,6,9,12),
                 ongoing_completed == "Completed")) %>%
   complete(urgency, date, ongoing_completed, 
@@ -221,26 +169,6 @@ dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 wee
   complete(urgency, date, ongoing_completed, weeks,
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(`number_seen/on_list` = 0)) 
-
-#uncomment code below if dates do not parse properly
-
-# #DoW ongoing waits
-# dow_4wk_ongoing <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-#   clean_names(use_make_names = FALSE) %>%
-#   filter(ongoing_completed=="Ongoing") %>%
-#   mutate(date= base::as.Date(date, format = "%d/%m/%Y"))
-# 
-# #DoW completed waits
-# dow_4wk_comp <- read.xlsx("data/Distribution of Waits 4 week bands.xlsx", sheet = "IPDC Clinical Prioritisation", detectDates = TRUE) %>%
-#   clean_names(use_make_names = FALSE) %>%
-#   filter(ongoing_completed=="Completed") %>%
-#   mutate(date= base::as.Date(date, format = "%Y-%m-%d"))
-# 
-# #bind completed and ongoing into a single df
-# dow_4wk <- rbind(dow_4wk_comp, dow_4wk_ongoing) %>%
-#   mutate(weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
-#          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
-
 
 #quarterly 4 week bands dow data for publication
 dow_4wk_qtr_pub <- dow_4wk %>%
