@@ -61,8 +61,7 @@ output$hbt_ui <-  renderUI({
                                                 conditionalPanel(
                                                   # Condition is in javascript
                                                   condition = "input.show_data_activity_hbt == true",
-                                                  p("Numbers here")
-                                                 # numbers[["spec_activity_table_output"]]
+                                                  numbers[["spec_activity_table_output_hbt"]]
                                                 )
                                               ) # taglist
                                      ),
@@ -80,7 +79,7 @@ output$hbt_ui <-  renderUI({
                                                 conditionalPanel(
                                                   # Condition is in javascript
                                                   condition = "input.show_data_waits_hbt == true",
-                                                  p("Numbers here"),
+                                                  p("Numbers here")#,
                                                  # numbers[["spec_waits_table_output"]]
                                                 )
                                               ) # taglist
@@ -126,17 +125,17 @@ plots$activity_facet_plot_hbt <- renderPlotly({activity_specs_hbt(input_data=app
 
 ## Data
 
-#numbers$spec_activity_table_output_hbt <- DT::renderDataTable({
-#
-#   make_table(spec_activity_table_hbt(input_data=app_data[["hb_plotdata_mar"]],
-#                                  qend=input$quarter_end_spec_hbt,
-#                                  hbts=input$hbt_filter_hbt,
-#                                  specialty_choice=input$spec_filter_hbt),
-#              # These columns have thousand separator added
-#              add_separator_cols = c(6),
-#              rows_to_display = 25)
-#
-# })
+numbers$spec_activity_table_output_hbt <- DT::renderDataTable({
+
+  make_table(spec_activity_table_hbt(input_data=app_data[["hb_plotdata_mar"]],
+                                 qend=input$quarter_end_spec_hbt,
+                                 hbts=input$hbt_filter_hbt,
+                                 specialty_choice=input$spec_filter_hbt),
+             # These columns have thousand separator added
+             add_separator_cols = c(6),
+             rows_to_display = 20)
+
+})
 
 
 # numbers$spec_waits_table_output_hbt <- DT::renderDataTable({

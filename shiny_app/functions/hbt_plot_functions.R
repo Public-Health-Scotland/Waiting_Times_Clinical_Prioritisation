@@ -147,32 +147,32 @@ activity_specs_hbt <- function(input_data,
 #
 # # --------------------------------------------------------------------------
 # ## Data tables
-#
-# spec_activity_table <-  function(input_data,
-#                                  qend="March 2022",
-#                                  hbt="NHS Scotland",
-#                                  specialties=c("All Specialties")) {
-#
-#
-#   dataset <- input_data %>%
-#     filter(nhs_board_of_treatment == hbt,
-#            date == get_short_date(qend),
-#            specialty %in% specialties) %>%
-#     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
-#     select(date, indicator, nhs_board_of_treatment, specialty, urgency, number) %>%
-#     dplyr::rename("Quarter ending" = "date",
-#                   "Waiting status" = "indicator",
-#                   "Health Board of Treatment" = "nhs_board_of_treatment",
-#                   "Specialty" = "specialty",
-#                   "Clinical Prioritisation" = "urgency",
-#                   "Count" = "number")
-#
-#
-#   return(dataset)
-#
-#
-# }
-#
+
+spec_activity_table_hbt <-   function(input_data,
+                                  qend="March 2022",
+                                  hbts=c("NHS Scotland"),
+                                  specialty_choice="All Specialties") {
+
+
+
+  dataset <- input_data %>%
+    filter(nhs_board_of_treatment %in% hbts,
+           date == get_short_date(qend),
+           specialty == specialty_choice) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    select(date, indicator, nhs_board_of_treatment, specialty, urgency, number) %>%
+    dplyr::rename("Quarter ending" = "date",
+                  "Waiting status" = "indicator",
+                  "Health Board of Treatment" = "nhs_board_of_treatment",
+                  "Specialty" = "specialty",
+                  "Clinical Prioritisation" = "urgency",
+                  "Count" = "number")
+
+  return(dataset)
+
+
+}
+
 # spec_waits_table <- function(input_data,
 #                              qend="March 2022",
 #                              hbt="NHS Scotland",
