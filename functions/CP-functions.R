@@ -57,7 +57,7 @@ ggplot_add.ggrepel <- function(object, plot, object_name) {
 }
 
 
-# 4. ----------------------------------------------------------------------
+# 4. Function plots the barchart of ppl waiting and admitted over time for HB and Specialty ----
 
 
 trendbar <- function(data, spec, hb)
@@ -94,4 +94,176 @@ trendbar <- function(data, spec, hb)
 
 highlight = function(x, pat, color="black", family="") {
   ifelse(grepl(pat, x), glue("<b style='font-family:{family}; color:{color}'>{x}</b>"), x)
+}
+
+
+# 6. Plot additions, waiting and admitted for topsix specs ----
+
+topsixplot <- function(df, date_choice) { df %>%
+    filter(date == date_choice, !urgency=="Total") %>%
+    group_by(nhs_board_of_treatment, date, specialty, indicator) %>%
+    ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = proportion), group = urgency) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+    theme_bw() +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    scale_y_continuous(labels=scales::percent) +
+    facet_wrap(~indicator, nrow=3, strip.position = "top",
+               labeller = as_labeller(c(additions_to_list = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
+    labs(x = NULL, y = NULL) +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.margin=margin(0,0,0,0),
+          legend.spacing= unit(0.0, "cm"),
+          legend.text = element_text(size = 8))
+}
+
+
+# 7. Plot cp code breakdown by hb -------
+hb_var_plot <- function(df, date_choice) {df %>%
+    filter(specialty == "All Specialties",
+           date == date_choice,
+           !urgency == "Total") %>%
+    ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_proportion, .desc =FALSE), y = proportion), urgency) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
+    theme_bw() +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    scale_x_discrete(labels= function(x) highlight(x, "NHS Scotland", "black")) +
+    scale_y_continuous(labels=scales::percent) +
+    facet_wrap(.~indicator,
+               labeller = as_labeller(c(`additions_to_list` = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+    labs(x = NULL, y = NULL) +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.spacing = unit(0.5, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8)) +
+    coord_flip() +
+    theme(axis.text.y=element_markdown())
+}
+
+# 8. Plot number activity for two diff healthboards for chosen specialty ----------------------------------------------------------------------
+hb_spec_plot <- function(df, date_choice, spec_choice, hb_list) {df %>% 
+    filter(date == date_choice,
+           !urgency == "Total",
+           specialty == spec_choice,
+           nhs_board_of_treatment %in% hb_list) %>%
+    rowwise() %>%
+    mutate(y_max = roundUpNice(total)) %>%
+    ggplot(aes(x = nhs_board_of_treatment, y = number), group=urgency) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.9) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    theme_bw() + 
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 20)) +
+    geom_blank(aes(y = y_max)) +
+    facet_wrap(.~indicator, 
+               labeller = as_labeller(c(`additions_to_list` = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+    labs(x = NULL, y = NULL) +
+    theme(text = element_text(size = 14),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 14),
+          panel.grid.minor.x = element_blank(), 
+          panel.grid.major.x = element_blank(),
+          panel.spacing = unit(0.25, "cm"),
+          panel.border = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 10)) 
+}
+
+# 9. Plot DoW admitted/waiting  ------
+dow_barplot <- function(df, board_choice, specialty_choice, date_choice) {df %>%
+    filter(nhs_board_of_treatment == board_choice, 
+           specialty == specialty_choice, 
+           !urgency == "Total",
+           date == date_choice) %>%
+    group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+    mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>% 
+    group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+    mutate(y_max = max(y_max)) %>%
+    ggplot(aes(x = weeks, y = `number_seen/on_list`), group = ongoing_completed) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+    theme_bw() +
+    scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    geom_blank(aes(y = plyr::round_any(y_max,2000, f = ceiling))) +
+    facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
+               labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+    ylab(NULL) +
+    xlab("Weeks waiting") +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.spacing = unit(1, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8))
+}
+
+# 10 Barplot of two contrasting Boards for single specialty -----
+hb_dow_bar <- function(df, specialty_choice, date_choice, board_list) {df %>%
+    filter(specialty == specialty_choice, 
+           date == date_choice, 
+           !urgency == "Total",
+           nhs_board_of_treatment %in% board_list) %>%
+    group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+    mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
+    group_by(nhs_board_of_treatment, ongoing_completed, specialty, date) %>%
+    mutate(y_max = max(y_max),
+           ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+    unite("BothLabels", ongoing_completed, nhs_board_of_treatment, sep = " - ", remove = FALSE) %>% #Create labels
+    ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+                 fill=fct_rev(factor(urgency, levels = colourset$codes))),
+             stat="identity") +
+    geom_blank(aes(y = y_max)) + #add blank geom to extend y axis up to y_max
+    theme_bw() +
+    scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    facet_wrap(~BothLabels, nrow = 2,  strip.position = "top") + 
+    ylab(NULL) +
+    xlab("Weeks waited or waiting") +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.spacing = unit(0.5, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8))
 }
