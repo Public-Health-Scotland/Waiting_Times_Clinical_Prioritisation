@@ -59,7 +59,8 @@ output$download_ui <-  renderUI({
              shinydashboard::box(width=NULL, height="300px",
                                  tagList(
 
-                                   #numbers[["data_download_table_output"]]
+                                   linebreaks(3),
+                                   numbers[["data_download_table_output"]]
 
                                  ) # taglist
 
@@ -101,32 +102,33 @@ observeEvent(
 )
 
 # ## Choices of dataset for filtering
-# chosen_dataset <- reactive({
-#   case_when((input$download_dataset == "Patients waiting, admitted and seen" &
-#                input$download_timescale == "monthly") ~ "add_perf_mon_mar",
-#
-#             (input$download_dataset == "Patients waiting, admitted and seen" &
-#                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-#
-#             (input$download_dataset == "Distribution of waits" &
-#                input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
-#
-#             (input$download_dataset == "Distribution of waits" &
-#                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-#
-#             (input$download_dataset == "Activity" &
-#                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-#
-#             (input$download_dataset == "Summary of patients waiting and admitted" &
-#                input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
-#
-#             (input$download_dataset == "Summary of patients waiting and admitted" &
-#                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-#
-#             TRUE ~ NULL
-#
-#             ) # case when
-# })
+chosen_dataset <- reactive({
+
+   case_when((input$download_dataset == "Patients waiting, admitted and seen" &
+               input$download_timescale == "monthly") ~ "add_perf_mon_mar",
+
+            (input$download_dataset == "Patients waiting, admitted and seen" &
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+
+            (input$download_dataset == "Distribution of waits" &
+               input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
+
+            (input$download_dataset == "Distribution of waits" &
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+
+            (input$download_dataset == "Activity" &
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+
+            (input$download_dataset == "Summary of patients waiting and admitted" &
+               input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
+
+            (input$download_dataset == "Summary of patients waiting and admitted" &
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+
+            TRUE ~ "no_choice"
+
+            ) # case when
+})
 
 
 #
@@ -138,7 +140,7 @@ observeEvent(
 #   handlerExpr={
 #
 #     validate(
-#       need(!is.null(chosen_dataset()),
+#       need(!(chosen_dataset()=="no_choice"),
 #            "Invalid choice of options. Please choose again.")
 #     )
 #
@@ -149,14 +151,12 @@ observeEvent(
 
 numbers$data_download_table_output <- DT::renderDataTable({
 
-  DT::datatable(data.frame(c("a", "b"), c("1", "2")))
-
-  #make_table(data_download_table(input_data=app_data[["perf_qtr_split_mar"]],
-  #                            hbts=input$download_hbt,
-  #                            chosen_specialties=input$download_specialty),
-  #           # These columns have thousand separator added
-  #           add_separator_cols = c(6),
-  #           rows_to_display = 10)
+  make_table(data_download_table(input_data=app_data[[chosen_dataset()]],
+                             hbts=input$download_hbt,
+                             chosen_specialties=input$download_specialty),
+            # These columns have thousand separator added
+            add_separator_cols = c(6),
+            rows_to_display = 10)
 
 })
 

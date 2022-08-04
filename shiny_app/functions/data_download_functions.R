@@ -6,7 +6,7 @@ data_download_table <-  function(input_data,
 
   dataset <- input_data %>%
     filter(nhs_board_of_treatment %in% hbts,
-           specialties %in% chosen_specialties) %>%
+           specialty %in% chosen_specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
 
