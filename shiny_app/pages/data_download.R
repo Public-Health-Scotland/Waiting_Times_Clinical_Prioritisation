@@ -23,7 +23,8 @@ output$download_ui <-  renderUI({
                                                inline = TRUE,
                                                multiple = TRUE,
                                                width = "100%",
-                                               options = pickerOptions(liveSearch = TRUE, showTick = TRUE)
+                                               options = pickerOptions(liveSearch = TRUE, showTick = TRUE,
+                                                                       `actions-box` = TRUE )
                                    ),
                                    pickerInput("download_specialty",
                                                "3. Select specialties to include (defaults to all)",
@@ -34,7 +35,8 @@ output$download_ui <-  renderUI({
                                                width = "100%",
                                                options = pickerOptions(
                                                  showTick = TRUE,
-                                                 liveSearch =TRUE)
+                                                 liveSearch =TRUE,
+                                                 `actions-box` = TRUE)
                                    ),
                                    pickerInput("download_dataset",
                                                "4. Choose dataset    ",
@@ -66,7 +68,7 @@ output$download_ui <-  renderUI({
 
     # Data download area
     fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="900px",
+             shinydashboard::box(width=NULL, height="1000px",
                                  tagList(
 
                                    linebreaks(3),
