@@ -134,26 +134,28 @@ topsixplot <- function(date_choice, board_choice) {hb_var_plotdata %>%
 
 
 # 7. Plot cp code breakdown by hb -------
-hb_var_plot <- function(df, date_choice) {df %>%
+
+hb_var_plot <- function(date_choice) {hb_var_plotdata %>% 
     filter(specialty == "All Specialties",
            date == date_choice,
            !urgency == "Total") %>%
     ggplot(aes(x = fct_reorder(nhs_board_of_treatment, p2_proportion, .desc =FALSE), y = proportion), urgency) +
     geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.75) +
-    theme_bw() +
+    #scale_x_reordered() +
+    theme_bw() + 
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
     scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
     scale_x_discrete(labels= function(x) highlight(x, "NHS Scotland", "black")) +
     scale_y_continuous(labels=scales::percent) +
-    facet_wrap(.~indicator,
-               labeller = as_labeller(c(`additions_to_list` = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
-    labs(x = NULL, y = NULL) +
+    facet_wrap(~indicator, nrow=1, strip.position = "top",
+               labeller = as_labeller(c(additions_to_list = "Patients added to the waiting list", Completed = "Patients admitted", Ongoing = "Patients waiting"), default=label_wrap_gen(20))) +
+    labs(x = NULL, y = "Percentage of total") +
     theme(text = element_text(size = 12),
           strip.background = element_blank(),
           strip.placement = "outside",
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.major.x = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12, vjust = 0),
+          #panel.grid.minor.x = element_blank(), 
+          #panel.grid.major.x = element_blank(),
           panel.spacing = unit(0.5, "cm"),
           panel.border = element_blank(),
           legend.position="bottom",
@@ -164,8 +166,9 @@ hb_var_plot <- function(df, date_choice) {df %>%
     theme(axis.text.y=element_markdown())
 }
 
+
 # 8. Plot number activity for two diff healthboards for chosen specialty ----------------------------------------------------------------------
-hb_spec_plot <- function(df, date_choice, spec_choice, hb_list) {df %>% 
+hb_spec_plot <- function(date_choice, spec_choice, hb_list) {hb_var_plotdata %>% 
     filter(date == date_choice,
            !urgency == "Total",
            specialty == spec_choice,
@@ -174,6 +177,7 @@ hb_spec_plot <- function(df, date_choice, spec_choice, hb_list) {df %>%
     mutate(y_max = roundUpNice(total)) %>%
     ggplot(aes(x = nhs_board_of_treatment, y = number), group=urgency) +
     geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity", width=0.9) +
+    #scale_x_reordered() +
     scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
     theme_bw() + 
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
@@ -182,13 +186,14 @@ hb_spec_plot <- function(df, date_choice, spec_choice, hb_list) {df %>%
     geom_blank(aes(y = y_max)) +
     facet_wrap(.~indicator, 
                labeller = as_labeller(c(`additions_to_list` = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+    #facet_grid(cols = vars(ongoing_completed), scales = "free_x",drop = TRUE)+
     labs(x = NULL, y = NULL) +
     theme(text = element_text(size = 14),
           strip.background = element_blank(),
           strip.placement = "outside",
           strip.text.x = element_text(angle = 0,hjust = 0,size = 14),
-          panel.grid.minor.x = element_blank(), 
-          panel.grid.major.x = element_blank(),
+          #panel.grid.minor.x = element_blank(), 
+          #panel.grid.major.x = element_blank(),
           panel.spacing = unit(0.25, "cm"),
           panel.border = element_blank(),
           legend.position="bottom",
@@ -197,8 +202,9 @@ hb_spec_plot <- function(df, date_choice, spec_choice, hb_list) {df %>%
           legend.text = element_text(size = 10)) 
 }
 
+
 # 9. Plot DoW admitted/waiting  ------
-dow_barplot <- function(df, board_choice, specialty_choice, date_choice) {df %>%
+dow_barplot <- function(data_choice, board_choice, specialty_choice, date_choice) {data_choice %>%
     filter(nhs_board_of_treatment == board_choice, 
            specialty == specialty_choice, 
            !urgency == "Total",
@@ -216,7 +222,7 @@ dow_barplot <- function(df, board_choice, specialty_choice, date_choice) {df %>%
     scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
     geom_blank(aes(y = plyr::round_any(y_max,2000, f = ceiling))) +
     facet_wrap(~ongoing_completed, nrow = 2, scales = "free_y",  strip.position = "top", 
-               labeller = as_labeller(c(Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+               labeller = as_labeller(c(Completed = "Number of patients admitted", Ongoing = "Number of patients waiting"))) +
     ylab(NULL) +
     xlab("Weeks waiting") +
     theme(text = element_text(size = 12),
