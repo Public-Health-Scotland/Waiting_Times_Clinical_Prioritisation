@@ -17,11 +17,12 @@
 #If a data folder has not been created, it will create one for you at the root of your project directory.
 #source_project: name of the project folder to copy from (Chr)
 #replace_file: should existing files with the same name be overwritten (TRUE/FALSE)
-#eg. get_data("R Code", replace_file = TRUE)
+#eg. get_data("R Code", "Maiana", replace_file = TRUE)
 
-get_data <- function(source_project, replace_file = FALSE){
+get_data <- function(source_project, my_folder, replace_file = FALSE){
   
-  source <- str_c(str_remove(here::here(), basename(here::here())), source_project, "/data/")
+  source <- str_c(str_remove(here::here(), str_c(my_folder, "/", basename(here::here()))), source_project, "/data/")
+
   
   list_of_files <- list.files(source) 
   
