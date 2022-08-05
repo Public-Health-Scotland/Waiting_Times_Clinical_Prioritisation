@@ -129,7 +129,7 @@ numbers$spec_activity_table_output <- DT::renderDataTable({
                          specialties=input$specialty_filter),
              # These columns have thousand separator added
              add_separator_cols = c(6),
-             rows_to_display = 25)
+             rows_to_display = 18)
 
 })
 
@@ -142,6 +142,6 @@ numbers$spec_waits_table_output <- DT::renderDataTable({
                          specialties=input$specialty_filter),
              # These columns have thousand separator added
              add_separator_cols = c(6),
-             rows_to_display = 10)
+             rows_to_display = 8)
 
 })

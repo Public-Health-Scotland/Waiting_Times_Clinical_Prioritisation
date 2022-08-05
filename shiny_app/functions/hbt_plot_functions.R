@@ -166,13 +166,9 @@ spec_activity_table_hbt <-   function(input_data,
            date == get_short_date(qend),
            specialty == specialty_choice) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
-    select(date, indicator, nhs_board_of_treatment, specialty, urgency, number) %>%
-    dplyr::rename("Quarter ending" = "date",
-                  "Waiting status" = "indicator",
-                  "Health Board of Treatment" = "nhs_board_of_treatment",
-                  "Specialty" = "specialty",
-                  "Clinical Prioritisation" = "urgency",
-                  "Count" = "number")
+    select(date, indicator, nhs_board_of_treatment, specialty, urgency, number)
+
+  names(dataset) <- replace_colnames(names(dataset))
 
   return(dataset)
 
@@ -196,13 +192,9 @@ spec_waits_table_hbt <- function(input_data,
                                        ongoing_completed == "Completed" ~ "Number seen")) %>%
     mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
     ) %>%
-    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, `number_seen/on_list`) %>%
-    dplyr::rename("Quarter ending" = "date",
-                  "Waiting status" = "ongoing_completed",
-                  "Health Board of Treatment" = "nhs_board_of_treatment",
-                  "Specialty" = "specialty",
-                  "Clinical Prioritisation" = "urgency",
-                  "Count" = "number_seen/on_list")
+    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, `number_seen/on_list`)
+
+  names(dataset) <- replace_colnames(names(dataset))
 
   return(dataset)
 

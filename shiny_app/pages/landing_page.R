@@ -231,6 +231,6 @@ numbers$waits_table_output <- DT::renderDataTable({
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(3),
-             rows_to_display = 10)
+             rows_to_display = 6)
 
 })
