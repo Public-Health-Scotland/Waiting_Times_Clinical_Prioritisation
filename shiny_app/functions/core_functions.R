@@ -97,7 +97,9 @@ format_entry <- function(x, dp=0, perc=F){
 # Generic data table
 make_table <- function(input_data_table,
                        add_separator_cols = NULL,
-                       rows_to_display = 20
+                       rows_to_display = 20,
+                       scrollX = FALSE,
+                       scrollY = FALSE
 ){
 
   # Add column formatting
@@ -110,6 +112,8 @@ make_table <- function(input_data_table,
                       rownames = FALSE,
                       filter="top",
                       options = list(pageLength = rows_to_display,
+                                     scrollX = scrollX,
+                                     scrollY = scrollY,
                                      dom = 'tip',
                                      autoWidth = TRUE,
                                      # style header

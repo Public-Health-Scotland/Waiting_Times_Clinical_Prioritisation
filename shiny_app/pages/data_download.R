@@ -56,10 +56,13 @@ output$download_ui <-  renderUI({
 
     # Data download area
     fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="300px",
+             shinydashboard::box(width=NULL, height="1000px",
                                  tagList(
 
                                    linebreaks(3),
+                                   downloadButton("data_download_output",
+                                                  "Download data"),
+                                   linebreaks(1),
                                    numbers[["data_download_table_output"]]
 
                                  ) # taglist
@@ -72,6 +75,8 @@ output$download_ui <-  renderUI({
 
 }) # renderUI
 
+
+### ---- CHOOSING CORRECT DATASET
 
 data_choices <- list("monthly" = c("Patients waiting, admitted and seen",
                                    "Distribution of waits",
@@ -106,46 +111,41 @@ chosen_dataset <- reactive({
 
    case_when((input$download_dataset == "Patients waiting, admitted and seen" &
                input$download_timescale == "monthly") ~ "add_perf_mon_mar",
-
             (input$download_dataset == "Patients waiting, admitted and seen" &
                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
-
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-
             (input$download_dataset == "Activity" &
                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-
             (input$download_dataset == "Summary of patients waiting and admitted" &
                input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
-
             (input$download_dataset == "Summary of patients waiting and admitted" &
                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
-
             TRUE ~ "no_choice"
 
             ) # case when
 })
 
 
-#
-# # Checking that a valid dataset has been chosen
-# observeEvent(
-#
-#   eventExpr=chosen_dataset(),
-#
-#   handlerExpr={
-#
-#     validate(
-#       need(!(chosen_dataset()=="no_choice"),
-#            "Invalid choice of options. Please choose again.")
-#     )
-#
-#   }
-# )
+
+# Checking that a valid dataset has been chosen
+observeEvent(
+
+  eventExpr=chosen_dataset(),
+
+  handlerExpr={
+
+    validate(
+      need(!(chosen_dataset()=="no_choice"),
+           "Invalid choice of options. Please choose again.")
+    )
+
+  }
+)
+
+# ---- GETTING DOWNLOAD DISPLAY TABLE
 
 ## Data table to be downloaded
 
@@ -156,7 +156,29 @@ numbers$data_download_table_output <- DT::renderDataTable({
                              chosen_specialties=input$download_specialty),
             # These columns have thousand separator added
             add_separator_cols = c(6),
-            rows_to_display = 10)
+            rows_to_display = 10,
+            scrollX = TRUE)
 
 })
+
+# ---- DATA DOWNLOAD BUTTON
+
+## Download button
+
+data_download <- reactive({
+  data_download_table(input_data=app_data[[chosen_dataset()]],
+                      hbts=input$download_hbt,
+                      chosen_specialties=input$download_specialty)
+})
+
+output$data_download_output <- downloadHandler(
+  filename ="CP_data.csv",
+  content = function(file) {
+    write.csv(data_download(),
+              file,
+              row.names=FALSE)
+  })
+
+
+
 

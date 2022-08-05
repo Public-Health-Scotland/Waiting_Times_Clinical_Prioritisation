@@ -1,5 +1,7 @@
 ####################### Data Download Functions #######################
 
+## Download display table
+
 data_download_table <-  function(input_data,
                                  hbts=c("NHS Scotland"),
                                  chosen_specialties=c("All Specialties")) {
