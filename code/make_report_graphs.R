@@ -85,11 +85,12 @@ activity_trendplot_jun <- add_perf %>%
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
+  # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
   theme(text = element_text(size = 12))+
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
   facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
-             labeller = as_labeller(c(additions_to_list ="Additions to list \n", Ongoing = "Patients waiting \n", Completed = "Patients admitted \n") )) +
+             labeller = as_labeller(c(additions_to_list ="Number of patients added to the waiting list \n", Ongoing = "Number of patients waiting \n", Completed = "Number of patients admitted \n") )) +
   ylab(NULL) +
   xlab("Month ending") +
   theme(text = element_text(size = 12),
@@ -149,25 +150,25 @@ addrem_qtr_split <- hb_var_plotdata %>%
 # ungroup() %>%
 # mutate(proportion = number/total)
 
-topsix_plot_data <- perf_qtr_split %>%
-  ungroup() %>%
-  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed, 
-         urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
-  mutate(proportion = proportion/100) %>%
-  bind_rows(select(addrem_qtr_split, - total)) %>%
-  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty), 
-         nhs_board_of_treatment=="NHS Scotland",
-         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>%
-  ungroup() %>%
-  left_join(select(ungroup(spec_p2_prop), -c(indicator, number)),
-            by = c("specialty")) %>%
-  unique() %>%
-  arrange(indicator,-p2_prop)
+#topsix_plot_data <- perf_qtr_split %>%
+#  ungroup() %>%
+#  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed, 
+#         urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
+#  mutate(proportion = proportion/100) %>%
+#  bind_rows(select(addrem_qtr_split, - total)) %>%
+#  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty), 
+#         nhs_board_of_treatment=="NHS Scotland",
+#         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>%
+#  ungroup() %>%
+#  left_join(select(ungroup(spec_p2_prop), -c(indicator, number)),
+#            by = c("specialty")) %>%
+#  unique() %>%
+#  arrange(indicator,-p2_prop)
 
 #Save March and June graphs
-ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(topsix_plot_data, max_date), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(max_date, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
-ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(topsix_plot_data, max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 #2.1.3 - HBT variation ----
 #Graph
@@ -177,9 +178,6 @@ ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(topsix_plot_data
 ggsave("hb_var_plot_jun.png", plot = hb_var_plot(hb_var_plotdata, max_date), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
 ggsave("hb_var_plot_mar.png", plot = hb_var_plot(hb_var_plotdata, max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
-
-#Save this image
-ggsave("hb_var_plot_2.png", dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Plots for draft report"))
 
 
 #2.1.4 - HBT comparison for a particular specialty ----
