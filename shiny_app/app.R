@@ -34,7 +34,7 @@ ui <- fluidPage(
                h1("Welcome to the dashboard"),
                p("Some caveats"),
                br(),
-               p("Navigation boxes to take you to the differnet tabs")
+               p("Navigation boxes to take you to the different tabs")
 
       ), # tabpanel
       ##############################################.
