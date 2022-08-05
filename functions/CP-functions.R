@@ -99,33 +99,38 @@ highlight = function(x, pat, color="black", family="") {
 
 # 6. Plot additions, waiting and admitted for topsix specs ----
 
-topsixplot <- function(df, date_choice) { df %>%
-    filter(date == date_choice, !urgency=="Total") %>%
+topsixplot <- function(date_choice, board_choice) {hb_var_plotdata %>%
+    filter(date == date_choice, 
+           !urgency=="Total",
+           nhs_board_of_treatment == board_choice,
+           str_detect(specialties, specialty)) %>%
     group_by(nhs_board_of_treatment, date, specialty, indicator) %>%
-    ggplot(aes(x = fct_reorder(specialty, p2_prop, .desc = TRUE), y = proportion), group = urgency) +
+    ggplot(aes(x = fct_reorder(specialty, p2_proportion, .desc = FALSE), y = proportion), group = urgency) +
     geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
     theme_bw() +
     scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
     scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
     scale_y_continuous(labels=scales::percent) +
-    facet_wrap(~indicator, nrow=3, strip.position = "top",
-               labeller = as_labeller(c(additions_to_list = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting") )) +
-    labs(x = NULL, y = NULL) +
+    facet_wrap(~indicator, nrow=1, strip.position = "top",
+               labeller = as_labeller(c(additions_to_list = "Patients added to the waiting list", Completed = "Patients admitted", Ongoing = "Patients waiting"), default=label_wrap_gen(20))) +
+    labs(x = NULL, y = "Percentage of total") +
     theme(text = element_text(size = 12),
           strip.background = element_blank(),
           strip.placement = "outside",
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.major.x = element_blank(),
-          panel.spacing = unit(1, "cm"),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12, vjust = 1),
+          #panel.grid.minor.x = element_blank(),
+          #panel.grid.major.x = element_blank(),
+          panel.spacing = unit(0.5, "cm"),
           panel.border = element_blank(),
           legend.position="bottom",
           legend.key.height= unit(0.25, 'cm'),
           legend.key.width= unit(0.25, 'cm'),
           legend.margin=margin(0,0,0,0),
           legend.spacing= unit(0.0, "cm"),
-          legend.text = element_text(size = 8))
+          legend.text = element_text(size = 10)) +
+    coord_flip()
 }
+
 
 
 # 7. Plot cp code breakdown by hb -------
