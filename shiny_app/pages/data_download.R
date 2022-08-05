@@ -26,20 +26,8 @@ output$download_ui <-  renderUI({
                                                options = pickerOptions(liveSearch = TRUE, showTick = TRUE,
                                                                        `actions-box` = TRUE )
                                    ),
-                                   pickerInput("download_specialty",
-                                               "3. Select specialties to include (defaults to all)",
-                                               choices = unique(app_data[["hb_plotdata_mar"]]$specialty),
-                                               selected = unique(app_data[["hb_plotdata_mar"]]$specialty),
-                                               inline = TRUE,
-                                               multiple = TRUE,
-                                               width = "100%",
-                                               options = pickerOptions(
-                                                 showTick = TRUE,
-                                                 liveSearch =TRUE,
-                                                 `actions-box` = TRUE)
-                                   ),
                                    pickerInput("download_dataset",
-                                               "4. Choose dataset    ",
+                                               "3. Choose dataset    ",
                                                choices = c("Patients waiting, admitted and seen",
                                                            "Distribution of waits",
                                                            "Activity",
@@ -50,6 +38,18 @@ output$download_ui <-  renderUI({
                                                width = "100%",
                                                options = pickerOptions(
                                                  showTick = TRUE)
+                                   ),
+                                   pickerInput("download_specialty",
+                                               "4. Select specialties to include (defaults to all)",
+                                               choices = "All Specialties",
+                                               selected = "All Specialties",
+                                               inline = TRUE,
+                                               multiple = TRUE,
+                                               width = "100%",
+                                               options = pickerOptions(
+                                                 showTick = TRUE,
+                                                 liveSearch =TRUE,
+                                                 `actions-box` = TRUE)
                                    ),
                                    pickerInput("download_filetype",
                                                "5. Choose file type   ",
@@ -128,15 +128,15 @@ chosen_dataset <- reactive({
             (input$download_dataset == "Patients waiting, admitted and seen" &
                input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
             (input$download_dataset == "Distribution of waits" &
-               input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "monthly") ~ "dow_4wk_mon_mar",
             (input$download_dataset == "Distribution of waits" &
-               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "quarterly") ~ "dow_4wk_qtr_mar",
             (input$download_dataset == "Activity" &
-               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "quarterly") ~ "hb_plotdata_mar",
             (input$download_dataset == "Summary of patients waiting and admitted" &
-               input$download_timescale == "monthly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "monthly") ~ "perf_mon_split_mar",
             (input$download_dataset == "Summary of patients waiting and admitted" &
-               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "quarterly") ~ "perf_qtr_split_mar",
             TRUE ~ "no_choice"
 
             ) # case when
@@ -144,17 +144,27 @@ chosen_dataset <- reactive({
 
 
 
-# Checking that a valid dataset has been chosen
 observeEvent(
 
   eventExpr=chosen_dataset(),
 
   handlerExpr={
 
-    validate(
-      need(!(chosen_dataset()=="no_choice"),
+    if( !is.null(chosen_dataset()) ) {
+
+      # Checking that a valid dataset has been chosen
+      validate(
+        need(!(chosen_dataset()=="no_choice"),
            "Invalid choice of options. Please choose again.")
-    )
+      )
+
+     # Updating specialty choice selection
+     updatePickerInput(session, inputId="download_specialty",
+                      selected = unique(app_data[[chosen_dataset()]]$specialty),
+                      choices = unique(app_data[[chosen_dataset()]]$specialty)
+        )
+    }
+
 
   }
 )
@@ -171,7 +181,8 @@ numbers$data_download_table_output <- DT::renderDataTable({
             # These columns have thousand separator added
             add_separator_cols = c(6),
             rows_to_display = 6,
-            scrollX = TRUE)
+            scrollX = TRUE,
+            scrollY = TRUE)
 
 })
 
