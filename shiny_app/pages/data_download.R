@@ -8,7 +8,7 @@ output$download_ui <-  renderUI({
 
     # Filters and toggles
     fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="300px",
+             shinydashboard::box(width=NULL, height="400px",
                                  tagList(
                                    p(strong("Follow the steps below to generate the dataset to download.")),
                                    radioButtons("download_timescale",
@@ -43,6 +43,16 @@ output$download_ui <-  renderUI({
                                                            "Activity",
                                                            "Summary of patients waiting and admitted"),
                                                selected = "Patients waiting, admitted and seen",
+                                               inline = TRUE,
+                                               multiple = FALSE,
+                                               width = "100%",
+                                               options = pickerOptions(
+                                                 showTick = TRUE)
+                                   ),
+                                   pickerInput("download_filetype",
+                                               "5. Choose file type   ",
+                                               choices = c(".csv", ".xlsx"),
+                                               selected = ".csv",
                                                inline = TRUE,
                                                multiple = FALSE,
                                                width = "100%",
@@ -164,7 +174,6 @@ numbers$data_download_table_output <- DT::renderDataTable({
 # ---- DATA DOWNLOAD BUTTON
 
 ## Download button
-
 data_download <- reactive({
   data_download_table(input_data=app_data[[chosen_dataset()]],
                       hbts=input$download_hbt,
@@ -172,11 +181,27 @@ data_download <- reactive({
 })
 
 output$data_download_output <- downloadHandler(
-  filename ="CP_data.csv",
+  filename = function(){
+    if(input$download_filetype == ".csv"){
+      "CP_data.csv"
+    } else if (input$download_filetype == ".xlsx"){
+      "CP_data.xlsx"
+    } else {
+      "invalid"
+    }
+  },
   content = function(file) {
-    write.csv(data_download(),
-              file,
-              row.names=FALSE)
+
+    if(input$download_filetype == ".csv"){
+      write.csv(data_download(),
+                file,
+                row.names=FALSE)
+    } else if (input$download_filetype == ".xlsx"){
+      openxlsx::write.xlsx(data_download(), file)
+    } else {
+      validate(TRUE, "Invalid download file type selected")
+    }
+
   })
 
 
