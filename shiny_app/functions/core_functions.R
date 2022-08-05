@@ -34,6 +34,53 @@ get_pretty_weeks <- function(ugly_weeks){
   return(pretty_weeks)
 }
 
+replace_colnames <- function(old_colnames){
+
+  # Convert old colname to new colname
+  # Use like names(df) <- replace_colnames(names(df))
+
+  # Named list, LHS is existing col names, RHS is what we want to rename
+  possible_colnames <- list("urgency" = "Clinical_Prioritisation",
+                            "date" = "Date",
+                            "indicator" = "Waiting_status",
+                            "nhs_board_of_treatment" = "Health_Board_of_Treatment",
+                            "specialty" = "Specialty",
+                            "patient_type" = "Patient_type",
+                            "number" = "Count",
+                            "waited_waiting_over_26_weeks" = "Waited_or_waiting_over_26_weeks",
+                            "waited_waiting_over_52_weeks" = "Waited_or_waiting_over_52_weeks",
+                            "waited_waiting_over_104_weeks" = "Waited_or_waiting_over_104_weeks",
+                            "monthly_avg" = "Monthly_average",
+                            "y_max" = "y_max",
+                            "y_max2" = "y_max2",
+                            "ongoing_completed" = "Waiting_status",
+                            "weeks" = "Weeks_waiting",
+                            "number_seen/on_list" = "Count",
+                            "total" = "Total",
+                            "p2_proportion" = "Proportion_which_is_P2",
+                            "proportion" = "Proportion",
+                            "median" = "Median_waiting_time",
+                            "90th_percentile" = "90th_percentile_waiting_time"
+                            )
+
+  # If the column is in the list names, replace it with the list value
+  replace_fn <- function(x){
+    if(x %in% names(possible_colnames)){
+      return(possible_colnames[[x]])
+    } else {
+      return(x)
+    }
+
+  }
+
+  new_colnames <- purrr::map_chr(old_colnames, ~replace_fn(x=.x))
+
+  return(new_colnames)
+
+}
+
+
+
 # Move x and y axis labels of ggplotly so they don't overlap plot
 # (Function from https://stackoverflow.com/questions/42763280/r-ggplot-and-plotly-axis-margin-wont-change)
 stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.09) {

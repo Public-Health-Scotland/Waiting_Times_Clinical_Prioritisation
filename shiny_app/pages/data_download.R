@@ -66,7 +66,7 @@ output$download_ui <-  renderUI({
 
     # Data download area
     fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="1000px",
+             shinydashboard::box(width=NULL, height="900px",
                                  tagList(
 
                                    linebreaks(3),
@@ -79,7 +79,9 @@ output$download_ui <-  renderUI({
 
              ) # box
 
-    ) # fluidrow
+    ), # fluidrow
+
+    fluidRow(width=12, height="50px", br())
 
   ) # div
 
