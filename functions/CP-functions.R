@@ -229,7 +229,7 @@ dow_barplot <- function(df, board_choice, specialty_choice, date_choice) {df %>%
           legend.text = element_text(size = 8))
 }
 
-# 10 Barplot of two contrasting Boards for single specialty -----
+# 10. Barplot of two contrasting Boards for single specialty -----
 hb_dow_bar <- function(df, specialty_choice, date_choice, board_list) {df %>%
     filter(specialty == specialty_choice, 
            date == date_choice, 
@@ -259,6 +259,48 @@ hb_dow_bar <- function(df, specialty_choice, date_choice, board_list) {df %>%
           strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
           axis.text.x = element_text(angle = 45, hjust = 1),
           panel.spacing = unit(0.5, "cm"),
+          panel.border = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          legend.position="bottom",
+          legend.key.height= unit(0.25, 'cm'),
+          legend.key.width= unit(0.25, 'cm'),
+          legend.text = element_text(size = 8))
+}
+
+
+# 11. Barplot of two contrasting specialties ------------------------------
+
+spec_dow_bar <-  function(df, specialty_list, date_choice, board_choice) {df %>%
+    filter(specialty %in% specialty_list, 
+           date == date_choice, 
+           !urgency == "Total",
+           nhs_board_of_treatment ==board_choice) %>%
+    group_by(nhs_board_of_treatment,  ongoing_completed, specialty, weeks, date) %>%
+    mutate(y_max = roundUpNice(sum(`number_seen/on_list`, na.rm=T))) %>%
+    group_by(nhs_board_of_treatment, ongoing_completed, date) %>%
+    mutate(y_max = max(y_max),
+           ongoing_completed = if_else(ongoing_completed =="Ongoing", "Patients waiting", "Patients admitted")) %>%
+    unite("BothLabels", ongoing_completed, specialty, sep = " - ", remove = FALSE) %>% #Create labels
+    ggplot(aes(x = weeks, y = `number_seen/on_list`, group = BothLabels)) +
+    geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+                 fill=fct_rev(factor(urgency, levels = colourset$codes))),
+             stat="identity") +
+    geom_blank(aes(y = plyr::round_any(y_max,1000,f = ceiling))) + #add blank geom to extend y axis up to nearest 1000
+    theme_bw() +
+    scale_x_discrete(labels = unique(dow_4wk_plot$weeks2)) +
+    scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
+    scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "")+
+    scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name = "") +
+    facet_wrap(~BothLabels, nrow = 2, scales = "free_y") + #,
+    ylab(NULL) +
+    xlab("Weeks waited or waiting") +
+    theme(text = element_text(size = 12),
+          strip.background = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 12),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.spacing.x = unit(0.25, "cm"),
+          panel.spacing.y = unit(0.5, "cm"),
           panel.border = element_blank(),
           panel.grid.minor.x = element_blank(),
           panel.grid.major.x = element_blank(),
