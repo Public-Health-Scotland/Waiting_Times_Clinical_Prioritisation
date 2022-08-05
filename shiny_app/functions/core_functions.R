@@ -149,6 +149,9 @@ make_table <- function(input_data_table,
                        scrollY = FALSE
 ){
 
+  # Take out underscores in column names for display purposes
+  table_colnames  <-  gsub("_", " ", colnames(input_data_table))
+
   # Add column formatting
   for (i in add_separator_cols){
     input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
@@ -158,6 +161,7 @@ make_table <- function(input_data_table,
                       class = 'table-bordered table-condensed',
                       rownames = FALSE,
                       filter="top",
+                      colnames = table_colnames,
                       options = list(pageLength = rows_to_display,
                                      scrollX = scrollX,
                                      scrollY = scrollY,

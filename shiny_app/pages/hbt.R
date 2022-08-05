@@ -121,7 +121,7 @@ numbers$spec_activity_table_output_hbt <- DT::renderDataTable({
                                  specialty_choice=input$spec_filter_hbt),
              # These columns have thousand separator added
              add_separator_cols = c(6),
-             rows_to_display = 18)
+             rows_to_display = 25)
 
 })
 
@@ -134,6 +134,6 @@ numbers$spec_waits_table_output_hbt <- DT::renderDataTable({
                                   specialty_choice=input$spec_filter_hbt),
              # These columns have thousand separator added
              add_separator_cols = c(6),
-             rows_to_display = 8)
+             rows_to_display = 10)
 
 })

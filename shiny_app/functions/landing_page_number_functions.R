@@ -7,19 +7,17 @@ activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly") 
 
     if (timescale == "monthly"){
       dataset <- input_data$monthly
-      cols_to_keep <- c("Date","Waiting status", "Clinical Prioritisation",
-                        "Count", "Monthly average")
+      cols_to_keep <- c("date", "indicator", "urgency", "number", "monthly_avg")
     } else {
       dataset <- input_data$quarterly
-      cols_to_keep <- c("Date","Waiting status", "Clinical Prioritisation",
-                        "Count", "Quarterly average")
+      cols_to_keep <- c("date", "indicator", "urgency", "number", "quarterly_avg")
 
     }
 
 
     dataset %<>%
       filter(nhs_board_of_treatment == hbt) %>%
-      mutate(urgency = factor(`Clinical Prioritisation`, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+      mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
              indicator = case_when(indicator == "Ongoing" ~ "Waiting",
                                    indicator == "Completed" ~ "Admitted",
                                    indicator == "additions_to_list" ~ "Additions to list")) %>%
@@ -73,9 +71,10 @@ median_byurgency_table <- function(input_data,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
     select(urgency, median, `90th_percentile`) %>%
-    unique()
-
-  names(dataset) <- replace_colnames(names(dataset))
+    unique() %>%
+    dplyr::rename("CP" = "urgency",
+                  "Median" = "median",
+                  "90th percentile" = "90th_percentile")
 
   return(dataset)
 
