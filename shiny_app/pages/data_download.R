@@ -175,7 +175,7 @@ observeEvent(
 
 numbers$data_download_table_output <- DT::renderDataTable({
 
-  make_table(data_download_table(input_data=app_data[[chosen_dataset()]],
+  make_table(data_download_table_head(input_data=app_data[[chosen_dataset()]],
                              hbts=input$download_hbt,
                              chosen_specialties=input$download_specialty),
             # These columns have thousand separator added
