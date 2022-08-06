@@ -27,6 +27,7 @@ activity_specs <- function(input_data,
 
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
+           !urgency == "Total",
            date == get_short_date(qend),
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
@@ -85,6 +86,7 @@ waits_specs <- function(input_data,
 
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
+           !urgency == "Total",
            date == get_short_date(qend),
            specialty %in% specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
@@ -166,7 +168,7 @@ spec_activity_table <-  function(input_data,
     filter(nhs_board_of_treatment == hbt,
            date == get_short_date(qend),
            specialty %in% specialties) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")) ) %>%
     select(date, indicator, nhs_board_of_treatment, specialty, urgency, number)
 
   names(dataset) <- replace_colnames(names(dataset))
@@ -188,7 +190,7 @@ spec_waits_table <- function(input_data,
     filter(nhs_board_of_treatment == hbt,
            date == get_short_date(qend),
            specialty %in% specialties) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
            weeks = get_pretty_weeks(weeks),
            seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
                                        ongoing_completed == "Completed" ~ "Number seen")) %>%

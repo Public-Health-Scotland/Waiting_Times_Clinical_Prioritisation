@@ -38,6 +38,8 @@ activity_trendplot <- function(input_data, waiting_status,
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- xaxis_title
   xaxis_plots[["type"]] <- "category" #display only quarters on quaterly plot axis
+  
+ 
 
   if(timescale == "monthly"){
 
@@ -50,12 +52,14 @@ activity_trendplot <- function(input_data, waiting_status,
 
     tooltip_trend <- glue("{xaxis_title}: {format(dataset$date_plot, '%b %Y')}<br>",
                           "Clinical prioritisation : {dataset$urgency}<br>",
-                          "Number of patients: {format(dataset$number, big.mark=',')}<br>")
+                          "Number of patients: {format(dataset$number, big.mark=',')}<br>",
+                          "2019 monthly average: {format(dataset$quarterly_avg, big.mark=',')}")
   }
 
 
   p <- dataset %>%
-      plot_ly(x = ~get_month(date_plot), height = 900) %>%
+    arrange(date_plot) %>%
+      plot_ly(x = ~factor(get_month(date_plot),levels = format(unique(date_plot), "%B %Y")), height = 900, legendgroup=~urgency) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
@@ -67,11 +71,13 @@ activity_trendplot <- function(input_data, waiting_status,
     if (timescale == "monthly"){
       p %<>% add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),
                        text = tooltip_trend, hoverinfo = "text",
-                       name = "2019 monthly average")
+                       name = "2019 monthly average",
+                       legendgroup = "average")
     } else {
       p %<>% add_lines(y = ~quarterly_avg, line = list(color = "black", dash="dash"),
                        text = tooltip_trend, hoverinfo = "text",
-                       name = "2019 quarterly average")
+                       name = "2019 quarterly average",
+                       legendgroup = "average")
     }
       #Layout
      p %<>%  layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
@@ -138,6 +144,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
              text = tooltip_trend,
              stroke = I("black"),
              hoverinfo = "text",
+             legendgroup = ~urgency,
              name = ~urgency) %>%
     #Layout
     layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out

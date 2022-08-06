@@ -142,11 +142,13 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
+                              
                               timescale=input$timescale_choice)
   # plot patients admitted
   p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "admitted",
+                              
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
   # plot additions to the list
@@ -154,12 +156,12 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
-                              timescale=input$timescale_choice)
+                              timescale=input$timescale_choice) 
 
   # make facets
-  subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
+  subplot(style(p3, showlegend = FALSE), # keep one legend for all plots
           style(p2, showlegend = FALSE),
-          p3, nrows = 3, shareX = TRUE, # share axis between plots
+          p1, nrows = 3, shareX = TRUE, # share axis between plots
           titleY = TRUE) # keep subplot titles
 
 
