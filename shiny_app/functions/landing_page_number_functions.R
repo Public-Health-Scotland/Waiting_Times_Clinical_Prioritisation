@@ -17,7 +17,7 @@ activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly") 
 
     dataset %<>%
       filter(nhs_board_of_treatment == hbt) %>%
-      mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+      mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
              indicator = case_when(indicator == "Ongoing" ~ "Waiting",
                                    indicator == "Completed" ~ "Admitted",
                                    indicator == "additions_to_list" ~ "Additions to list")) %>%
@@ -45,7 +45,7 @@ waits_table <- function(input_data,
     filter(date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
            weeks = get_pretty_weeks(weeks)) %>%
     mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
     select(date, ongoing_completed, specialty, nhs_board_of_treatment, urgency, weeks, `number_seen/on_list`) %>%
@@ -69,12 +69,12 @@ median_byurgency_table <- function(input_data,
            date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total"))) %>%
     select(urgency, median, `90th_percentile`) %>%
     unique() %>%
     dplyr::rename("CP" = "urgency",
-                  "Median" = "median",
-                  "90th percentile" = "90th_percentile")
+                  "Median (days)" = "median",
+                  "90th percentile (days)" = "90th_percentile")
 
   return(dataset)
 
