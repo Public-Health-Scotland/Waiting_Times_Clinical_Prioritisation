@@ -34,42 +34,88 @@ activity_specs <- function(input_data,
 
   facets <- unique(dataset$indicator)
 
-  p <- ggplot(dataset, aes(x=specialty, y=proportion, group=urgency,
-                           text = paste(
-                             '</br>Specialty: ', specialty,
-                             '</br>Urgency: ', urgency,
-                             '</br>Percentage: ', paste0(round(100*proportion, 2), '%'))
-                           )) +
-    geom_col(aes(fill = urgency),
-             position = position_stack(reverse = TRUE)) +
-    scale_fill_manual(values = waiting_times_palette) +
-    scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 10)) +
-    scale_y_continuous(labels = scales::percent) +
-    xlab("") +
-    ylab("") +
-    theme_minimal() +
-    theme(legend.position = "bottom",
-          legend.title = element_blank(),
-          axis.text.x = element_text(colour = phs_colours("phs-purple")),
-          strip.text = element_text(colour = phs_colours("phs-purple"), size=12)) +
-    facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
-               labeller = as_labeller(c(additions_to_list ="Additions to list \n",
-                                        Ongoing = "Patients waiting \n",
-                                        Completed = "Patients admitted \n") ))
-
-
-  plotlyp <- ggplotly(p, height=600, tooltip=c("text"))%>%
-    #Layout
-    layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
+  xaxis_plots[["categoryorder"]] <-"trace"
+  
+  panel1 <- . %>% 
+    plot_ly(x = ~specialty, 
+            y = ~round(100*proportion,2), 
+            height = 600,
+            type = "bar", 
+            customdata = ~urgency,
+            color = ~urgency, 
+            colors = waiting_times_palette, 
+            legendgroup = ~urgency,
+            showlegend = (~unique(indicator) == "additions_to_list"),
+            hovertemplate = paste(
+              "<b>Specialty</b>:  %{x}",
+              "<b>Urgency</b>: %{customdata}",
+              "<b>Percentage</b>: %{y}",
+              "<b>Number</b>: format(~number, big.mark=",")",
+              sep = "\n")) %>%
+    add_annotations(
+      text = ~paste("\n",strwrap(unique(indicator),25), collapse="\n"),
+      x = 0,
+      y = 1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "left",
+      yanchor = "bottom",
+      showarrow = FALSE,
+      font = list(size = 14, face = "bold")
+    )# %>%
+  #  layout(xaxis = list(title = ""), yaxis = list(title = "Number of additions"), barmode = 'stack')#, 
+  # yaxis = list(title = paste(strwrap("Proportion of additions (%)",20),collapse="\n"), range = c(0,100), tickvals = c(0,50,100)), margin = 0.01)
+  
+  tp <- dataset %>%
+    group_by(indicator) %>%
+    do(p = panel1(.)) %>%
+    subplot(nrows = 3, margin = 0.06, shareX=T, shareY = F) %>% 
+    layout(barmode = 'stack',
+           legend = list(y = 1), 
+          # xaxis = list(categoryorder = "trace", title = ""),
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
-           plot_bgcolor = phs_colours("phs-liberty-10"),
-           legend = list(x = 100, y = 0.5), #position of legend
-           barmode = "stack") %>% #split by group
-    # leaving only save plot button
-    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+           plot_bgcolor = phs_colours("phs-liberty-10"))
+  
+  return(tp)
 
-  return(plotlyp)
+ # p <- ggplot(dataset, aes(x=specialty, y=proportion, group=urgency,
+ #                          text = paste(
+ #                            '</br>Specialty: ', specialty,
+ #                            '</br>Urgency: ', urgency,
+ #                            '</br>Percentage: ', paste0(round(100*proportion, 2), '%'),
+ #                            '</br>Number: ', format(number, big.mark=","))
+ #                          )) +
+ #   geom_col(aes(fill = urgency),
+ #            position = position_stack(reverse = TRUE)) +
+ #   scale_fill_manual(values = waiting_times_palette) +
+ #   scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 10)) +
+ #   scale_y_continuous(labels = scales::percent) +
+ #   xlab("") +
+ #   ylab("") +
+ #   theme_minimal() +
+ #   theme(legend.position = "bottom",
+ #         legend.title = element_blank(),
+ #         axis.text.x = element_text(colour = phs_colours("phs-purple")),
+ #         strip.text = element_text(colour = phs_colours("phs-purple"), size=12)) +
+ #   facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
+ #              labeller = as_labeller(c(additions_to_list ="Additions to list \n",
+ #                                       Ongoing = "Patients waiting \n",
+ #                                       Completed = "Patients admitted \n") ))
+#
+#
+ # plotlyp <- ggplotly(p, height=600, tooltip=c("text"))%>%
+ #   #Layout
+ #   layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
+ #          yaxis = yaxis_plots, xaxis = xaxis_plots,
+ #          paper_bgcolor = phs_colours("phs-liberty-10"),
+ #          plot_bgcolor = phs_colours("phs-liberty-10"),
+ #          legend = list(x = 100, y = 0.5), #position of legend
+ #          barmode = "stack") %>% #split by group
+ #   # leaving only save plot button
+ #   config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+#
+ # return(plotlyp)
 
 
 }
