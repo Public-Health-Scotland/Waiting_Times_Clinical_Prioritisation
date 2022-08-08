@@ -13,17 +13,21 @@ activity_trendplot <- function(input_data, waiting_status,
 
   if (timescale == "monthly"){
     dataset <- input_data$monthly %>% mutate(date_plot = floor_date(date, "month"))
-    cols_to_keep <- c("date_plot", "urgency", "number", "monthly_avg")
+    cols_to_keep <- c("date_plot", "urgency", "number", "monthly_avg", "total")
   } else {
     dataset <- input_data$quarterly %>% mutate(date_plot = date)
-    cols_to_keep <- c("date_plot", "urgency", "number", "quarterly_avg")
+    cols_to_keep <- c("date_plot", "urgency", "number", "quarterly_avg", "total")
   }
 
  dataset %<>%
     filter(indicator == indicator_string,
-           nhs_board_of_treatment == hbt) %>%
+           nhs_board_of_treatment == hbt,
+           urgency != "Total") %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
+   group_by(across(c(-urgency, -number))) %>% 
+   mutate(total = sum(number)) %>% 
    select(cols_to_keep) %>%
+   ungroup() %>% 
    unique()
 
   yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
@@ -43,30 +47,32 @@ activity_trendplot <- function(input_data, waiting_status,
 
   if(timescale == "monthly"){
 
-    tooltip_trend <- glue("{xaxis_title}: {format(dataset$date_plot, '%b %Y')}<br>",
-                          "Clinical prioritisation : {dataset$urgency}<br>",
-                          "Number of patients: {format(dataset$number, big.mark=',')}<br>",
-                          "2019 monthly average: {format(dataset$monthly_avg, big.mark=',')}")
+    tooltip_trend <- glue("2019 monthly average: {format(dataset$monthly_avg, big.mark=',')}")
 
   } else {
 
-    tooltip_trend <- glue("{xaxis_title}: {format(dataset$date_plot, '%b %Y')}<br>",
-                          "Clinical prioritisation : {dataset$urgency}<br>",
-                          "Number of patients: {format(dataset$number, big.mark=',')}<br>",
-                          "2019 monthly average: {format(dataset$quarterly_avg, big.mark=',')}")
+    tooltip_trend <- glue("2019 quaterly average: {format(dataset$quarterly_avg, big.mark=',')}")
+
   }
 
 
+  
   p <- dataset %>%
     arrange(date_plot) %>%
       plot_ly(x = ~factor(get_month(date_plot),levels = format(unique(date_plot), "%B %Y")), height = 900, legendgroup=~urgency) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
-             text = tooltip_trend,
              stroke = I("black"),
-             hoverinfo = "text",
-             name = ~urgency)
+             customdata = ~urgency,
+             text = ~total,
+             hovertemplate = paste(
+               "All Specialties",
+              "<b>Date</b>:  %{x}",
+              "<b>Urgency</b>: %{customdata}",
+              "<b>Number of Patients</b>: %{y:,}",
+              "<b>Total</b>: %{text:,}<extra></extra>",
+              sep = "\n"))
 
     if (timescale == "monthly"){
       p %<>% add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),

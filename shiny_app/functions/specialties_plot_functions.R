@@ -24,13 +24,16 @@ activity_specs <- function(input_data,
                            specialties=c("All Specialties")) {
 
 
-
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
            !urgency == "Total",
            date == get_short_date(qend),
-           specialty %in% specialties) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
+           specialty %in% input$specialty_filter) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>% 
+    group_by(date, indicator, nhs_board_of_treatment, specialty)%>% 
+    mutate(total = sum(number)) %>% 
+    ungroup() %>% 
+    unique()
 
   facets <- unique(dataset$indicator)
 
@@ -41,16 +44,17 @@ activity_specs <- function(input_data,
             y = ~round(100*proportion,2), 
             height = 600,
             type = "bar", 
-            customdata = ~urgency,
+            customdata = ~number,
+            text = ~total,
             color = ~urgency, 
             colors = waiting_times_palette, 
             legendgroup = ~urgency,
             showlegend = (~unique(indicator) == "additions_to_list"),
             hovertemplate = paste(
               "<b>Specialty</b>:  %{x}",
-              "<b>Urgency</b>: %{customdata}",
-              "<b>Percentage</b>: %{y}",
-              "<b>Number</b>: format(~number, big.mark=",")",
+              "<b>Number of Patients</b>: %{customdata:,}",
+              "<b>Percentage</b>: %{y}%",
+              "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
       text = ~paste("\n",strwrap(unique(indicator),25), collapse="\n"),
@@ -213,7 +217,7 @@ spec_activity_table <-  function(input_data,
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
            date == get_short_date(qend),
-           specialty %in% specialties) %>%
+           specialty %in% input$specialty_filter) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")) ) %>%
     select(date, indicator, nhs_board_of_treatment, specialty, urgency, number)
 
