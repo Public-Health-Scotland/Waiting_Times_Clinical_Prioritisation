@@ -90,6 +90,7 @@ perf <- perf_all %>%
 
 #Create version of data that has proportions per CP code per month
 perf_split <- perf %>% 
+  filter(urgency!="Total") %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
                                                   100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
