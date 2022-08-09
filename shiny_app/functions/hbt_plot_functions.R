@@ -29,10 +29,11 @@ activity_specs_hbt <- function(input_data,
   xaxis_plots[["categoryorder"]] <-"trace"
   
   panel1 <- . %>% 
-    plot_ly(x = ~nhs_board_of_treatment, 
-            y = ~round(100*proportion,2), 
+    plot_ly(x = ~round(100*proportion,2), 
+            y = ~nhs_board_of_treatment, 
             height = 600,
-            type = "bar", 
+            type = "bar",
+            orientation = 'h', #make bar chart horizontal
             customdata = ~number,
             text = ~total,
             color = ~urgency, 
