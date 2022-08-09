@@ -34,14 +34,14 @@ output$landing_page_ui <-  renderUI({
 
                                      tabPanel("Charts",
                                               tagList(
-                                                h3("Number of patients waiting, admitted and seen"),
+                                                h3("Number of TTG patients added to the list, admitted and waiting"),
                                                 br(),
                                                 plots[["activity_stacked"]])
                                      ),
 
                                      tabPanel("Data",
                                               tagList(
-                                                h3("Number of patients waiting, admitted and seen"),
+                                                h3("Number of TTG patients added to the list, admitted and waiting"),
                                                 br(),
                                                 numbers[["activity_table_output"]])
                                      )
@@ -56,7 +56,7 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12,
              shinydashboard::box( width=NULL, height="100px",
                                   tagList(
-                                    h3("Distribution of patients waiting and admitted"),
+                                    h3("Distribution of patients admitted and waiting"),
                                     pickerInput("timescale_filter_waits_f", "3. Select month",
                                                 choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
                                                 selected = "March 2022")

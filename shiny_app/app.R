@@ -44,7 +44,7 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("magnifying-glass-chart"),
                value = "overview",
 
-               h1("Overview"),
+               h2("Overview - Waiting list activity across all specialties"),
                uiOutput("landing_page_ui")
 
                ), # tabpanel
@@ -55,7 +55,7 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("stethoscope"),
                value = "specialties",
 
-               h2("Specialties"),
+               h2("Application of clinical prioritisation by specialty"),
                uiOutput("specialties_ui")
 
       ), # tabpanel
@@ -66,7 +66,7 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("people-roof"),
                value = "hbt",
 
-               h2("Health Board of Treatment"),
+               h2("Application of clinical prioritisation by Health Board of Treatment"),
                uiOutput("hbt_ui")
 
       ), # tabpanel
