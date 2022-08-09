@@ -26,8 +26,9 @@ activity_specs_hbt <- function(input_data,
          "There are no entries matching your selection. Please choose again.")
   )
   
-  xaxis_plots[["categoryorder"]] <-"trace"
-  
+  yaxis_plots[["categoryorder"]] <-"trace" 
+  yaxis_plots[["tickfont"]] <- 14
+
   panel1 <- . %>% 
     plot_ly(x = ~round(100*proportion,2), 
             y = ~nhs_board_of_treatment, 
@@ -41,9 +42,9 @@ activity_specs_hbt <- function(input_data,
             legendgroup = ~urgency,
             showlegend = (~unique(indicator) == "additions_to_list"),
             hovertemplate = paste(
-              "<b>Healthboard</b>:  %{x}",
+              "<b>Healthboard</b>:  %{y}",
               "<b>Number of Patients</b>: %{customdata:,}",
-              "<b>Percentage</b>: %{y}%",
+              "<b>Percentage</b>: %{x}%",
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
@@ -63,7 +64,7 @@ activity_specs_hbt <- function(input_data,
   tp <- dataset %>%
     group_by(indicator) %>%
     do(p = panel1(.)) %>%
-    subplot(nrows = 3, margin = 0.06, shareX=T, shareY = F) %>% 
+    subplot(nrows = 3, margin = 0.06, shareX=T) %>% 
     layout(barmode = 'stack',
            legend = list(y = 1), 
            # xaxis = list(categoryorder = "trace", title = ""),
