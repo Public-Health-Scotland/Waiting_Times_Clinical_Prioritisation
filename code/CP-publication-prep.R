@@ -209,7 +209,7 @@ total_comp <- bind_rows(add_comp, perf_comp) %>%
 #Quarterly additions ----
 addrem_qtr <- addrem %>%
   group_by(patient_type, nhs_board_of_treatment, indicator,  specialty, urgency, date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
-  summarise(number = sum(number[!urgency=="Total"], na.rm = T))
+  summarise(number = if_else(!urgency=="Total", sum(number[!urgency=="Total"], na.rm = T),sum(number[urgency=="Total"], na.rm = T))) %>% unique()
 
 
 #2.4.1 - long-term additions to get 2019 average ----
@@ -272,7 +272,7 @@ add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
 #additions from addrem_qtr
 hb_var_data <- perf_qtr_split %>%
   ungroup() %>%
-  select(-c(waited_waiting_over_52_weeks:y_max)) %>%
+  select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   rename(number = `number_seen/on_list`,
          indicator = `ongoing_completed`) %>%
   bind_rows(addrem_qtr) %>%
