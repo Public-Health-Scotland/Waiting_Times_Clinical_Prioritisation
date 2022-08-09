@@ -29,12 +29,7 @@ activity_specs <- function(input_data,
            !urgency == "Total",
            date == get_short_date(qend),
            specialty %in% input$specialty_filter) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>% 
-    group_by(date, indicator, nhs_board_of_treatment, specialty)%>% 
-    mutate(total = sum(number)) %>% 
-    ungroup() %>% 
-    unique()
-
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
   facets <- unique(dataset$indicator)
 
   xaxis_plots[["categoryorder"]] <-"trace"
