@@ -48,7 +48,7 @@ output$specialties_ui <-  renderUI({
                                               tagList(
                                                 h3("Activity"),
                                                 br(),
-                                                plots[["activity_facet_plot"]],
+                                                plots[["activity_facet_plot_spec"]],
                                                 linebreaks(10),
                                                 materialSwitch(inputId = "show_data_activity",
                                                                label = "Show data",
@@ -66,7 +66,7 @@ output$specialties_ui <-  renderUI({
                                               tagList(
                                                 h3("Distribution of waits"),
                                                 br(),
-                                                plots[["waits_facet_plot"]],
+                                                plots[["waits_facet_plot_spec"]],
                                                 linebreaks(35),
                                                 materialSwitch(inputId = "show_data_waits",
                                                                label = "Show data",
@@ -106,13 +106,18 @@ observe({
 
 ## Plots
 
-plots$activity_facet_plot <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+plots$activity_facet_plot_spec <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata_mar"]],
                                                     qend=input$quarter_end_spec,
                                                     hbt=input$hbt_filter_spec,
                                                     specialties=input$specialty_filter)})
 
 
-
+plots$waits_facet_plot_spec <- renderPlotly({waits_specs(input_data = app_data[["dow_4wk_qtr_pub_mar"]],
+                                                         qend=input$quarter_end_spec,
+                                                         hbt=input$hbt_filter_spec,
+                                                         specialties=input$specialty_filter)
+  
+})
 
 ## Data
 
