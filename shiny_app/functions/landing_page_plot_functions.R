@@ -34,6 +34,11 @@ activity_trendplot <- function(input_data, waiting_status,
                            waiting_status == "admitted" ~ "Patients admitted",
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
+  
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
+                           waiting_status == "admitted" ~ "Patients admitted for treatment",
+                           waiting_status == "additions" ~ "Patients added to the list",
+                           TRUE ~ "")
 
   xaxis_title <- case_when(timescale == "monthly" ~ "Month ending",
                            timescale == "quarterly" ~ "Quarter ending",
@@ -72,7 +77,18 @@ activity_trendplot <- function(input_data, waiting_status,
               "<b>Urgency</b>: %{customdata}",
               "<b>Number of Patients</b>: %{y:,}",
               "<b>Total</b>: %{text:,}<extra></extra>",
-              sep = "\n"))
+              sep = "\n")) #%>%
+    #add_annotations(
+    #  text = paste(unique(waiting_status),"\n"),
+    #  x = 0,
+    #  y = 1.05,
+    #  yref = "paper",
+    #  xref = "paper",
+    #  xanchor = "left",
+    #  yanchor = "bottom",
+    #  showarrow = FALSE,
+    #  font = list(size = 14, face = "bold")
+    #)
 
     if (timescale == "monthly"){
       p %<>% add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),
@@ -86,7 +102,7 @@ activity_trendplot <- function(input_data, waiting_status,
                        legendgroup = "average")
     }
       #Layout
-     p %<>%  layout(margin = list(b = 80, t = 5), #to avoid labels getting cut out
+     p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
@@ -98,6 +114,24 @@ activity_trendplot <- function(input_data, waiting_status,
   return(p)
 
 
+}
+
+##Activity BANs
+activity_ban <- function(value, subtitle, icon, color) {
+
+  div(class = "col-lg-3 col-md-6",
+      div(class = "panel panel-primary",
+          div(class = "panel-heading", style = paste0("background-color:", color),
+              div(class = "row",
+                  div(class = ("col-xs-12"),
+                      div(style = ("font-size: 12px; font-weight: bold;"),
+                          textOutput(value)),
+                      div(subtitle)
+                  )
+              )
+          )
+      )
+  )
 }
 
 

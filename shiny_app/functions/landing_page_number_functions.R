@@ -72,6 +72,7 @@ median_byurgency_table <- function(input_data,
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total"))) %>%
     select(urgency, median, `90th_percentile`) %>%
     unique() %>%
+    arrange(urgency) %>%
     dplyr::rename("CP" = "urgency",
                   "Median (days)" = "median",
                   "90th percentile (days)" = "90th_percentile")

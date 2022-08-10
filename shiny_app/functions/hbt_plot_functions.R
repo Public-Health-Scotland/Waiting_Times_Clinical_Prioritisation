@@ -168,7 +168,7 @@ waits_specs_hbt <- function(input_data,
           axis.title.y = element_text(margin=margin(r=500))) +
     facet_grid(nhs_board_of_treatment ~ ongoing_completed,  scales="free_y",
                # This wraps the facet label text to fit it on the plot
-               labeller = label_wrap_gen(width=10))
+               labeller = label_wrap_gen(width=10)) 
 
 
   plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%

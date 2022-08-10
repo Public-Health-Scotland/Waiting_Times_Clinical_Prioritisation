@@ -36,7 +36,10 @@ output$landing_page_ui <-  renderUI({
                                               tagList(
                                                 h3("Number of TTG patients added to the list, admitted and waiting"),
                                                 br(),
-                                                plots[["activity_stacked"]])
+                                                column(width = 12,
+                                                       plots[["activity_stacked"]])
+                                                )
+                                     
                                      ),
 
                                      tabPanel("Data",
@@ -56,7 +59,7 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12,
              shinydashboard::box( width=NULL, height="100px",
                                   tagList(
-                                    h3("Distribution of patients admitted and waiting"),
+                                    h3("Distribution of waits for patients admitted and waiting"),
                                     pickerInput("timescale_filter_waits_f", "3. Select month",
                                                 choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
                                                 selected = "March 2022")
@@ -79,6 +82,9 @@ output$landing_page_ui <-  renderUI({
                                                      br(), br(),
                                                      actionButton("btn_modal_median",
                                                                   "What is the median?",
+                                                                  icon = icon('question-circle')),
+                                                     actionButton("btn_modal_90th",
+                                                                  "What is the 90th percentile?",
                                                                   icon = icon('question-circle')),
                                                      br(), br(), br(),
                                                      numbers[["median_table_output"]]
@@ -142,13 +148,11 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
-                              
                               timescale=input$timescale_choice)
   # plot patients admitted
   p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "admitted",
-                              
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
   # plot additions to the list
@@ -162,10 +166,24 @@ plots$activity_stacked <- renderPlotly({
   subplot(style(p3, showlegend = FALSE), # keep one legend for all plots
           style(p2, showlegend = FALSE),
           p1, nrows = 3, shareX = TRUE, # share axis between plots
-          titleY = TRUE) # keep subplot titles
-
-
+          heights = c(0.3, 0.3, 0.3),
+          titleY = TRUE) #%>% # keep subplot titles
+    #layout(
+    #  annotations = list(
+    #    list(x = 0 , y = 1, text = "Patients added to the list", showarrow = FALSE, 
+    #         xref = 'paper', xanchor = "left", yref = 'paper', font = list(family = "arial",
+    #                                                                      size = 16)),
+    #    list(x = 0 , y = 0.65, text = "Patients admitted for treatment", showarrow = FALSE, 
+    #         xref = 'paper', yref = 'paper', font = list(family = "arial",
+    #                                                     size = 16)),
+    #    list(x = 0 , y = 0.3, text = "Patients waiting", showarrow = FALSE,
+    #         xref = 'paper', yref = 'paper', font = list(family = "arial",
+    #                                                    size = 16))
+    #    )
+    #)
 })
+
+
 
 ## Distribution of waits plots
 
@@ -205,6 +223,21 @@ numbers$activity_table_output <- DT::renderDataTable({
 
 })
 
+numbers$activity_ban_P1 <- activity_ban(value = "1",
+                                            color = waiting_times_palette[1],
+                                            subtitle = "P1A-1B")
+numbers$activity_ban_P2 <- activity_ban(value = "1",
+                                        color = waiting_times_palette[2],
+                                        subtitle = "P2")
+numbers$activity_ban_P3 <- activity_ban(value = "1",
+                                        color = waiting_times_palette[3],
+                                        subtitle = "P3")
+numbers$activity_ban_P4 <- activity_ban(value = "1",
+                                        color = waiting_times_palette[4],
+                                        subtitle = "P4")
+numbers$activity_ban_Other <- activity_ban(value = "1",
+                                        color = waiting_times_palette[5],
+                                        subtitle = "Other")
 
 ## Distribution of waits numbers
 

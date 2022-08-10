@@ -112,11 +112,6 @@ plots$activity_facet_plot <- renderPlotly({activity_specs(input_data=app_data[["
                                                     specialties=input$specialty_filter)})
 
 
-plots$waits_facet_plot <- renderPlotly({waits_specs(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
-                                                          qend=input$quarter_end_spec,
-                                                          hbt=input$hbt_filter_spec,
-                                                          specialties=input$specialty_filter)})
-
 
 
 ## Data
