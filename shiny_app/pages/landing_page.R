@@ -206,7 +206,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                 hbt=input$hbt_filter)
 
   # make facets
-  subplot(style(p4, showlegend = FALSE), p5,
+  subplot(style(p5, showlegend = FALSE), p4,
           nrows = 2, titleY = TRUE, shareX = TRUE)
 
 })

@@ -154,9 +154,10 @@ waits_distribution_plot <- function(input_data, waiting_status,
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+           total = sum(`number_seen/on_list`),
            weeks = get_pretty_weeks(weeks)) %>%
     mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
-    select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency) %>%
+    select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency, total) %>%
     unique()
 
   yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
@@ -173,7 +174,8 @@ waits_distribution_plot <- function(input_data, waiting_status,
                         "HBT: {hbt}<br>",
                         "Clinical prioritisation: {dataset$urgency}<br>",
                         "Specialty: {chosen_specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+                        "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
 
   p <- dataset %>%
