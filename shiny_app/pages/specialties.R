@@ -106,10 +106,30 @@ observe({
 
 ## Plots
 
-plots$activity_facet_plot_spec <- renderPlotly({activity_specs(input_data=app_data[["hb_plotdata_mar"]],
-                                                    qend=input$quarter_end_spec,
-                                                    hbt=input$hbt_filter_spec,
-                                                    specialties=input$specialty_filter)})
+plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+                                                                     waiting_status = "additions",
+                                                                     qend=input$quarter_end_spec,
+                                                                     hbt=input$hbt_filter_spec,
+                                                                     specialties=input$specialty_filter)
+                                                
+                                              p2 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+                                                                   waiting_status = "admitted",
+                                                                   qend=input$quarter_end_spec,
+                                                                   hbt=input$hbt_filter_spec,
+                                                                   specialties=input$specialty_filter)
+                                              
+                                              p3 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+                                                                   waiting_status = "waiting",
+                                                                   qend=input$quarter_end_spec,
+                                                                   hbt=input$hbt_filter_spec,
+                                                                   specialties=input$specialty_filter)
+                                              
+                                              #make facets
+                                              subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
+                                                      style(p2, showlegend = FALSE),
+                                                      p3, nrows = 3, shareX = TRUE, # share axis between plots
+                                                      titleY = TRUE)
+                                              })
 
 
 plots$waits_facet_plot_spec <- renderPlotly({waits_specs(input_data = app_data[["dow_4wk_qtr_pub_mar"]],

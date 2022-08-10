@@ -19,23 +19,28 @@ topsix_specs <- function(qend, hbt){
 ## Faceted activity graph
 
 activity_specs <- function(input_data,
-                           waiting_status= "additions",
+                           waiting_status,
                            qend="March 2022",
                            hbt="NHS Scotland",
                            specialties=c("All Specialties")) {
 
-
+  # Waiting status
+  indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
+                                waiting_status == "admitted" ~ "Completed",
+                                waiting_status == "additions" ~ "additions_to_list",
+                                TRUE ~ "")
 
   
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
+           indicator == indicator_string,
            !urgency == "Total",
            date == get_short_date(qend),
            specialty %in% input$specialty_filter) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
   
-  yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
@@ -44,12 +49,10 @@ activity_specs <- function(input_data,
   yaxis_plots[["tickformat"]] <- "%"
 
 
-  facets <- unique(dataset$indicator)
+  # facets <- unique(dataset$indicator)
 
-
-  
-  panel1 <- . %>% 
-    plot_ly(x = ~specialty, 
+  p <- dataset %>% 
+    plot_ly(x = ~factor(specialty), 
             y = ~round(proportion,2), 
             height = 600,
             type = "bar", 
@@ -57,8 +60,9 @@ activity_specs <- function(input_data,
             text = ~total,
             color = ~urgency, 
             colors = waiting_times_palette, 
+            # stroke = I("black"),
+            marker = list(line = list(color = "black", width = 1)),
             legendgroup = ~urgency,
-            showlegend = (~unique(indicator) == "additions_to_list"),
             hovertemplate = paste(
               "<b>Specialty</b>:  %{x}",
               "<b>Number of Patients</b>: %{customdata:,}",
@@ -66,7 +70,7 @@ activity_specs <- function(input_data,
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
-      text = ~paste("\n",strwrap(unique(indicator),25), collapse="\n"),
+      text = ~paste("\n",strwrap(unique(plot_title),25), collapse="\n"),
       x = 0,
       y = 1,
       yref = "paper",
@@ -75,26 +79,19 @@ activity_specs <- function(input_data,
       yanchor = "bottom",
       showarrow = FALSE,
       font = list(size = 14, face = "bold")
-    )# %>%
-  #  layout(xaxis = list(title = ""), yaxis = list(title = "Number of additions"), barmode = 'stack')#, 
-  # yaxis = list(title = paste(strwrap("Proportion of additions (%)",20),collapse="\n"), range = c(0,100), tickvals = c(0,50,100)), margin = 0.01)
+    )
   
-  tp <- dataset %>%
-    group_by(indicator) %>%
-    do(p = panel1(.)) %>%
-    subplot(nrows = 3, margin = 0.06, shareX=T, shareY = F) %>% 
-    layout(barmode = 'stack',
-           margin = list(b = 80, t = 50),
-           legend = list(y = 1), 
-          # xaxis = list(categoryorder = "trace", title = ""),
-           yaxis = list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4,
-                        tickfont = list(size=14), titlefont = list(size=14), tickformat = "%"), 
-          xaxis = xaxis_plots,
-           paper_bgcolor = phs_colours("phs-liberty-10"),
-           plot_bgcolor = phs_colours("phs-liberty-10")) %>%
-    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove)
-  
-  return(tp)
+  p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
+                 yaxis = yaxis_plots, xaxis = xaxis_plots,
+                 paper_bgcolor = phs_colours("phs-liberty-10"),
+                 plot_bgcolor = phs_colours("phs-liberty-10"),
+                 legend = list(x = 100, y = 0.5), #position of legend
+                 barmode = "stack") %>% #split by group
+    # leaving only save plot button
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+  return(p)
+
+
 
 #  p <- dataset %>%
 #   # arrange(desc(prop_p2)) %>%
