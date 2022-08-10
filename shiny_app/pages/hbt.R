@@ -98,10 +98,32 @@ output$hbt_ui <-  renderUI({
 
 ## Plots
 
-plots$activity_facet_plot_hbt <- renderPlotly({activity_specs_hbt(input_data=app_data[["hb_plotdata_mar"]],
-                                                          qend=input$quarter_end_spec_hbt,
-                                                          hbts=input$hbt_filter_hbt,
-                                                          specialty_choice=input$spec_filter_hbt)})
+plots$activity_facet_plot_hbt <- renderPlotly({
+                              p1 <- activity_specs_hbt(input_data=app_data[["hb_plotdata_mar"]],
+                                    waiting_status="additions",
+                                    qend=input$quarter_end_spec_hbt,
+                                    hbts=input$hbt_filter_hbt,
+                                    specialty_choice=input$spec_filter_hbt)
+                              
+                              p2 <- activity_specs_hbt(input_data=app_data[["hb_plotdata_mar"]],
+                                                       waiting_status="admitted",
+                                                       qend=input$quarter_end_spec_hbt,
+                                                       hbts=input$hbt_filter_hbt,
+                                                       specialty_choice=input$spec_filter_hbt)
+                              
+                              p3 <- activity_specs_hbt(input_data=app_data[["hb_plotdata_mar"]],
+                                                       waiting_status="waiting",
+                                                       qend=input$quarter_end_spec_hbt,
+                                                       hbts=input$hbt_filter_hbt,
+                                                       specialty_choice=input$spec_filter_hbt)
+                              
+                              # make facets
+                              subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
+                                      style(p2, showlegend = FALSE),
+                                      p3, nrows = 3, shareX = TRUE, # share axis between plots
+                                      # heights = c(0.3, 0.3, 0.3),
+                                      titleY = TRUE)
+                                })
 
 
 plots$waits_facet_plot_hbt <- renderPlotly({waits_specs_hbt(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
