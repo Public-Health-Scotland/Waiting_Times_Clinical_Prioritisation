@@ -121,7 +121,7 @@ plots$activity_facet_plot_hbt <- renderPlotly({
                               subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
                                       style(p2, showlegend = FALSE),
                                       p3, nrows = 3, shareX = TRUE, # share axis between plots
-                                      # heights = c(0.3, 0.3, 0.3),
+                                      heights = c(0.3, 0.3, 0.3),
                                       titleY = TRUE)
                                 })
 
