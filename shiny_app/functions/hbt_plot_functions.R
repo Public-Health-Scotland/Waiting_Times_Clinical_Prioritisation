@@ -40,6 +40,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
   
 
   p <- dataset %>% 
+    mutate(nhs_board_of_treatment = fct_reorder(as.factor(nhs_board_of_treatment), p2_proportion, .desc=FALSE)) %>%
     plot_ly(x = ~round(100*proportion,2), 
             y = ~factor(nhs_board_of_treatment), 
             height = 600,

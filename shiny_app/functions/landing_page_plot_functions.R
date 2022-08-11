@@ -174,8 +174,8 @@ waits_distribution_plot <- function(input_data, waiting_status,
                         "HBT: {hbt}<br>",
                         "Clinical prioritisation: {dataset$urgency}<br>",
                         "Specialty: {chosen_specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
-                        "<b>Total</b>: {format(dataset$total, big.mark=',')}")
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")#,
+                       # "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
 
   p <- dataset %>%
