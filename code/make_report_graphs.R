@@ -181,7 +181,12 @@ ggsave("hb_var_plot_mar.png", plot = hb_var_plot(hb_var_plotdata, max_date2), dp
 
 
 #2.1.4 - HBT comparison for a particular specialty ----
-#A&A and Lanarkshire for ophthalmology?
+#D&G and FV for ophthalmology?
+
+#Save version for QE June
+ggsave("hb_comparison_ophthalmology_dg_fv_jun.png", plot = hb_spec_plot(max_date, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
+
 #Save version for QE March
 ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(hb_var_plotdata, max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
@@ -197,12 +202,16 @@ dow_4wk_plot <- dow_4wk_qtr_pub %>%
 #Save this plot
 ggsave("dow Scotland all specs qe mar 2022.png", plot = dow_barplot(dow_4wk_plot,"NHS Scotland", "All Specialties", max_date2), dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
-#2.2.2 - Barplot of two contrasting specialties (Gynae and Ophthalmology) ----
+#2.2.2 - Barplot of two contrasting specialties (Urology and Orthopaedics) ----
 #Save plot for QE March 2022
 ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar(dow_4wk_plot, c("Urology", "Orthopaedics"), max_date2, "NHS Scotland"), dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 
 #2.2.3 - Barplot of two contrasting Boards for single specialty (D&G and FV) ----
+
+#Save June Ophthalmology D&G and FV plot
+ggsave("dow_ophthalmology_d&g_fv_jun2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+
 
 #Save March Ophthalmology D&G and FV plot
 ggsave("dow_ophthalmology_d&g_fv_mar2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date2, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))

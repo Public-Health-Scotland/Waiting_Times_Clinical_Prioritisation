@@ -162,7 +162,7 @@ hb_var_plot <- function(date_choice) {hb_var_plotdata %>%
           legend.key.height= unit(0.25, 'cm'),
           legend.key.width= unit(0.25, 'cm'),
           legend.text = element_text(size = 14),
-          plot.margin = unit(c(5.5,12,5.5,5.5), "pt")) +
+          plot.margin = unit(c(5.5,12,5.5,5.5), "pt")) + #Add margin to avoid axis text getting cut off
     coord_flip() +
     theme(axis.text.y=element_markdown())
 }
@@ -186,13 +186,13 @@ hb_spec_plot <- function(date_choice, spec_choice, hb_list) {hb_var_plotdata %>%
     scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 20)) +
     geom_blank(aes(y = y_max)) +
     facet_wrap(.~indicator, 
-               labeller = as_labeller(c(`additions_to_list` = "Additions to list", Completed = "Patients admitted", Ongoing = "Patients waiting"))) +
+               labeller = as_labeller(c(`additions_to_list` = "Number of patients added to the list", Completed = "Number of patients admitted", Ongoing = "Number of patients waiting"), default=label_wrap_gen(28))) +
     #facet_grid(cols = vars(ongoing_completed), scales = "free_x",drop = TRUE)+
     labs(x = NULL, y = NULL) +
-    theme(text = element_text(size = 14),
+    theme(text = element_text(size = 16),
           strip.background = element_blank(),
           strip.placement = "outside",
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 14),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 16, vjust = 0),
           #panel.grid.minor.x = element_blank(), 
           #panel.grid.major.x = element_blank(),
           panel.spacing = unit(0.25, "cm"),
