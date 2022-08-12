@@ -175,7 +175,7 @@ ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2, "NHS 
 #bar chart qe march, All Speciaties, stacked by urgency code, hbt on x axis, facet additions/seen/waiting
 
 #Save March and June graphs
-ggsave("hb_var_plot_jun.png", plot = hb_var_plot(hb_var_plotdata, max_date), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("hb_var_plot_jun.png", plot = hb_var_plot(max_date), dpi=300, dev='png', height=24, width=36, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
 ggsave("hb_var_plot_mar.png", plot = hb_var_plot(hb_var_plotdata, max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 

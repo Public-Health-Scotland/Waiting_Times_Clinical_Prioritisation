@@ -150,18 +150,19 @@ hb_var_plot <- function(date_choice) {hb_var_plotdata %>%
     facet_wrap(~indicator, nrow=1, strip.position = "top",
                labeller = as_labeller(c(additions_to_list = "Patients added to the waiting list", Completed = "Patients admitted", Ongoing = "Patients waiting"), default=label_wrap_gen(20))) +
     labs(x = NULL, y = "Percentage of total") +
-    theme(text = element_text(size = 12),
+    theme(text = element_text(size = 20),
           strip.background = element_blank(),
           strip.placement = "outside",
-          strip.text.x = element_text(angle = 0,hjust = 0,size = 12, vjust = 0),
-          #panel.grid.minor.x = element_blank(), 
-          #panel.grid.major.x = element_blank(),
+          strip.text.x = element_text(angle = 0,hjust = 0,size = 20, vjust = 0),
+          panel.grid.minor.x = element_line(colour = phs_colours("phs-graphite")), 
+          panel.grid.major.x = element_line(colour = phs_colours("phs-graphite")),
           panel.spacing = unit(0.5, "cm"),
           panel.border = element_blank(),
           legend.position="bottom",
           legend.key.height= unit(0.25, 'cm'),
           legend.key.width= unit(0.25, 'cm'),
-          legend.text = element_text(size = 8)) +
+          legend.text = element_text(size = 14),
+          plot.margin = unit(c(5.5,12,5.5,5.5), "pt")) +
     coord_flip() +
     theme(axis.text.y=element_markdown())
 }
