@@ -69,7 +69,8 @@ median_byurgency_table <- function(input_data,
            date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total"))) %>%
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
+           `90th_percentile` = round(`90th_percentile`, 0)) %>%
     select(urgency, median, `90th_percentile`) %>%
     unique() %>%
     arrange(urgency) %>%
