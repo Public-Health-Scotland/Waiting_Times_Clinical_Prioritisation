@@ -39,7 +39,7 @@ output$landing_page_ui <-  renderUI({
                                                 column(width = 12,
                                                        plots[["activity_stacked"]])
                                                 )
-                                     
+
                                      ),
 
                                      tabPanel("Data",
@@ -160,7 +160,7 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
-                              timescale=input$timescale_choice) 
+                              timescale=input$timescale_choice)
 
   # make facets
   subplot(style(p3, showlegend = FALSE), # keep one legend for all plots
@@ -170,10 +170,10 @@ plots$activity_stacked <- renderPlotly({
           titleY = TRUE) #%>% # keep subplot titles
     #layout(
     #  annotations = list(
-    #    list(x = 0 , y = 1, text = "Patients added to the list", showarrow = FALSE, 
+    #    list(x = 0 , y = 1, text = "Patients added to the list", showarrow = FALSE,
     #         xref = 'paper', xanchor = "left", yref = 'paper', font = list(family = "arial",
     #                                                                      size = 16)),
-    #    list(x = 0 , y = 0.65, text = "Patients admitted for treatment", showarrow = FALSE, 
+    #    list(x = 0 , y = 0.65, text = "Patients admitted for treatment", showarrow = FALSE,
     #         xref = 'paper', yref = 'paper', font = list(family = "arial",
     #                                                     size = 16)),
     #    list(x = 0 , y = 0.3, text = "Patients waiting", showarrow = FALSE,
