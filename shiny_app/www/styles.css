@@ -4,6 +4,7 @@
   --black: #000000;
   --phs-purple: #3F3685;
   --phs-blue: #0078D4;
+  --phs-teal-30: #BCD9DA;
   --phs-teal-50: #8FBFC2;
   --phs-teal-80: #4B999D;
   --phs-purple-80: #655E9D;
@@ -81,36 +82,28 @@ th, td {
     margin-left: 15px;
 }
 
-/* intro page boxes adapted from scotpho  https://github.com/Public-Health-Scotland/scotpho-profiles-tool/*/
+/* intro page boxes adapted from scotpho
+ https://github.com/Public-Health-Scotland/scotpho-profiles-tool/ */
 .intro-page-box > .btn {background-color: black;}
 
-.intro-page-box { width:100%; height:100%; min-height:15vh; background-color:#E1C7DF;
-                    border: 5px solid #3F3685; border-radius: 15px 50px 30px; margin-bottom: 5px; float: left;
+.intro-page-box { width:100%; height:100%; min-height:15vh; background-color:var(--phs-teal-50);
+                    border: 5px solid var(--phs-purple); border-radius: 15px; margin-bottom: 5px; float: left;
                     transition: 0.5s ease; position: relative; object-fit: scale-down;}
-
-.intro-page-box-about {width:100%; height:100%; min-height:11vh; background-color:#E1C7DF;
-                          border: 5px solid #3F3685; border-radius: 15px 50px 30px; margin-bottom: 5px; float: left;
-                          position: relative; object-fit: scale-down;}
 
 .intro-page-box:hover, .intro-page-box-about:hover {-webkit-transform: scale(1.05);
                           -ms-transform: scale(1.05); transform: scale(1.05); } /* hover effect on boxes*/
 
-/* intro-page titles for boxes*/
-.intro-page-box-title {font-size: 18px; text-align:center; color: #3F3685;
+/* intro page titles for boxes*/
+.intro-page-box-title {font-size: 20px; text-align:center; color: var(--phs-purple);
                           font-weight: bold; background-color: none; width:100%;
                           max-height: 20px; margin-top: 2vh;}
 
-/* intro-page description text of boxes*/
-.intro-page-box-description {font-size: 14px; text-align:center; color: #3F3685;
-                          background-color: none; border-radius: 15px 50px 30px;width:100%; max-height: 20px;
+/* intro page description text of boxes*/
+.intro-page-box-description {font-size: 16px; text-align:center; color: var(--phs-purple);
+                          background-color: none; border-radius: 15px; width:100%; max-height: 20px;
                           margin-top: 2vh; padding-bottom: 3vh;}
 
-/*landing page titles for ABOUT boxes */
-.intro-page-box-about-title { font-size: 16px; text-align:center; color: #3F3685;
-                                font-weight: bold; border-radius: 15px 50px 30px; background-color: none;
-                                width:100%; max-height: 20px; margin-top: 5px; }
-
-/* landing page buttons*/
+/* intro page buttons*/
 .intro-page-button { position: absolute; top:0; width: 100%;
                         height: 100%; opacity: 0;}
 

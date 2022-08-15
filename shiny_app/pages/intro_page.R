@@ -15,16 +15,21 @@ output$intro_page_ui <-  renderUI({
       column(6, class="intro-page-column",
                 intro_main_box(button_name = 'intro_jump_to_specialties',
                             title_box = "Specialties",
-                            description = 'Breakdown by specialties')),
+                            description = 'Breakdown by specialties'))
+    ), # fluid row
+    fluidRow(
+      br(),
       # HBT
       column(6, class="intro-page-column",
-         intro_main_box(button_name = 'intro_jump_to_hbt', title_box = "Health Board",
-                     description = 'Breakdown by Health Board of Treatment')),
+         intro_main_box(button_name = 'intro_jump_to_hbt',
+                        title_box = "Health Board of Treatment",
+                        description = 'Breakdown by Health Board of Treatment')),
      # Data download
-     column(6, class="intro-page-column",
-            intro_main_box(button_name = 'intro_jump_to_data', title_box = "Download data",
-                        description = 'Interactive page to dowload selected data'))
-    ) # fluid row close
+      column(6, class="intro-page-column",
+            intro_main_box(button_name = 'intro_jump_to_data',
+                           title_box = "Download data",
+                           description = 'Interactive page to dowload selected data'))
+    ) # fluid row
    # End of first row
 
   ) # div
