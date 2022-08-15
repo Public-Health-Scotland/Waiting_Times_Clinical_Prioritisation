@@ -42,7 +42,6 @@ data_download_table_summary <-  function(input_data,
                                       chosen_specialties=c("")) {
 
   dataset <- input_data %>%
-    head(10) %>%
     filter(nhs_board_of_treatment %in% hbts,
            specialty %in% chosen_specialties) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
