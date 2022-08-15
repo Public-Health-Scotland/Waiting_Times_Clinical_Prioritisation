@@ -19,7 +19,9 @@ activity_specs_hbt <- function(input_data, waiting_status,
            !urgency == "Total",
            date == get_short_date(qend),
            specialty == specialty_choice) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) 
+    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
+    mutate(nhs_board_of_treatment = forcats::fct_reorder(as.factor(nhs_board_of_treatment),
+                                                       p2_proportion, .desc=FALSE))
 
   facets <- unique(dataset$indicator)
 
@@ -30,25 +32,24 @@ activity_specs_hbt <- function(input_data, waiting_status,
     need(((length(facets)>=1) & (unique(dataset$number) != 0)),
          "There are no entries matching your selection. Please choose again.")
   )
-  
+
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
    yaxis_plots[["tickfont"]] <- 14
    xaxis_plots[["title"]] <- "Proportion of Patients (%)"
-  
 
-  p <- dataset %>% 
-    mutate(nhs_board_of_treatment = fct_reorder(as.factor(nhs_board_of_treatment), p2_proportion, .desc=FALSE)) %>%
-    plot_ly(x = ~round(100*proportion,2), 
-            y = ~factor(nhs_board_of_treatment), 
+
+  p <- dataset %>%
+    plot_ly(x = ~round(100*proportion,2),
+            y = ~factor(nhs_board_of_treatment),
             height = 600,
             type = "bar",
             orientation = 'h', #make bar chart horizontal
             customdata = ~number,
             text = ~total,
-            color = ~urgency, 
+            color = ~urgency,
             colors = waiting_times_palette,
             # stroke = I("black"),
             marker = list(line = list(color = "black", width = 1)),
@@ -71,7 +72,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
       showarrow = FALSE,
       font = list(size = 14, face = "bold")
     )
-  
+
   p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
                  yaxis = yaxis_plots, xaxis = xaxis_plots,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
@@ -105,8 +106,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
   #              labeller = as_labeller(c(additions_to_list ="Additions to list \n",
   #                                       Ongoing = "Patients waiting \n",
   #                                       Completed = "Patients admitted \n") ))
-  # 
-  # 
+  #
+  #
   # plotlyp <- ggplotly(p, height=600, tooltip=c("text"))%>%
   #   #Layout
   #   layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
@@ -117,7 +118,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
   #          barmode = "stack") %>% #split by group
   #   # leaving only save plot button
   #   config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
-  # 
+  #
   # return(plotlyp)
 
 
@@ -177,7 +178,7 @@ waits_specs_hbt <- function(input_data,
           axis.title.y = element_text(margin=margin(r=500))) +
     facet_grid(nhs_board_of_treatment ~ ongoing_completed,  scales="free_y",
                # This wraps the facet label text to fit it on the plot
-               labeller = label_wrap_gen(width=10)) 
+               labeller = label_wrap_gen(width=10))
 
 
   plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%
