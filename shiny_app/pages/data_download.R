@@ -66,18 +66,33 @@ output$download_ui <-  renderUI({
              ) # box
     ), # fluidrow
 
+    fluidRow(width=12, height="100px", br()),
+
     # Data download area
     fluidRow(width=12,
-             shinydashboard::box(width=NULL, height="1000px",
-                                 tagList(
+             h3("Download data "),
+             downloadButton("data_download_output",
+                            "Download data"),
+             shinydashboard::tabBox(width=NULL, type="pills", side="right", height="800px",
 
-                                   linebreaks(3),
-                                   downloadButton("data_download_output",
-                                                  "Download data"),
-                                   linebreaks(1),
-                                   numbers[["data_download_table_output"]]
+                                    tabPanel("Data summary",
+                                      tagList(
 
-                                 ) # taglist
+                                        h3("Summary of data to download: "),
+                                        linebreaks(1),
+                                        numbers[["data_download_summary_output"]]
+
+
+                                        ) # taglist
+                                    ), # tabpanel
+                                    tabPanel("Data preview",
+                                      tagList(
+
+                                        h3("Preview of data to download (first 10 rows): "),
+                                        linebreaks(1),
+                                        numbers[["data_download_table_output"]]
+
+                                             ))
 
              ) # box
 
@@ -180,10 +195,16 @@ numbers$data_download_table_output <- DT::renderDataTable({
                              chosen_specialties=input$download_specialty),
             # These columns have thousand separator added
             add_separator_cols = c(6),
-            rows_to_display = 6,
+            rows_to_display = 4,
             scrollX = TRUE,
             scrollY = TRUE)
 
+})
+
+numbers$data_download_summary_output <- renderPrint({
+  data_download_table_summary(input_data=app_data[[chosen_dataset()]],
+                                                                    hbts=input$download_hbt,
+                                                                    chosen_specialties=input$download_specialty)
 })
 
 # ---- DATA DOWNLOAD BUTTON
