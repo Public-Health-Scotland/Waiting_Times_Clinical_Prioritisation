@@ -113,6 +113,11 @@ stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.09) {
   gg
 }
 
+# Wrap labels for plotly graphs
+wrap_label <- function(unwrapped_label, width=16){
+  wrapped_label <- paste(strwrap(unwrapped_label, width=width), collapse = "<br>")
+  return (wrapped_label)
+}
 
 # Function to format a given entry in a table
 format_entry <- function(x, dp=0, perc=F){

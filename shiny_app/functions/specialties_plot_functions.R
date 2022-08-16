@@ -37,8 +37,11 @@ activity_specs <- function(input_data,
            !urgency == "Total",
            date == get_short_date(qend),
            specialty %in% input$specialty_filter) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
+    mutate(
+      urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
+  # Wrapping text on specialties for plotting
+  dataset$specialty_wrapped <- purrr::map_chr(dataset$specialty, wrap_label)
 
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
@@ -52,7 +55,7 @@ activity_specs <- function(input_data,
   # facets <- unique(dataset$indicator)
 
   p <- dataset %>%
-    plot_ly(x = ~factor(specialty),
+    plot_ly(x = ~factor(specialty_wrapped),
             y = ~round(proportion,2),
             height = 600,
             type = "bar",
@@ -90,47 +93,6 @@ activity_specs <- function(input_data,
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
   return(p)
-
-
-
-#  p <- dataset %>%
-#   # arrange(desc(prop_p2)) %>%
-#    plot_ly(x = ~specialty, height = 900, legendgroup=~urgency) %>%
-#    add_bars(y = ~proportion,
-#             color = ~urgency,
-#             colors = waiting_times_palette,
-#             stroke = I("black"),
-#             customdata = ~number,
-#             text = ~total,
-#             hovertemplate = paste(
-#               "<b>Specialty</b>:  %{x}",
-#               "<b>Number of Patients</b>: %{customdata:,}",
-#               "<b>Percentage</b>: %{y:,}",
-#               "<b>Total</b>: %{text:,}<extra></extra>",
-#               sep = "\n")) #%>%
-#  #add_annotations(
-#  #  text = paste(unique(waiting_status),"\n"),
-#  #  x = 0,
-  #  y = 1.05,
-  #  yref = "paper",
-  #  xref = "paper",
-  #  xanchor = "left",
-  #  yanchor = "bottom",
-  #  showarrow = FALSE,
-  #  font = list(size = 14, face = "bold")
-  #)
-
-  #Layout
-  #p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
-  #               yaxis = yaxis_plots, xaxis = xaxis_plots,
-  #               paper_bgcolor = phs_colours("phs-liberty-10"),
-  #               plot_bgcolor = phs_colours("phs-liberty-10"),
-  #               legend = list(x = 100, y = 0.5), #position of legend
-  #               barmode = "stack") %>% #split by group
-  #  # leaving only save plot button
-  #  config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
-  #
-  #return(p)
 
 }
 
