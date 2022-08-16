@@ -17,8 +17,8 @@ icon_no_warning_fn = function(icon_name) {
 }
 
 # Transforms e.g. 2021-09-30 to September 2021
-get_month <- function(short_date){
-  long_date <- format(as.Date(short_date, format="%Y-%d-%m"), "%B %Y")
+get_month <- function(short_date, format = "%B %Y"){
+  long_date <- format(as.Date(short_date, format="%Y-%d-%m"), format)
   return(long_date)
 }
 

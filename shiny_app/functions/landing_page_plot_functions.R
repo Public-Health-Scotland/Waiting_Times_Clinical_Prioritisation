@@ -66,7 +66,9 @@ activity_trendplot <- function(input_data, waiting_status,
 
   p <- dataset %>%
     arrange(date_plot) %>%
-      plot_ly(x = ~factor(get_month(date_plot),levels = format(unique(date_plot), "%B %Y")), height = 900, legendgroup=~urgency) %>%
+      plot_ly(x = ~factor(get_month(date_plot, format="%b<br>%Y"),
+                          levels = format(unique(date_plot), "%b<br>%Y")),
+              height = 900, legendgroup=~urgency) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
