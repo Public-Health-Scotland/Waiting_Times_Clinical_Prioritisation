@@ -150,21 +150,21 @@ observeEvent(
 plots$activity_stacked <- renderPlotly({
 
   # plot patients waiting
-  p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
-                                   monthly=app_data[["add_perf_mon_jun"]]),
+  p1 <- activity_trendplot(list(quarterly=app_data[["ongoing_completed_for_MI_all_specs"]],
+                                   monthly=app_data[["ongoing_completed_for_MI_all_specs"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
   # plot patients admitted
-  p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
-                                   monthly=app_data[["add_perf_mon_jun"]]),
+  p2 <- activity_trendplot(list(quarterly=app_data[["ongoing_completed_for_MI_all_specs"]],
+                                   monthly=app_data[["ongoing_completed_for_MI_all_specs"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
   # plot additions to the list
-  p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
-                                   monthly=app_data[["add_perf_mon_jun"]]),
+  p3 <- activity_trendplot(list(quarterly=app_data[["ongoing_completed_for_MI_all_specs"]],
+                                   monthly=app_data[["ongoing_completed_for_MI_all_specs"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
@@ -210,8 +210,8 @@ plots$waits_breakdown_facets <- renderPlotly({
 ## Activity numbers
 numbers$activity_table_output <- DT::renderDataTable({
 
-  make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_jun"]],
-                                 monthly=app_data[["add_perf_mon_jun"]]),
+  make_table(activity_table(list(quarterly=app_data[["ongoing_completed_for_MI_all_specs"]],
+                                 monthly=app_data[["ongoing_completed_for_MI_all_specs"]]),
                             hbt=input$hbt_filter,
                             chosen_specialty = input$specialty_filter,
                             timescale=input$timescale_choice),
@@ -241,8 +241,8 @@ numbers$activity_ban_Other <- activity_ban(value = "1",
 # Median and 90th percentile
 numbers$median_table_output <- DT::renderDataTable({
 
-    info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_jun"]],
-                          monthly=app_data[["perf_mon_split_jun"]]),
+    info_table(median_byurgency_table(list(quarterly=app_data[["ongoing_completed_for_MI_all_specs"]],
+                          monthly=app_data[["ongoing_completed_for_MI_all_specs"]]),
                      timescale=input$timescale_choice,
                      chosen_specialty = input$specialty_filter,
                      time_chunk_end=input$timescale_filter_waits_f,
