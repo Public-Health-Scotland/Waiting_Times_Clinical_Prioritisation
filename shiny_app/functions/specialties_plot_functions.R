@@ -3,7 +3,7 @@
 ## Get top six specialties given quarter and HBT
 topsix_specs <- function(qend, hbt){
 
- specs <- app_data[["topsix_specs_mar"]] %>%
+ specs <- app_data[["topsix_specs_jun"]] %>%
           filter(date==get_short_date(qend),
              nhs_board_of_treatment==hbt) %>%
           select("specialties") %>% .[[1]] %>%
@@ -30,7 +30,7 @@ activity_specs <- function(input_data,
                                 waiting_status == "additions" ~ "additions_to_list",
                                 TRUE ~ "")
 
-  
+
   dataset <- input_data %>%
     filter(nhs_board_of_treatment == hbt,
            indicator == indicator_string,
@@ -39,27 +39,27 @@ activity_specs <- function(input_data,
            specialty %in% input$specialty_filter) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
-  
+
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
-  
+
   xaxis_plots[["categoryorder"]] <-"trace"
   yaxis_plots[["tickformat"]] <- "%"
 
 
   # facets <- unique(dataset$indicator)
 
-  p <- dataset %>% 
-    plot_ly(x = ~factor(specialty), 
-            y = ~round(proportion,2), 
+  p <- dataset %>%
+    plot_ly(x = ~factor(specialty),
+            y = ~round(proportion,2),
             height = 600,
-            type = "bar", 
+            type = "bar",
             customdata = ~number,
             text = ~total,
-            color = ~urgency, 
-            colors = waiting_times_palette, 
+            color = ~urgency,
+            colors = waiting_times_palette,
             # stroke = I("black"),
             marker = list(line = list(color = "black", width = 1)),
             legendgroup = ~urgency,
@@ -80,7 +80,7 @@ activity_specs <- function(input_data,
       showarrow = FALSE,
       font = list(size = 14, face = "bold")
     )
-  
+
   p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
                  yaxis = yaxis_plots, xaxis = xaxis_plots,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
@@ -119,7 +119,7 @@ activity_specs <- function(input_data,
   #  showarrow = FALSE,
   #  font = list(size = 14, face = "bold")
   #)
-  
+
   #Layout
   #p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
   #               yaxis = yaxis_plots, xaxis = xaxis_plots,
