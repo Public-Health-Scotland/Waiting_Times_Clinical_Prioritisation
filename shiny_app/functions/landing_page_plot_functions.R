@@ -109,26 +109,6 @@ activity_trendplot <- function(input_data, waiting_status,
 
 }
 
-## Activity BANs
-activity_ban <- function(value, subtitle, icon, color) {
-
-  div(class = "col-lg-3 col-md-6",
-      div(class = "panel panel-primary",
-          div(class = "panel-heading", style = paste0("background-color:", color),
-              div(class = "row",
-                  div(class = ("col-xs-12"),
-                      div(style = ("font-size: 12px; font-weight: bold;"),
-                          textOutput(value)),
-                      div(subtitle)
-                  )
-              )
-          )
-      )
-  )
-}
-
-
-
 # ----------------------------------------------------------------------------
 ## Distribution of waits
 waits_distribution_plot <- function(input_data, waiting_status,

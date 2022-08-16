@@ -85,4 +85,26 @@ median_byurgency_table <- function(input_data,
 
 }
 
+# ---------------------------------------------------------------------
+
+## Activity BANs
+activity_ban <- function(value, subtitle, icon, color) {
+
+  div(class = "col-lg-3 col-md-6",
+      div(class = "panel panel-primary",
+          div(class = "panel-heading", style = paste0("background-color:", color),
+              div(class = "row",
+                  div(class = ("col-xs-12"),
+                      div(style = ("font-size: 12px; font-weight: bold;"),
+                          renderText(value)),
+                      div(subtitle)
+                  )
+              )
+          )
+      )
+  )
+}
+
+
+
 
