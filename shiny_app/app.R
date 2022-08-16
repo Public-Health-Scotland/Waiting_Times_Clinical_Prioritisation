@@ -78,17 +78,6 @@ ui <- fluidPage(
                h2("Download data"),
                uiOutput("download_ui")
 
-      ), # tabpanel
-      ##############################################.
-      # NOTES PAGE ----
-      ##############################################.
-      tabPanel(title = "Notes",
-               icon = icon_no_warning_fn("file-lines"),
-               value = "notes",
-
-               h2("Notes"),
-               uiOutput("notes_ui")
-
       ) # tabpanel
       ) # navbar
     ) # taglist
@@ -121,7 +110,6 @@ server <- function(input, output, session) {
   source(file.path("pages/specialties.R"), local = TRUE)$value
   source(file.path("pages/hbt.R"), local = TRUE)$value
   source(file.path("pages/data_download.R"), local = TRUE)$value
-  source(file.path("pages/notes.R"), local = TRUE)$value
 
 
 }
