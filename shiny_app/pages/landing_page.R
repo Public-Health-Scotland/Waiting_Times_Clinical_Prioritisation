@@ -67,8 +67,8 @@ output$landing_page_ui <-  renderUI({
                                   tagList(
                                     h3("Distribution of waits for patients admitted and waiting"),
                                     pickerInput("timescale_filter_waits_f", "4. Select month",
-                                                choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                                                selected = "March 2022")
+                                                choices = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
+                                                selected = "June 2022")
                                               ) # pickerInput
              ) # box
     ),
@@ -117,8 +117,8 @@ output$landing_page_ui <-  renderUI({
 
 })
 
-timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
-                          "quarterly" = get_month(unique(app_data[["perf_qtr_split_mar"]]$date)))
+timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
+                          "quarterly" = get_month(unique(app_data[["perf_qtr_split_jun"]]$date)))
 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
@@ -133,7 +133,7 @@ observeEvent(
         updatePickerInput(session, inputId="timescale_filter_waits_f",
                       label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
                                         input$timescale_choice=="quarterly" ~ "3. Select quarter"),
-                      selected = "March 2022",
+                      selected = "June 2022",
                       choices = timescale_choices[[input$timescale_choice]]
     )
 
@@ -150,21 +150,21 @@ observeEvent(
 plots$activity_stacked <- renderPlotly({
 
   # plot patients waiting
-  p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                   monthly=app_data[["add_perf_mon_mar"]]),
+  p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
+                                   monthly=app_data[["add_perf_mon_jun"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
   # plot patients admitted
-  p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                   monthly=app_data[["add_perf_mon_mar"]]),
+  p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
+                                   monthly=app_data[["add_perf_mon_jun"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
   # plot additions to the list
-  p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                   monthly=app_data[["add_perf_mon_mar"]]),
+  p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_jun"]],
+                                   monthly=app_data[["add_perf_mon_jun"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               timescale=input$timescale_choice)
@@ -184,8 +184,8 @@ plots$activity_stacked <- renderPlotly({
 plots$waits_breakdown_facets <- renderPlotly({
 
   # DoW plot patients waiting
-  p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                                      monthly=app_data[["dow_4wk_mon_mar"]]),
+  p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
+                                      monthly=app_data[["dow_4wk_mon_jun"]]),
                                  waiting_status="waiting",
                                  timescale=input$timescale_choice,
                                  chosen_specialty = input$specialty_filter,
@@ -193,8 +193,8 @@ plots$waits_breakdown_facets <- renderPlotly({
                                  hbt=input$hbt_filter)
 
   # DoW plot patients admitted
-  p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                                     monthly=app_data[["dow_4wk_mon_mar"]]),
+  p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
+                                     monthly=app_data[["dow_4wk_mon_jun"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
                                 chosen_specialty = input$specialty_filter,
@@ -210,8 +210,8 @@ plots$waits_breakdown_facets <- renderPlotly({
 ## Activity numbers
 numbers$activity_table_output <- DT::renderDataTable({
 
-  make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_mar"]],
-                                 monthly=app_data[["add_perf_mon_mar"]]),
+  make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_jun"]],
+                                 monthly=app_data[["add_perf_mon_jun"]]),
                             hbt=input$hbt_filter,
                             chosen_specialty = input$specialty_filter,
                             timescale=input$timescale_choice),
@@ -241,8 +241,8 @@ numbers$activity_ban_Other <- activity_ban(value = "1",
 # Median and 90th percentile
 numbers$median_table_output <- DT::renderDataTable({
 
-    info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_mar"]],
-                          monthly=app_data[["perf_mon_split_mar"]]),
+    info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_jun"]],
+                          monthly=app_data[["perf_mon_split_jun"]]),
                      timescale=input$timescale_choice,
                      chosen_specialty = input$specialty_filter,
                      time_chunk_end=input$timescale_filter_waits_f,
@@ -257,8 +257,8 @@ numbers$median_table_output <- DT::renderDataTable({
 # Raw data table
 numbers$waits_table_output <- DT::renderDataTable({
 
-  make_table(waits_table(list(quarterly=app_data[["dow_4wk_qtr_pub_mar"]],
-                              monthly=app_data[["dow_4wk_mon_mar"]]),
+  make_table(waits_table(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
+                              monthly=app_data[["dow_4wk_mon_jun"]]),
                             hbt=input$hbt_filter,
                             time_chunk_end=input$timescale_filter_waits_f,
                             chosen_specialty = input$specialty_filter,

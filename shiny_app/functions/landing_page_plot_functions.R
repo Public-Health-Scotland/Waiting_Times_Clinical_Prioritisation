@@ -130,7 +130,7 @@ activity_ban <- function(value, subtitle, icon, color) {
 ## Distribution of waits
 waits_distribution_plot <- function(input_data, waiting_status,
                                     timescale="monthly",
-                                    time_chunk_end="March 2022",
+                                    time_chunk_end="June 2022",
                                     chosen_specialty="All Specialties",
                                     hbt="NHS Scotland") {
 

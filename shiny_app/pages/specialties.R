@@ -13,7 +13,7 @@ output$specialties_ui <-  renderUI({
                                  column(width=4,
                                         pickerInput("hbt_filter_spec",
                                                     "1. Select Health Board ",
-                                                    choices = unique(app_data[["dow_4wk_qtr_pub_mar"]]$nhs_board_of_treatment),
+                                                    choices = unique(app_data[["dow_4wk_qtr_pub_jun"]]$nhs_board_of_treatment),
                                                     selected = "NHS Scotland",
                                                     options = pickerOptions(liveSearch = TRUE, showTick=TRUE),
                                                     multiple = FALSE)
@@ -21,14 +21,14 @@ output$specialties_ui <-  renderUI({
                                  column(width=4,
                                         pickerInput("quarter_end_spec",
                                                      "2. Select quarter end date ",
-                                                     choices = c("September 2021", "December 2021", "March 2022"),
-                                                     selected = "March 2022",
+                                                     choices = c("September 2021", "December 2021", "June 2022"),
+                                                     selected = "June 2022",
                                                      multiple = FALSE)
                                  ), # column
                                  column(width=4,
                                         pickerInput("specialty_filter",
                                                     "3. Select up to six specialties ",
-                                                    choices = unique(app_data[["hb_plotdata_mar"]]$specialty),
+                                                    choices = unique(app_data[["hb_plotdata_jun"]]$specialty),
                                                     selected = c("Orthopaedics", "General Surgery",
                                                                  "Opthalmology", "Urology",
                                                                  "Ear, Nose & Throat", "Gynaecology"),
@@ -106,24 +106,24 @@ observe({
 
 ## Plots
 
-plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=app_data[["hb_plotdata_jun"]],
                                                                      waiting_status = "additions",
                                                                      qend=input$quarter_end_spec,
                                                                      hbt=input$hbt_filter_spec,
                                                                      specialties=input$specialty_filter)
-                                                
-                                              p2 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+
+                                              p2 <- activity_specs(input_data=app_data[["hb_plotdata_jun"]],
                                                                    waiting_status = "admitted",
                                                                    qend=input$quarter_end_spec,
                                                                    hbt=input$hbt_filter_spec,
                                                                    specialties=input$specialty_filter)
-                                              
-                                              p3 <- activity_specs(input_data=app_data[["hb_plotdata_mar"]],
+
+                                              p3 <- activity_specs(input_data=app_data[["hb_plotdata_jun"]],
                                                                    waiting_status = "waiting",
                                                                    qend=input$quarter_end_spec,
                                                                    hbt=input$hbt_filter_spec,
                                                                    specialties=input$specialty_filter)
-                                              
+
                                               #make facets
                                               subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
                                                       style(p2, showlegend = FALSE),
@@ -132,18 +132,18 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
                                               })
 
 
-plots$waits_facet_plot_spec <- renderPlotly({waits_specs(input_data = app_data[["dow_4wk_qtr_pub_mar"]],
+plots$waits_facet_plot_spec <- renderPlotly({waits_specs(input_data = app_data[["dow_4wk_qtr_pub_jun"]],
                                                          qend=input$quarter_end_spec,
                                                          hbt=input$hbt_filter_spec,
                                                          specialties=input$specialty_filter)
-  
+
 })
 
 ## Data
 
 numbers$spec_activity_table_output <- DT::renderDataTable({
 
-  make_table(spec_activity_table(input_data=app_data[["hb_plotdata_mar"]],
+  make_table(spec_activity_table(input_data=app_data[["hb_plotdata_jun"]],
                          qend=input$quarter_end_spec,
                          hbt=input$hbt_filter_spec,
                          specialties=input$specialty_filter),
@@ -156,7 +156,7 @@ numbers$spec_activity_table_output <- DT::renderDataTable({
 
 numbers$spec_waits_table_output <- DT::renderDataTable({
 
-  make_table(spec_waits_table(input_data=app_data[["dow_4wk_qtr_pub_mar"]],
+  make_table(spec_waits_table(input_data=app_data[["dow_4wk_qtr_pub_jun"]],
                          qend=input$quarter_end_spec,
                          hbt=input$hbt_filter_spec,
                          specialties=input$specialty_filter),

@@ -18,8 +18,8 @@ output$download_ui <-  renderUI({
                                                 inline = TRUE),
                                    pickerInput("download_hbt",
                                                "2. Select Health Boards to include (defaults to all)",
-                                               choices = unique(app_data[["perf_qtr_split_mar"]]$nhs_board_of_treatment),
-                                               selected = unique(app_data[["perf_qtr_split_mar"]]$nhs_board_of_treatment),
+                                               choices = unique(app_data[["perf_qtr_split_jun"]]$nhs_board_of_treatment),
+                                               selected = unique(app_data[["perf_qtr_split_jun"]]$nhs_board_of_treatment),
                                                inline = TRUE,
                                                multiple = TRUE,
                                                width = "100%",
@@ -139,19 +139,19 @@ observeEvent(
 chosen_dataset <- reactive({
 
    case_when((input$download_dataset == "Patients waiting, admitted and seen" &
-               input$download_timescale == "monthly") ~ "add_perf_mon_mar",
+               input$download_timescale == "monthly") ~ "add_perf_mon_jun",
             (input$download_dataset == "Patients waiting, admitted and seen" &
-               input$download_timescale == "quarterly") ~ "add_perf_qtr_mar",
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_jun",
             (input$download_dataset == "Distribution of waits" &
-               input$download_timescale == "monthly") ~ "dow_4wk_mon_mar",
+               input$download_timescale == "monthly") ~ "dow_4wk_mon_jun",
             (input$download_dataset == "Distribution of waits" &
-               input$download_timescale == "quarterly") ~ "dow_4wk_qtr_mar",
+               input$download_timescale == "quarterly") ~ "dow_4wk_qtr_jun",
             (input$download_dataset == "Activity" &
-               input$download_timescale == "quarterly") ~ "hb_plotdata_mar",
+               input$download_timescale == "quarterly") ~ "hb_plotdata_jun",
             (input$download_dataset == "Summary of patients waiting and admitted" &
-               input$download_timescale == "monthly") ~ "perf_mon_split_mar",
+               input$download_timescale == "monthly") ~ "perf_mon_split_jun",
             (input$download_dataset == "Summary of patients waiting and admitted" &
-               input$download_timescale == "quarterly") ~ "perf_qtr_split_mar",
+               input$download_timescale == "quarterly") ~ "perf_qtr_split_jun",
             TRUE ~ "no_choice"
 
             ) # case when
