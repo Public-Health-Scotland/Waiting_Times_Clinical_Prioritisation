@@ -15,8 +15,10 @@ if (!is.null(project_directory)){ setwd(project_directory) }
 processed_data_folder <- "data/processed data/"
 shiny_data_folder <- "shiny_app/data/"
 
-# Load all processed data files and save out as rds
+# Remove all files in shiny data folder
+purrr::walk(list.files(path=shiny_data_folder, full.names=TRUE), file.remove)
 
+# Load all processed data files and save out as rds
 copy_to_shiny_data <- function(csv){
   # Given a .csv file name in processed_data_folder
   # copies it across to an .rds file in shiny_data_folder
@@ -24,12 +26,8 @@ copy_to_shiny_data <- function(csv){
   saveRDS(readfile, paste0(shiny_data_folder, gsub(".csv", ".rds", csv)))
 }
 
-# Find all csv files in processed_data
-processed_data_csvs <- list.files(path=processed_data_folder, pattern="*.csv")
-
-for(csv in processed_data_csvs){
-  copy_to_shiny_data(csv)
-}
+# Copy all csv files in processed_data to shiny_data as rds files
+purrr::walk(list.files(path=processed_data_folder, pattern="*.csv"), copy_to_shiny_data)
 
 
 
