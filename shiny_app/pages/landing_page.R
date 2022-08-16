@@ -70,24 +70,24 @@ output$landing_page_ui <-  renderUI({
     fluidRow(width=12, height="50px", shinydashboard::box(width=NULL, height="50px", br())),
 
     fluidRow(width=12,
-             shinydashboard::tabBox( width=NULL, type="pills", height="600px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="800px", side="right",
 
                                      tabPanel("Charts",
                                               tagList(
                                                 column(7,
-                                                             plots[["waits_breakdown_facets"]] # facetted DoW plot
+                                                       br(), br(),
+                                                       plots[["waits_breakdown_facets"]] # facetted DoW plot
                                               ), #column
                                               column(5,
                                                      # shunting table down to make it more centred
+                                                     numbers[["median_table_output"]],
                                                      br(), br(),
                                                      actionButton("btn_modal_median",
                                                                   "What is the median?",
                                                                   icon = icon('question-circle')),
                                                      actionButton("btn_modal_90th",
                                                                   "What is the 90th percentile?",
-                                                                  icon = icon('question-circle')),
-                                                     br(), br(), br(),
-                                                     numbers[["median_table_output"]]
+                                                                  icon = icon('question-circle'))
                                               ) # column
                                               ) #taglist
 
