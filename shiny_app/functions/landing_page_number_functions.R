@@ -2,7 +2,8 @@
 
 ## Activity
 
-activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly") {
+activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly",
+                           chosen_specialty="All Specialties") {
 
 
     if (timescale == "monthly"){

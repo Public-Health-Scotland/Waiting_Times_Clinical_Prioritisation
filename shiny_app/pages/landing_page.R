@@ -10,17 +10,23 @@ output$landing_page_ui <-  renderUI({
     # Filters and toggles
     fluidRow(width=12,
              shinydashboard::box(width=NULL, height="100px",
-              column(width=6,
+              column(width=4,
                      pickerInput("hbt_filter",
                                  "1. Select Health Board of Treatment ",
-                                 choices = unique(app_data[["perf_qtr_split_mar"]]$nhs_board_of_treatment),
+                                 choices = unique(app_data[["ongoing_completed_for_MI_all_specs"]]$nhs_board_of_treatment),
                                  selected = "NHS Scotland",
-                                # pickerOptions = list(liveSearch = TRUE, showTick=TRUE),
                                  multiple = FALSE)
                   ), # column
-              column(width=6,
+              column(width=4,
+                     pickerInput("specialty_filter",
+                                 "2. Select specialty ",
+                                 choices = unique(app_data[["ongoing_completed_for_MI_all_specs"]]$specialty),
+                                 selected = "All Specialties",
+                                 multiple = FALSE)
+              ), # column
+              column(width=4,
                      radioButtons("timescale_choice",
-                                  "2. Select timescale ",
+                                  "3. Select timescale ",
                                  choices = c("monthly", "quarterly"),
                                  selected = "monthly",
                                  inline=TRUE)
@@ -60,7 +66,7 @@ output$landing_page_ui <-  renderUI({
              shinydashboard::box( width=NULL, height="100px",
                                   tagList(
                                     h3("Distribution of waits for patients admitted and waiting"),
-                                    pickerInput("timescale_filter_waits_f", "3. Select month",
+                                    pickerInput("timescale_filter_waits_f", "4. Select month",
                                                 choices = get_month(unique(app_data[["perf_mon_split_mar"]]$date)),
                                                 selected = "March 2022")
                                               ) # pickerInput
@@ -148,6 +154,7 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_mar"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
+                              chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
   # plot patients admitted
   p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_mar"]],
@@ -167,20 +174,7 @@ plots$activity_stacked <- renderPlotly({
           style(p2, showlegend = FALSE),
           p1, nrows = 3, shareX = TRUE, # share axis between plots
           heights = c(0.3, 0.3, 0.3),
-          titleY = TRUE) #%>% # keep subplot titles
-    #layout(
-    #  annotations = list(
-    #    list(x = 0 , y = 1, text = "Patients added to the list", showarrow = FALSE,
-    #         xref = 'paper', xanchor = "left", yref = 'paper', font = list(family = "arial",
-    #                                                                      size = 16)),
-    #    list(x = 0 , y = 0.65, text = "Patients admitted for treatment", showarrow = FALSE,
-    #         xref = 'paper', yref = 'paper', font = list(family = "arial",
-    #                                                     size = 16)),
-    #    list(x = 0 , y = 0.3, text = "Patients waiting", showarrow = FALSE,
-    #         xref = 'paper', yref = 'paper', font = list(family = "arial",
-    #                                                    size = 16))
-    #    )
-    #)
+          titleY = TRUE)
 })
 
 
@@ -194,6 +188,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                       monthly=app_data[["dow_4wk_mon_mar"]]),
                                  waiting_status="waiting",
                                  timescale=input$timescale_choice,
+                                 chosen_specialty = input$specialty_filter,
                                  time_chunk_end=input$timescale_filter_waits_f,
                                  hbt=input$hbt_filter)
 
@@ -202,6 +197,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                      monthly=app_data[["dow_4wk_mon_mar"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
+                                chosen_specialty = input$specialty_filter,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
 
@@ -217,6 +213,7 @@ numbers$activity_table_output <- DT::renderDataTable({
   make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_mar"]],
                                  monthly=app_data[["add_perf_mon_mar"]]),
                             hbt=input$hbt_filter,
+                            chosen_specialty = input$specialty_filter,
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(4,5))
@@ -247,6 +244,7 @@ numbers$median_table_output <- DT::renderDataTable({
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_mar"]],
                           monthly=app_data[["perf_mon_split_mar"]]),
                      timescale=input$timescale_choice,
+                     chosen_specialty = input$specialty_filter,
                      time_chunk_end=input$timescale_filter_waits_f,
                      hbt=input$hbt_filter)
                  )
@@ -263,6 +261,7 @@ numbers$waits_table_output <- DT::renderDataTable({
                               monthly=app_data[["dow_4wk_mon_mar"]]),
                             hbt=input$hbt_filter,
                             time_chunk_end=input$timescale_filter_waits_f,
+                            chosen_specialty = input$specialty_filter,
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(3),

@@ -3,7 +3,8 @@
 ## Activity
 activity_trendplot <- function(input_data, waiting_status,
                                hbt="NHS Scotland",
-                               timescale="monthly") {
+                               timescale="monthly",
+                               chosen_specialty="All Specialties") {
 
   # Waiting status
   indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
@@ -24,17 +25,17 @@ activity_trendplot <- function(input_data, waiting_status,
            nhs_board_of_treatment == hbt,
            urgency != "Total") %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
-   group_by(across(c(-urgency, -number))) %>% 
-   mutate(total = sum(number)) %>% 
+   group_by(across(c(-urgency, -number))) %>%
+   mutate(total = sum(number)) %>%
    select(cols_to_keep) %>%
-   ungroup() %>% 
+   ungroup() %>%
    unique()
 
   yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
-  
+
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
                            waiting_status == "admitted" ~ "Patients admitted for treatment",
                            waiting_status == "additions" ~ "Patients added to the list",
@@ -46,9 +47,9 @@ activity_trendplot <- function(input_data, waiting_status,
 
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- xaxis_title
-  xaxis_plots[["type"]] <- "category" #display only quarters on quaterly plot axis
-  
- 
+  xaxis_plots[["type"]] <- "category" # display only quarters on quaterly plot axis
+
+
 
   if(timescale == "monthly"){
 
@@ -61,7 +62,7 @@ activity_trendplot <- function(input_data, waiting_status,
   }
 
 
-  
+
   p <- dataset %>%
     arrange(date_plot) %>%
       plot_ly(x = ~factor(get_month(date_plot),levels = format(unique(date_plot), "%B %Y")), height = 900, legendgroup=~urgency) %>%
@@ -77,18 +78,7 @@ activity_trendplot <- function(input_data, waiting_status,
               "<b>Urgency</b>: %{customdata}",
               "<b>Number of Patients</b>: %{y:,}",
               "<b>Total</b>: %{text:,}<extra></extra>",
-              sep = "\n")) #%>%
-    #add_annotations(
-    #  text = paste(unique(waiting_status),"\n"),
-    #  x = 0,
-    #  y = 1.05,
-    #  yref = "paper",
-    #  xref = "paper",
-    #  xanchor = "left",
-    #  yanchor = "bottom",
-    #  showarrow = FALSE,
-    #  font = list(size = 14, face = "bold")
-    #)
+              sep = "\n"))
 
     if (timescale == "monthly"){
       p %<>% add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),
@@ -116,7 +106,7 @@ activity_trendplot <- function(input_data, waiting_status,
 
 }
 
-##Activity BANs
+## Activity BANs
 activity_ban <- function(value, subtitle, icon, color) {
 
   div(class = "col-lg-3 col-md-6",
