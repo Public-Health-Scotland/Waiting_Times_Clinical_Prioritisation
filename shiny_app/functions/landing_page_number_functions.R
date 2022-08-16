@@ -66,7 +66,7 @@ median_byurgency_table <- function(input_data,
 
   dataset <- input_data[[timescale]] %>%
     # if status is ongoing cannot yet compute stats
-    filter(indicator == "Completed",
+    filter(ongoing_completed == "Completed",
            date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt) %>%
