@@ -57,7 +57,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
             hovertemplate = paste(
               "<b>Healthboard</b>:  %{y}",
               "<b>Number of Patients</b>: %{customdata:,}",
-              "<b>Percentage</b>: %{x}%",
+              "<b>Percentage</b>: %{x}",
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
