@@ -198,8 +198,7 @@ add_mon <- addrem %>%
 
 #Additions completeness
 add_comp <- addrem %>%
-  filter(specialty == "All Specialties",
-         indicator == "additions_to_list") %>%
+  filter(indicator == "additions_to_list") %>%
   select(patient_type, indicator, nhs_board_of_treatment, specialty, date, completeness) %>%
   summarise(completeness = unique(completeness)) #Only take one row per group
 
@@ -242,19 +241,19 @@ add_mon <- addrem %>%
 
 #2.4.2 - Create 2019 average combined lookup and combined data for additions, completed, waiting ----
 
-avg_2019 <- bind_rows(add_2019, perf_2019)
+avg_2019 <- bind_rows(add_2019, add_2019_specs, perf_2019, perf_2019_specs)
 
 add_perf_monthly  <- perf_split %>% #First modify perf_split
   rename(indicator = ongoing_completed,
          number = `number_seen/on_list`) %>%
   select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   bind_rows(select(addrem %>% select(-completeness) %>% filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
-  filter(specialty=="All Specialties") %>%
+  # filter(specialty=="All Specialties") %>%
   left_join(select(avg_2019, -quarterly_avg), 
             by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
-  group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
-  mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
-         y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
+  group_by(nhs_board_of_treatment, specialty, indicator, date)
+  #mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
+         #y_max2 = roundUpNice(max(monthly_avg))) #Calculate max from 2019 data per group
 
 add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
   rename(indicator = ongoing_completed,
@@ -262,11 +261,11 @@ add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
   select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   bind_rows(select(addrem_qtr %>% 
                      filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
-  filter(specialty=="All Specialties") %>%
+  #filter(specialty=="All Specialties") %>%
   left_join(select(avg_2019, -monthly_avg), by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
-  group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
-  mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
-         y_max2 = roundUpNice(max(quarterly_avg))) #Calculate max from 2019 data per group
+  group_by(nhs_board_of_treatment, specialty, indicator, date)
+  #mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
+         #y_max2 = roundUpNice(max(quarterly_avg))) #Calculate max from 2019 data per group
 
 
 # 2.6 HBT Variation Plot Data ---------------------------------------------
