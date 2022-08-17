@@ -93,7 +93,7 @@ perf_split <- perf %>%
   filter(urgency!="Total") %>% 
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
   mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0, 
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`, na.rm=T), 0), 1),
+                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T), 0), 2),
          y_max = sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T)) %>% #Need to exclude the Total group to avoid double-counting
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max))) #calculate max y for graph limits
@@ -188,8 +188,8 @@ addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian 
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(number = 0)) %>% 
   group_by(patient_type, nhs_board_of_treatment, specialty, date, indicator) %>%
-  mutate(proportion_CP = ifelse(urgency=="Total", NA, 100*number/sum(number[!urgency=="Total"], na.rm=T)),
-         completeness = 100*sum(number[!urgency %in% c("Other","Total")], na.rm=T)/sum(number[!urgency=="Total"], na.rm=T)) #Calculate proportion of indicator by CP
+  mutate(proportion_CP = ifelse(urgency=="Total", NA, round(100*number/sum(number[!urgency=="Total"], na.rm=T),2)),
+         completeness = round(100*sum(number[!urgency %in% c("Other","Total")], na.rm=T)/sum(number[!urgency=="Total"], na.rm=T),2)) #Calculate proportion of indicator by CP
   
 
 #Additions only for Excel MI
@@ -209,7 +209,7 @@ total_comp <- bind_rows(add_comp, perf_comp) %>%
 #Quarterly additions ----
 addrem_qtr <- addrem %>%
   group_by(patient_type, nhs_board_of_treatment, indicator,  specialty, urgency, date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
-  summarise(number = sum(number[!urgency=="Total"], na.rm = T))
+  summarise(number = if_else(!urgency=="Total", sum(number[!urgency=="Total"], na.rm = T),sum(number[urgency=="Total"], na.rm = T))) %>% unique()
 
 
 #2.4.1 - long-term additions to get 2019 average ----
@@ -272,7 +272,7 @@ add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
 #additions from addrem_qtr
 hb_var_data <- perf_qtr_split %>%
   ungroup() %>%
-  select(-c(waited_waiting_over_52_weeks:y_max)) %>%
+  select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   rename(number = `number_seen/on_list`,
          indicator = `ongoing_completed`) %>%
   bind_rows(addrem_qtr) %>%
@@ -307,7 +307,7 @@ add_stats <- addrem_qtr %>%
   mutate(allspec = sum(number[specialty=="All Specialties" & !urgency=="Total"],na.rm=T)) %>% #Add all specialties total added to all rows
   group_by(date, indicator, nhs_board_of_treatment, specialty) %>% 
   summarise(number = sum(number[!urgency=="Total"], na.rm = T), #Calculate total seen/waiting for each specialty (sum across CP codes)
-            proportion = 100*number/allspec) %>% #Calculate the proportion of all seen/waiting for each specialty
+            proportion = round(100*number/allspec,2)) %>% #Calculate the proportion of all seen/waiting for each specialty
   unique()
 
 #Calculate the proportion of admissions and ongoing waits represented by each specialty per HB, bind onto additions 
@@ -316,7 +316,7 @@ specstats <- perf_qtr_split  %>%
   mutate(allspec = sum(`number_seen/on_list`[specialty=="All Specialties" & !urgency=="Total"],na.rm=T)) %>% #Add all specialties total added to all rows
   group_by(date,patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>% 
   summarise(`total_seen/on_list` = sum(`number_seen/on_list`[!urgency=="Total"], na.rm = T), #Calculate total seen/waiting for each specialty (sum across CP codes)
-            proportion = 100*`total_seen/on_list`/allspec) %>% #Calculate the proportion of all seen/waiting for each specialty
+            proportion = round(100*`total_seen/on_list`/allspec,2)) %>% #Calculate the proportion of all seen/waiting for each specialty
   unique() %>%
   rename(indicator = ongoing_completed,
          number = `total_seen/on_list`) %>%
@@ -324,6 +324,7 @@ specstats <- perf_qtr_split  %>%
   select(-`patient_type`) %>%
   bind_rows(add_stats)
 
+#Lists of top six specialties per HBT and quarter
 topsix <- specstats %>%
   filter(indicator=="Ongoing", !specialty=="All Specialties") %>%
   arrange(desc(proportion)) %>%
@@ -332,18 +333,38 @@ topsix <- specstats %>%
   group_by(date, nhs_board_of_treatment) %>%
   summarise(specialties = as.character(list(unique(specialty))))
 
+##Data for top six specialties
+topsixstats <- specstats %>% 
+left_join(topsix, by=c("nhs_board_of_treatment", "date")) %>%
+filter(str_detect(specialties, specialty))
 
-# 2.9 Get P2 proportions by spec for graphs in report and shiny app ---------------
+##Proportion of total seen/waiting represented by these 6 specialties
+topsix_prop <- topsixstats %>%
+  filter(nhs_board_of_treatment == "NHS Scotland") %>%
+  group_by(date, indicator) %>%
+  summarise(`proportion of total` = sum(proportion))
 
-#Calculate proportion of additions that are P2 per specialty
+##Calculate proportion of additions that are P2 per specialty
 spec_p2_prop <- addrem_qtr  %>%
   filter(nhs_board_of_treatment == "NHS Scotland",
          indicator == "additions_to_list",
          date == max_date) %>%
-  group_by(specialty) %>%
-  mutate(total = sum(number[!urgency=="Total"], na.rm = T),
-         p2_prop = sum(number[urgency == "P2"], na.rm = T)/total) %>%
-  select(indicator, specialty, number, p2_prop) 
+  group_by(indicator,specialty) %>%
+  summarise(total = sum(number[!urgency=="Total"], na.rm = T),
+         p2_prop = round(sum(number[urgency == "P2"], na.rm = T)/total,2)) %>%
+  select(indicator, specialty, number = total, p2_prop) 
+
+##Bind top six list onto hb_var_plotdata for use in topsix plot function
+hb_var_plotdata %<>% 
+  left_join(topsix, by = c("nhs_board_of_treatment", "date"))
+
+#Calculate proportion of additions by HB/spec/CP/date
+#addrem_qtr_split <- addrem_qtr %>%
+#  group_by(nhs_board_of_treatment, specialty, indicator,date) %>%
+#  mutate(total = sum(number[!urgency=="Total"], na.rm = T)) %>%
+#  ungroup() %>%
+#  mutate(proportion = round(number/total,2))
+
 
 # 2.8 - Save data for Excel and app ----
 
