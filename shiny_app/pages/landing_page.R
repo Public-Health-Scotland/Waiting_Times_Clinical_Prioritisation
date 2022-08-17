@@ -180,12 +180,14 @@ plots$activity_stacked <- renderPlotly({
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
+                              chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
   # plot additions to the list
   p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
+                              chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
 
   # make facets
