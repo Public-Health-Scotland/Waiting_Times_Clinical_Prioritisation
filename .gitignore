@@ -3,6 +3,8 @@
 r_code_maiana.Rproj
 Clinical_Prioritisation_RP.Rproj
 
+shiny_app/AppDeployment.R
+
 # History files
 .Rhistory
 .Rapp.history
