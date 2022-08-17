@@ -18,7 +18,7 @@ output$landing_page_ui <-  renderUI({
                                  multiple = FALSE)
                   ), # column
               column(width=4,
-                     pickerInput("specialty_filter",
+                     pickerInput("specialty_filter_lp",
                                  "2. Select specialty ",
                                  choices = unique(app_data[["add_perf_qtr_specs_jun"]]$specialty),
                                  selected = "All Specialties",
@@ -49,15 +49,20 @@ output$landing_page_ui <-  renderUI({
                                                 # Have restyled them as PHS colours in the css file.
                                                 # green: phs-green; purple: phs-purple; blue: phs-blue;
                                                 # fuchsia: phs-magenta; olive: phs-graphite;
-                                                shinydashboard::valueBox(value=1000, subtitle="P1", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_waiting_p1"]],
+                                                                         subtitle="P1", width=2,
                                                                          color="green"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P2", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_waiting_p2"]],
+                                                                         subtitle="P2", width=2,
                                                                          color="purple"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P3", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_waiting_p3"]],
+                                                                         subtitle="P3", width=2,
                                                                          color="blue"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P4", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_waiting_p4"]],
+                                                                         subtitle="P4", width=2,
                                                                          color="fuchsia"),
-                                                shinydashboard::valueBox(value=1000, subtitle="Other", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_waiting_other"]],
+                                                                         subtitle="Other", width=2,
                                                                          color="olive"),
                                                 # Activity plot
                                                 column(width = 12,
@@ -162,7 +167,43 @@ observeEvent(
 )
 
 
+## BANs
 
+numbers$ban_waiting_p1 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                                     monthly=app_data[["add_perf_mon_specs_jun"]]),
+                                cp="P1A-1B",
+                                waiting_status="waiting",
+                                hbt=input$hbt_filter,
+                                chosen_specialty=input$specialty_filter_lp,
+                                timescale=input$timescale_choice)})
+numbers$ban_waiting_p2 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
+                                  cp="P2",
+                                  waiting_status="waiting",
+                                  hbt=input$hbt_filter,
+                                  chosen_specialty=input$specialty_filter_lp,
+                                  timescale=input$timescale_choice)})
+numbers$ban_waiting_p3 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
+                                  cp="P3",
+                                  waiting_status="waiting",
+                                  hbt=input$hbt_filter,
+                                  chosen_specialty=input$specialty_filter_lp,
+                                  timescale=input$timescale_choice)})
+numbers$ban_waiting_p4 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
+                                  cp="P4",
+                                  waiting_status="waiting",
+                                  hbt=input$hbt_filter,
+                                  chosen_specialty=input$specialty_filter_lp,
+                                  timescale=input$timescale_choice)})
+numbers$ban_waiting_other <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
+                                  cp="Other",
+                                  waiting_status="waiting",
+                                  hbt=input$hbt_filter,
+                                  chosen_specialty=input$specialty_filter_lp,
+                                  timescale=input$timescale_choice)})
 
 
 ## Activity plots
@@ -173,7 +214,7 @@ plots$activity_stacked <- renderPlotly({
                                    monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter,
+                              chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
   # plot patients admitted
   p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
@@ -207,7 +248,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                       monthly=app_data[["dow_4wk_mon_jun"]]),
                                  waiting_status="waiting",
                                  timescale=input$timescale_choice,
-                                 chosen_specialty = input$specialty_filter,
+                                 chosen_specialty = input$specialty_filter_lp,
                                  time_chunk_end=input$timescale_filter_waits_f,
                                  hbt=input$hbt_filter)
 
@@ -216,7 +257,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                      monthly=app_data[["dow_4wk_mon_jun"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
-                                chosen_specialty = input$specialty_filter,
+                                chosen_specialty = input$specialty_filter_lp,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
 
@@ -232,7 +273,7 @@ numbers$activity_table_output <- DT::renderDataTable({
   make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                  monthly=app_data[["add_perf_mon_specs_jun"]]),
                             hbt=input$hbt_filter,
-                            chosen_specialty = input$specialty_filter,
+                            chosen_specialty = input$specialty_filter_lp,
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(4,5))
@@ -247,7 +288,7 @@ numbers$median_table_output <- DT::renderDataTable({
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_jun"]],
                                            monthly=app_data[["perf_mon_split_jun"]]),
                      timescale=input$timescale_choice,
-                     chosen_specialty = input$specialty_filter,
+                     chosen_specialty = input$specialty_filter_lp,
                      time_chunk_end=input$timescale_filter_waits_f,
                      hbt=input$hbt_filter)
                  )
@@ -264,7 +305,7 @@ numbers$waits_table_output <- DT::renderDataTable({
                               monthly=app_data[["dow_4wk_mon_jun"]]),
                             hbt=input$hbt_filter,
                             time_chunk_end=input$timescale_filter_waits_f,
-                            chosen_specialty = input$specialty_filter,
+                            chosen_specialty = input$specialty_filter_lp,
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(3),
