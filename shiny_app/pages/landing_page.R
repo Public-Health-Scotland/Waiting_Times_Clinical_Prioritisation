@@ -40,9 +40,21 @@ output$landing_page_ui <-  renderUI({
 
                                      tabPanel("Charts",
                                               tagList(
-                                                h3("Number of TTG patients added to the list, admitted and waiting"),
+                                                h3("Number of TTG patients added to the list,
+                                                   admitted and waiting"),
                                                 br(),
-                                                numbers[["activity_ban_P2"]],
+                                                # BANs
+                                                shinydashboard::valueBox(value=1000, subtitle="P1", width=2,
+                                                                         color="green"),
+                                                shinydashboard::valueBox(value=1000, subtitle="P2", width=2,
+                                                                         color="purple"),
+                                                shinydashboard::valueBox(value=1000, subtitle="P3", width=2,
+                                                                         color="blue"),
+                                                shinydashboard::valueBox(value=1000, subtitle="P4", width=2,
+                                                                         color="fuchsia"),
+                                                shinydashboard::valueBox(value=1000, subtitle="Other", width=2,
+                                                                         color="olive"),
+                                                # Activity plot
                                                 column(width = 12,
                                                        plots[["activity_stacked"]])
                                                 )
@@ -51,7 +63,8 @@ output$landing_page_ui <-  renderUI({
 
                                      tabPanel("Data",
                                               tagList(
-                                                h3("Number of TTG patients added to the list, admitted and waiting"),
+                                                h3("Number of TTG patients added to the list,
+                                                   admitted and waiting"),
                                                 br(),
                                                 numbers[["activity_table_output"]])
                                      )
@@ -220,22 +233,6 @@ numbers$activity_table_output <- DT::renderDataTable({
              add_separator_cols = c(4,5))
 
 })
-
-numbers$activity_ban_P1 <- activity_ban(value = "1",
-                                            color = waiting_times_palette[1],
-                                            subtitle = "P1A-1B")
-numbers$activity_ban_P2 <- activity_ban(value = "1",
-                                        color = waiting_times_palette[2],
-                                        subtitle = "P2")
-numbers$activity_ban_P3 <- activity_ban(value = "1",
-                                        color = waiting_times_palette[3],
-                                        subtitle = "P3")
-numbers$activity_ban_P4 <- activity_ban(value = "1",
-                                        color = waiting_times_palette[4],
-                                        subtitle = "P4")
-numbers$activity_ban_Other <- activity_ban(value = "1",
-                                        color = waiting_times_palette[5],
-                                        subtitle = "Other")
 
 ## Distribution of waits numbers
 
