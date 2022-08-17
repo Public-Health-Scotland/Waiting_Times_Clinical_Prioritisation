@@ -23,9 +23,15 @@ ban <- function(input_data, cp,
            specialty == chosen_specialty,
            urgency == cp,
            date == max(date)) %>%
-    .$number %>% unique() %>% .[[1]] %>%
-    format(big.mark=",")
+    unique()
 
+  # Displaying 0 if no entries
+  if (nrow(ban)==0){
+    ban <- "0"
+  } else {
+    ban %<>% .$number %>%
+      format(big.mark=",")
+  }
 
   return(ban)
 
