@@ -68,7 +68,7 @@ activity_trendplot <- function(input_data, waiting_status,
     arrange(date_plot) %>%
       plot_ly(x = ~factor(get_month(date_plot, format="%b<br>%Y"),
                           levels = format(unique(date_plot), "%b<br>%Y")),
-              height = 900, legendgroup=~urgency) %>%
+              height = 320, legendgroup=~urgency) %>%
       add_bars(y = ~number,
              color = ~urgency,
              colors = waiting_times_palette,
@@ -95,7 +95,7 @@ activity_trendplot <- function(input_data, waiting_status,
                        legendgroup = "average")
     }
       #Layout
-     p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
+     p %<>%  layout(margin = list(b = 30, t = 10), #to avoid labels getting cut out
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),

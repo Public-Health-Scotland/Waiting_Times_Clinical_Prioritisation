@@ -1,5 +1,37 @@
 ####################### Landing Page Number Functions #######################
 
+## Get BANs
+ban <- function(input_data, cp,
+                waiting_status="waiting",
+                hbt="NHS Scotland", timescale="monthly",
+                chosen_specialty="All Specialties"){
+
+  if (timescale == "monthly"){
+    dataset <- input_data$monthly
+  } else {
+    dataset <- input_data$quarterly
+  }
+
+  indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
+                                waiting_status == "admitted" ~ "Completed",
+                                waiting_status == "additions" ~ "additions_to_list",
+                                TRUE ~ "")
+
+  ban <- dataset %>%
+    filter(nhs_board_of_treatment == hbt,
+           indicator == indicator_string,
+           specialty == chosen_specialty,
+           urgency == cp,
+           date == max(date)) %>%
+    .$number %>% unique() %>% .[[1]] %>%
+    format(big.mark=",")
+
+
+  return(ban)
+
+}
+
+
 ## Activity
 
 activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly",

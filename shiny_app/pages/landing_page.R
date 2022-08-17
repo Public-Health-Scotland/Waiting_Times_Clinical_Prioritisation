@@ -18,7 +18,7 @@ output$landing_page_ui <-  renderUI({
                                  multiple = FALSE)
                   ), # column
               column(width=4,
-                     pickerInput("specialty_filter",
+                     pickerInput("specialty_filter_lp",
                                  "2. Select specialty ",
                                  choices = unique(app_data[["add_perf_qtr_specs_jun"]]$specialty),
                                  selected = "All Specialties",
@@ -36,35 +36,80 @@ output$landing_page_ui <-  renderUI({
 
 
     fluidRow(
-             shinydashboard::tabBox( width=NULL, type="pills", height="1000px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="1400px", side="right",
 
                                      tabPanel("Charts",
                                               tagList(
                                                 h3("Number of TTG patients added to the list,
                                                    admitted and waiting"),
                                                 br(),
+                                                # Additions
+
                                                 # BANs
                                                 # NB: The colours below are proxy colours for PHS colours
                                                 # because only certain colours are accepted for this function.
                                                 # Have restyled them as PHS colours in the css file.
                                                 # green: phs-green; purple: phs-purple; blue: phs-blue;
                                                 # fuchsia: phs-magenta; olive: phs-graphite;
-                                                shinydashboard::valueBox(value=1000, subtitle="P1", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_additions_p1"]],
+                                                                         subtitle="P1", width=2,
                                                                          color="green"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P2", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_additions_p2"]],
+                                                                         subtitle="P2", width=2,
                                                                          color="purple"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P3", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_additions_p3"]],
+                                                                         subtitle="P3", width=2,
                                                                          color="blue"),
-                                                shinydashboard::valueBox(value=1000, subtitle="P4", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_additions_p4"]],
+                                                                         subtitle="P4", width=2,
                                                                          color="fuchsia"),
-                                                shinydashboard::valueBox(value=1000, subtitle="Other", width=2,
+                                                shinydashboard::valueBox(value=numbers[["ban_additions_other"]],
+                                                                         subtitle="Other", width=2,
+                                                                         color="olive"),
+                                                column(width = 12,
+                                                       plots[["activity_additions"]]),
+                                                # Admitted
+                                                shinydashboard::valueBox(value=numbers[["ban_admitted_p1"]],
+                                                                         subtitle="P1", width=2,
+                                                                         color="green"),
+                                                shinydashboard::valueBox(value=numbers[["ban_admitted_p2"]],
+                                                                         subtitle="P2", width=2,
+                                                                         color="purple"),
+                                                shinydashboard::valueBox(value=numbers[["ban_admitted_p3"]],
+                                                                         subtitle="P3", width=2,
+                                                                         color="blue"),
+                                                shinydashboard::valueBox(value=numbers[["ban_admitted_p4"]],
+                                                                         subtitle="P4", width=2,
+                                                                         color="fuchsia"),
+                                                shinydashboard::valueBox(value=numbers[["ban_admitted_other"]],
+                                                                         subtitle="Other", width=2,
                                                                          color="olive"),
                                                 # Activity plot
                                                 column(width = 12,
-                                                       plots[["activity_stacked"]])
-                                                )
+                                                       plots[["activity_admitted"]]),
 
-                                     ),
+                                                          # Waiting
+                                               shinydashboard::valueBox(value=numbers[["ban_waiting_p1"]],
+                                                                        subtitle="P1", width=2,
+                                                                        color="green"),
+                                               shinydashboard::valueBox(value=numbers[["ban_waiting_p2"]],
+                                                                        subtitle="P2", width=2,
+                                                                        color="purple"),
+                                               shinydashboard::valueBox(value=numbers[["ban_waiting_p3"]],
+                                                                        subtitle="P3", width=2,
+                                                                        color="blue"),
+                                               shinydashboard::valueBox(value=numbers[["ban_waiting_p4"]],
+                                                                        subtitle="P4", width=2,
+                                                                        color="fuchsia"),
+                                               shinydashboard::valueBox(value=numbers[["ban_waiting_other"]],
+                                                                        subtitle="Other", width=2,
+                                                                        color="olive"),
+                                               # Activity plot
+                                               column(width = 12,
+                                                      plots[["activity_waiting"]])
+
+                                     ) # taglist
+                                     ), # tabPanel
 
                                      tabPanel("Data",
                                               tagList(
@@ -162,41 +207,66 @@ observeEvent(
 )
 
 
+## BANs
+waiting_statuses <- c("additions", "admitted", "waiting")
+cps <- c("p1"="P1A-1B", "p2"="P2", "p3"= "P3", "p4"="P4", "other"="Other")
 
+# Get number for every waiting status and CP
+for (waiting_status in waiting_statuses){
+  for (cpname in names(cps)){
+    # Need this local to make sure that cpname and waiting_status
+    # are evaluated each time and not just taken as last value
+    # See https://gist.github.com/wch/5436415/
+    local({
+      # Making local variables
+      local_cpname <- cpname
+      local_waiting_status <- waiting_status
 
+    numbers[[paste0("ban_", local_waiting_status, "_", local_cpname)]] <- renderText({
+      ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+               monthly=app_data[["add_perf_mon_specs_jun"]]),
+          cp=cps[[local_cpname]],
+          waiting_status=local_waiting_status,
+          hbt=input$hbt_filter,
+          chosen_specialty=input$specialty_filter_lp,
+          timescale=input$timescale_choice)
+        })# renderText
+
+    }) # local
+  }
+}
 
 ## Activity plots
-plots$activity_stacked <- renderPlotly({
 
-  # plot patients waiting
-  p1 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+# plot patients waiting
+plots$activity_waiting <- renderPlotly({
+  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                    monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter,
+                              chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
+})
   # plot patients admitted
-  p2 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+plots$activity_admitted <- renderPlotly({
+  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
+})
+
   # plot additions to the list
-  p3 <- activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+plots$activity_additions <- renderPlotly({
+  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter,
                               timescale=input$timescale_choice)
-
-  # make facets
-  subplot(style(p3, showlegend = FALSE), # keep one legend for all plots
-          style(p2, showlegend = FALSE),
-          p1, nrows = 3, shareX = TRUE, # share axis between plots
-          heights = c(0.3, 0.3, 0.3),
-          titleY = TRUE)
 })
+
 
 
 
@@ -209,7 +279,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                       monthly=app_data[["dow_4wk_mon_jun"]]),
                                  waiting_status="waiting",
                                  timescale=input$timescale_choice,
-                                 chosen_specialty = input$specialty_filter,
+                                 chosen_specialty = input$specialty_filter_lp,
                                  time_chunk_end=input$timescale_filter_waits_f,
                                  hbt=input$hbt_filter)
 
@@ -218,7 +288,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                      monthly=app_data[["dow_4wk_mon_jun"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
-                                chosen_specialty = input$specialty_filter,
+                                chosen_specialty = input$specialty_filter_lp,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
 
@@ -234,8 +304,9 @@ numbers$activity_table_output <- DT::renderDataTable({
   make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                  monthly=app_data[["add_perf_mon_specs_jun"]]),
                             hbt=input$hbt_filter,
-                            chosen_specialty = input$specialty_filter,
+                            chosen_specialty = input$specialty_filter_lp,
                             timescale=input$timescale_choice),
+             rows_to_display = 33,
              # These columns have thousand separator added
              add_separator_cols = c(4,5))
 
@@ -249,7 +320,7 @@ numbers$median_table_output <- DT::renderDataTable({
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_jun"]],
                                            monthly=app_data[["perf_mon_split_jun"]]),
                      timescale=input$timescale_choice,
-                     chosen_specialty = input$specialty_filter,
+                     chosen_specialty = input$specialty_filter_lp,
                      time_chunk_end=input$timescale_filter_waits_f,
                      hbt=input$hbt_filter)
                  )
@@ -266,7 +337,7 @@ numbers$waits_table_output <- DT::renderDataTable({
                               monthly=app_data[["dow_4wk_mon_jun"]]),
                             hbt=input$hbt_filter,
                             time_chunk_end=input$timescale_filter_waits_f,
-                            chosen_specialty = input$specialty_filter,
+                            chosen_specialty = input$specialty_filter_lp,
                             timescale=input$timescale_choice),
              # These columns have thousand separator added
              add_separator_cols = c(3),
