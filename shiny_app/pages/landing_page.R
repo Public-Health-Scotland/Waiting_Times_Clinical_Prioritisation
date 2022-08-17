@@ -208,116 +208,33 @@ observeEvent(
 
 
 ## BANs
+waiting_statuses <- c("additions", "admitted", "waiting")
+cps <- c("p1"="P1A-1B", "p2"="P2", "p3"= "P3", "p4"="P4", "other"="Other")
 
-# Additions
-numbers$ban_additions_p1 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P1A-1B",
-                                          waiting_status="additions",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_additions_p2 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P2",
-                                          waiting_status="additions",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_additions_p3 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P3",
-                                          waiting_status="additions",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_additions_p4 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P4",
-                                          waiting_status="additions",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_additions_other <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                                  monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                             cp="Other",
-                                             waiting_status="additions",
-                                             hbt=input$hbt_filter,
-                                             chosen_specialty=input$specialty_filter_lp,
-                                             timescale=input$timescale_choice)})
-# Admitted
-numbers$ban_admitted_p1 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P1A-1B",
-                                          waiting_status="admitted",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_admitted_p2 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P2",
-                                          waiting_status="admitted",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_admitted_p3 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P3",
-                                          waiting_status="admitted",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_admitted_p4 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                               monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                          cp="P4",
-                                          waiting_status="admitted",
-                                          hbt=input$hbt_filter,
-                                          chosen_specialty=input$specialty_filter_lp,
-                                          timescale=input$timescale_choice)})
-numbers$ban_admitted_other <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                                  monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                             cp="Other",
-                                             waiting_status="admitted",
-                                             hbt=input$hbt_filter,
-                                             chosen_specialty=input$specialty_filter_lp,
-                                             timescale=input$timescale_choice)})
-# Waiting
-numbers$ban_waiting_p1 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                     monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                cp="P1A-1B",
-                                waiting_status="waiting",
-                                hbt=input$hbt_filter,
-                                chosen_specialty=input$specialty_filter_lp,
-                                timescale=input$timescale_choice)})
-numbers$ban_waiting_p2 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                  cp="P2",
-                                  waiting_status="waiting",
-                                  hbt=input$hbt_filter,
-                                  chosen_specialty=input$specialty_filter_lp,
-                                  timescale=input$timescale_choice)})
-numbers$ban_waiting_p3 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                  cp="P3",
-                                  waiting_status="waiting",
-                                  hbt=input$hbt_filter,
-                                  chosen_specialty=input$specialty_filter_lp,
-                                  timescale=input$timescale_choice)})
-numbers$ban_waiting_p4 <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                  cp="P4",
-                                  waiting_status="waiting",
-                                  hbt=input$hbt_filter,
-                                  chosen_specialty=input$specialty_filter_lp,
-                                  timescale=input$timescale_choice)})
-numbers$ban_waiting_other <- renderText({ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                       monthly=app_data[["add_perf_mon_specs_jun"]]),
-                                  cp="Other",
-                                  waiting_status="waiting",
-                                  hbt=input$hbt_filter,
-                                  chosen_specialty=input$specialty_filter_lp,
-                                  timescale=input$timescale_choice)})
+# Get number for every waiting status and CP
+for (waiting_status in waiting_statuses){
+  for (cpname in names(cps)){
+    # Need this local to make sure that cpname and waiting_status
+    # are evaluated each time and not just taken as last value
+    # See https://gist.github.com/wch/5436415/
+    local({
+      # Making local variables
+      local_cpname <- cpname
+      local_waiting_status <- waiting_status
 
+    numbers[[paste0("ban_", local_waiting_status, "_", local_cpname)]] <- renderText({
+      ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+               monthly=app_data[["add_perf_mon_specs_jun"]]),
+          cp=cps[[local_cpname]],
+          waiting_status=local_waiting_status,
+          hbt=input$hbt_filter,
+          chosen_specialty=input$specialty_filter_lp,
+          timescale=input$timescale_choice)
+        })# renderText
+
+    }) # local
+  }
+}
 
 ## Activity plots
 

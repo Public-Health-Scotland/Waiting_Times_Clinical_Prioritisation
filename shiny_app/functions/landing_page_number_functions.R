@@ -26,6 +26,7 @@ ban <- function(input_data, cp,
     .$number %>% unique() %>% .[[1]] %>%
     format(big.mark=",")
 
+
   return(ban)
 
 }
