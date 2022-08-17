@@ -144,11 +144,11 @@ waits_distribution_plot <- function(input_data, waiting_status,
 
   tooltip_trend <- glue("{time_name} ending: {time_chunk_end}<br>",
                         "Weeks waiting: {dataset$weeks}<br>",
-                        "HBT: {hbt}<br>",
+                        "HBT: {dataset$nhs_board_of_treatment}<br>",
                         "Clinical prioritisation: {dataset$urgency}<br>",
-                        "Specialty: {chosen_specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")#,
-                       # "<b>Total</b>: {format(dataset$total, big.mark=',')}")
+                        "Specialty: {dataset$specialty}<br>",
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+                        "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
 
   p <- dataset %>%

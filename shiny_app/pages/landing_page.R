@@ -44,6 +44,11 @@ output$landing_page_ui <-  renderUI({
                                                    admitted and waiting"),
                                                 br(),
                                                 # BANs
+                                                # NB: The colours below are proxy colours for PHS colours
+                                                # because only certain colours are accepted for this function.
+                                                # Have restyled them as PHS colours in the css file.
+                                                # green: phs-green; purple: phs-purple; blue: phs-blue;
+                                                # fuchsia: phs-magenta; olive: phs-graphite;
                                                 shinydashboard::valueBox(value=1000, subtitle="P1", width=2,
                                                                          color="green"),
                                                 shinydashboard::valueBox(value=1000, subtitle="P2", width=2,
