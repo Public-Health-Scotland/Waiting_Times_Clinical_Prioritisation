@@ -23,6 +23,9 @@ activity_specs_hbt <- function(input_data, waiting_status,
     mutate(nhs_board_of_treatment = forcats::fct_reorder(as.factor(nhs_board_of_treatment),
                                                        p2_proportion, .desc=FALSE))
 
+  # Wrapping text on specialties for plotting
+  dataset$nhs_board_of_treatment_wrapped <- purrr::map_chr(dataset$nhs_board_of_treatment, wrap_label)
+
   facets <- unique(dataset$indicator)
 
   # Check that there is enough data to be displayed, otherwise throw error to user
@@ -42,7 +45,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
 
   p <- dataset %>%
     plot_ly(x = ~round(proportion,2),
-            y = ~factor(nhs_board_of_treatment),
+            y = ~factor(nhs_board_of_treatment_wrapped),
             height = 600,
             type = "bar",
             orientation = 'h', #make bar chart horizontal
