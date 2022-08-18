@@ -253,7 +253,7 @@ plots$activity_admitted <- renderPlotly({
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter,
+                              chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
 })
 
@@ -263,7 +263,7 @@ plots$activity_additions <- renderPlotly({
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter,
+                              chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
 })
 
