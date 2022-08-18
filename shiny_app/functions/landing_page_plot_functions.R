@@ -126,13 +126,17 @@ waits_distribution_plot <- function(input_data, waiting_status,
     filter(ongoing_completed == indicator_string,
            date == get_short_date(time_chunk_end),
            specialty == chosen_specialty,
-           nhs_board_of_treatment == hbt) %>%
+           nhs_board_of_treatment == hbt,
+           urgency!="Total") %>%
+    distinct() %>% 
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
-           total = sum(`number_seen/on_list`),
            weeks = get_pretty_weeks(weeks)) %>%
     mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
-    select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency, total) %>%
+    group_by(across(c(-urgency, -`number_seen/on_list`))) %>%
+    mutate(total = sum(`number_seen/on_list`)) %>% 
+    select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency,total) %>%
     unique()
+
 
   yaxis_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
                            waiting_status == "admitted" ~ "Patients admitted",
