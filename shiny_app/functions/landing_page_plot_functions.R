@@ -25,6 +25,7 @@ activity_trendplot <- function(input_data, waiting_status,
            nhs_board_of_treatment == hbt,
            specialty == chosen_specialty,
            urgency != "Total") %>%
+   distinct() %>% #removes duplicate rows
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other"))) %>%
    group_by(across(c(-urgency, -number))) %>%
    mutate(total = sum(number)) %>%
