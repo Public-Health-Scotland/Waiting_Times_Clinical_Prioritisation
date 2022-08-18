@@ -79,6 +79,11 @@ replace_colnames <- function(old_colnames){
 
 }
 
+cols_to_not_display <- c("y_max", "y_max2", "waited_waiting_over_26_weeks",
+                            "waited_waiting_over_52_weeks", "waited_waiting_over_104_weeks",
+                            "monthly_avg", "proportion"
+)
+
 
 
 # Move x and y axis labels of ggplotly so they don't overlap plot

@@ -23,10 +23,12 @@ activity_specs_hbt <- function(input_data, waiting_status,
     mutate(nhs_board_of_treatment = forcats::fct_reorder(as.factor(nhs_board_of_treatment),
                                                        p2_proportion, .desc=FALSE))
 
+  # Wrapping text on specialties for plotting
+  dataset$nhs_board_of_treatment_wrapped <- purrr::map_chr(dataset$nhs_board_of_treatment, wrap_label)
+
   facets <- unique(dataset$indicator)
 
   # Check that there is enough data to be displayed, otherwise throw error to user
-
   # Checking there are 1 or more facets and the dataset is not entirely populated by zeros
   validate(
     need(((length(facets)>=1) & (unique(dataset$number) != 0)),
@@ -42,8 +44,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
 
 
   p <- dataset %>%
-    plot_ly(x = ~round(100*proportion,2),
-            y = ~factor(nhs_board_of_treatment),
+    plot_ly(x = ~round(proportion,2),
+            y = ~factor(nhs_board_of_treatment_wrapped),
             height = 600,
             type = "bar",
             orientation = 'h', #make bar chart horizontal
@@ -58,7 +60,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
             hovertemplate = paste(
               "<b>Healthboard</b>:  %{y}",
               "<b>Number of Patients</b>: %{customdata:,}",
-              "<b>Percentage</b>: %{x}%",
+              "<b>Percentage</b>: %{x}",
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
@@ -74,7 +76,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
     )
 
   p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
-                 yaxis = yaxis_plots, xaxis = xaxis_plots,
+                 yaxis = yaxis_plots, xaxis = xaxis_pc,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
                  plot_bgcolor = phs_colours("phs-liberty-10"),
                  legend = list(x = 100, y = 0.5), #position of legend
@@ -83,44 +85,6 @@ activity_specs_hbt <- function(input_data, waiting_status,
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
 
   return(p)
-
-  # p <- ggplot(dataset, aes(x=nhs_board_of_treatment, y=proportion, group=urgency,
-  #                          text = paste(
-  #                            '</br>HBT: ', nhs_board_of_treatment,
-  #                            '</br>Urgency: ', urgency,
-  #                            '</br>Percentage: ', paste0(round(100*proportion, 2), '%'))
-  # )) +
-  #   geom_col(aes(fill = urgency),
-  #            position = position_stack(reverse = TRUE)) +
-  #   scale_fill_manual(values = waiting_times_palette) +
-  #   scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 10)) +
-  #   scale_y_continuous(labels = scales::percent) +
-  #   xlab("") +
-  #   ylab("") +
-  #   theme_minimal() +
-  #   theme(legend.position = "bottom",
-  #         legend.title = element_blank(),
-  #         axis.text.x = element_text(colour = phs_colours("phs-purple")),
-  #         strip.text = element_text(colour = phs_colours("phs-purple"), size=12)) +
-  #   facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
-  #              labeller = as_labeller(c(additions_to_list ="Additions to list \n",
-  #                                       Ongoing = "Patients waiting \n",
-  #                                       Completed = "Patients admitted \n") ))
-  #
-  #
-  # plotlyp <- ggplotly(p, height=600, tooltip=c("text"))%>%
-  #   #Layout
-  #   layout(margin = list(l=100, r=100, b=50, t=50, pad=4), #to avoid labels getting cut out
-  #          yaxis = yaxis_plots, xaxis = xaxis_plots,
-  #          paper_bgcolor = phs_colours("phs-liberty-10"),
-  #          plot_bgcolor = phs_colours("phs-liberty-10"),
-  #          legend = list(x = 100, y = 0.5), #position of legend
-  #          barmode = "stack") %>% #split by group
-  #   # leaving only save plot button
-  #   config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
-  #
-  # return(plotlyp)
-
 
 }
 

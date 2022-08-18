@@ -41,6 +41,10 @@ for (rds in rds_files){
 xaxis_plots <- list(title = FALSE, tickfont = list(size=14), titlefont = list(size=14),
                     showline = TRUE, fixedrange=TRUE)
 
+xaxis_pc <- list(title = FALSE, tickfont = list(size=14), titlefont = list(size=14),
+                    showline = TRUE, fixedrange=TRUE,
+                 tickformat="%")
+
 yaxis_plots <- list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4,
                     tickfont = list(size=14), titlefont = list(size=14))
 

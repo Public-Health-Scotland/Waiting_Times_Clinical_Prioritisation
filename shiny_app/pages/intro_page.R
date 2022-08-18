@@ -3,6 +3,19 @@
 output$intro_page_ui <-  renderUI({
 
   div(
+    wellPanel(
+      column(12,
+             h3("Select a topic to see background information"),
+             bsCollapse(id = "collapse_notes", open = "Panel 1",
+                        bsCollapsePanel("About Clinical Prioritisation", uiOutput("about_cp_notes")),
+                        bsCollapsePanel("Data quality", uiOutput("data_quality_notes")),
+                        bsCollapsePanel("Using the dashboard", uiOutput("using_dashboard_notes")),
+                        bsCollapsePanel("Further information", uiOutput("further_info_notes")),
+                        bsCollapsePanel("Accessibility", uiOutput("accessibility_notes"))
+             ) # bscollapse
+      ) # column
+    ), # wellpanel
+
     # 1st row of boxes
     fluidRow(
       h3("Use the buttons below or the tabs in the top bar to navigate around the dashboard"),
@@ -33,18 +46,7 @@ output$intro_page_ui <-  renderUI({
     ), # fluid row
    # End of first row
 
-   wellPanel(
-     column(12,
-            linebreaks(3),
-            h3("Select a topic to see background information"),
-            bsCollapse(id = "collapse_notes", open = "Panel 1",
-                       bsCollapsePanel("Overview", uiOutput("overview_notes")),
-                       bsCollapsePanel("Clinical Prioritisation", uiOutput("cp_notes")),
-                       bsCollapsePanel("Additional information", uiOutput("timeline_notes")),
-                       bsCollapsePanel("Specialties", uiOutput("specialty_notes"))
-            ) # bscollapse
-     ) # column
-   ) # wellpanel
+   fluidRow(width=12, height="100px", br())
 
 
   ) # div
@@ -53,41 +55,52 @@ output$intro_page_ui <-  renderUI({
 
 
 
-output$overview_notes <- renderUI({
+output$about_cp_notes <- renderUI({
 
   tagList(
-    h4("Overview"),
+    h4("About Clinical Prioritisation")#,
 
-    bsButton("jump_to_landing_page", label = "Go to overview")
+    #bsButton("jump_to_landing_page", label = "Go to overview")
 
   )
 }) # render UI close bracket
 
 
-output$cp_notes <- renderUI({
+output$data_quality_notes <- renderUI({
 
   tagList(
+    h4("Data quality")
 
   )
 }) # render UI close bracket
 
 
-output$generic_notes <- renderUI({
+output$using_dashboard_notes <- renderUI({
 
   tagList(
+    h4("Using the dashboard")
 
   )
 }) # render UI close bracket
 
-output$specialty_notes <- renderUI({
+output$further_info_notes <- renderUI({
 
   tagList(
-    h4("Specialties"),
+    h4("Further information")#,
 
-    bsButton("jump_to_specialties", label = "Go to specialties")
+    #bsButton("jump_to_specialties", label = "Go to specialties")
   )
 }) # render UI close bracket
 
+
+output$accessibility_notes <- renderUI({
+
+  tagList(
+    h4("Accessibility")#,
+
+  #  bsButton("jump_to_specialties", label = "Go to specialties")
+  )
+}) # render UI close bracket
 
 
 
