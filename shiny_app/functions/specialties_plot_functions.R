@@ -99,6 +99,7 @@ activity_specs <- function(input_data,
 # --------------------------------------------------------------------------
 ## Faceted waits graph
 
+#makes spec DoW plot
 waits_specs <- function(input_data, waiting_status,
                            qend="March 2022",
                            hbt="NHS Scotland",
@@ -169,7 +170,8 @@ waits_specs <- function(input_data, waiting_status,
 
 }
 
-make_dow_suplots <- function(data, specialties = c("All Specialties"), n_specs, 
+#calls wait_specs and wraps them in facetted view for chosen waiting_status
+make_dow_spec_suplots <- function(data, specialties = c("All Specialties"), n_specs, 
                              waiting_status, qend, hbt){
   
   validate(

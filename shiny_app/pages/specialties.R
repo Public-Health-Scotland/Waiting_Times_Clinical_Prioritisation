@@ -156,7 +156,7 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
 #Dow ongoing waits facetted by specialty
 plots$waits_spec_plot_ongoing <- renderPlotly({
   
-  make_dow_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+  make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                    specialties = input$specialty_filter,
                    n_specs = length(input$specialty_filter),
                    waiting_status = "waiting",
@@ -168,7 +168,7 @@ plots$waits_spec_plot_ongoing <- renderPlotly({
 #Dow admissions facetted by specialty
 plots$waits_spec_plot_admitted <- renderPlotly({
   
-  make_dow_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+  make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                    specialties = input$specialty_filter,
                    n_specs = length(input$specialty_filter),
                    waiting_status = "admitted",
