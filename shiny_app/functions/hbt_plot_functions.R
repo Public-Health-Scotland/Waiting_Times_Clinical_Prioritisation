@@ -79,7 +79,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
                  yaxis = yaxis_plots, xaxis = xaxis_pc,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
                  plot_bgcolor = phs_colours("phs-liberty-10"),
-                 legend = list(x = 100, y = 0.5), #position of legend
+                 legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
                  barmode = "stack") %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
@@ -148,12 +148,12 @@ waits_hbt <- function(input_data, waiting_status,
              legendgroup = ~urgency,
              name = ~urgency,
              showlegend = legend) %>%
-    #Layout
+    #Layout 
     layout(#to avoid labels getting cut out
       yaxis = yaxis_plots, xaxis = xaxis_plots,
       paper_bgcolor = phs_colours("phs-liberty-10"),
       plot_bgcolor = phs_colours("phs-liberty-10"),
-      legend = list(x = 100, y = 0.5), #position of legend
+      legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
       barmode = "stack") %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
