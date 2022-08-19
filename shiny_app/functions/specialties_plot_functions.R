@@ -116,12 +116,17 @@ waits_specs <- function(input_data, waiting_status,
            !urgency == "Total",
            date == get_short_date(qend),
            specialty == chosen_specialty) %>%
+    distinct() %>% 
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks),
            seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
                                       ongoing_completed == "Completed" ~ "Number seen")) %>%
     mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
-           )
+           ) %>% 
+    group_by(across(c(-urgency, -`number_seen/on_list`))) %>%
+    mutate(total = sum(`number_seen/on_list`)) %>%
+    ungroup() %>% 
+    unique()
   
   
   yaxis_title <- chosen_specialty
@@ -135,11 +140,12 @@ waits_specs <- function(input_data, waiting_status,
                         "HBT: {dataset$nhs_board_of_treatment}<br>",
                         "Clinical prioritisation: {dataset$urgency}<br>",
                         "Specialty: {dataset$specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>")
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+                        "<b>Total</b>: {format(dataset$total, big.mark=',')}")
   
   
   p <- dataset %>%
-    plot_ly(x = ~weeks, height = 1000) %>%
+    plot_ly(x = ~weeks, height = 1200) %>%
     add_bars(y = ~`number_seen/on_list`,
              color = ~urgency,
              colors = waiting_times_palette,
@@ -166,10 +172,11 @@ waits_specs <- function(input_data, waiting_status,
 make_dow_suplots <- function(data, specialties = c("All Specialties"), n_specs, 
                              waiting_status, qend, hbt){
   
-  # specialties <- input$specialty_filter #list of specs selected
-  # 
-  # n_specs <- length(input$specialty_filter) #num of specs selected
-  
+  validate(
+    need((length(specialties)>=1),
+         "There are no entries matching your selection. Please choose again.")
+  )
+
   plot_list <- vector("list", length = n_specs) #initialize empty list to store plots
   
   #create patients waiting DoW plots for each spec
@@ -201,7 +208,7 @@ make_dow_suplots <- function(data, specialties = c("All Specialties"), n_specs,
   
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>% 
-    layout(title=plot_title, margin = list(b = 10, t = 20))
+    layout(title=plot_title, margin = list(b = 10, t = 40))
   
 }
 
