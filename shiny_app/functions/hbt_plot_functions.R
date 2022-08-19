@@ -94,7 +94,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
 #makes hbt DoW plot
 waits_hbt <- function(input_data, waiting_status,
                         qend="March 2022",
-                        spec="All Specialties",
+                        chosen_specialty="All Specialties",
                         hbt="NHS Scotland",
                         legend = FALSE) {
   
@@ -108,7 +108,7 @@ waits_hbt <- function(input_data, waiting_status,
            ongoing_completed == indicator_string,
            !urgency == "Total",
            date == get_short_date(qend),
-           specialty == spec) %>%
+           specialty == chosen_specialty) %>%
     distinct() %>% 
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks),
@@ -180,15 +180,15 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
       hbt_plot <- waits_hbt(input_data = data,
                                waiting_status = waiting_status,
                                qend=qend,
-                               spec=spec,
+                               chosen_specialty=spec,
                                hbt = healthboards[[i]])
     }
     
     else{ #add legend to last plot 
       hbt_plot <- waits_hbt(input_data = data,
                                waiting_status = waiting_status,
-                               qend=input$quarter_end_spec,
-                               spec=input$hbt_filter_spec,
+                               qend=qend,
+                               chosen_specialty=spec,
                                hbt = healthboards[[i]],
                                legend = TRUE)
     }
