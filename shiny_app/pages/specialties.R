@@ -81,7 +81,14 @@ output$specialties_ui <-  renderUI({
                                               tagList(
                                                 h3("Distribution of waits"),
                                                 br(),
-                                                plots[["waits_facet_plot_spec"]],
+                                                fluidRow(
+                                                  column(6,
+                                                         plots[["waits_spec_plot_ongoing"]]
+                                                         ), #column
+                                                  column(6,
+                                                         plots[["waits_spec_plot_admitted"]]
+                                                         ) #column
+                                                ), #fluidrow
                                                 linebreaks(35),
                                                 materialSwitch(inputId = "show_data_waits",
                                                                label = "Show data",
@@ -146,13 +153,31 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
                                                       titleY = TRUE)
                                               })
 
-
-plots$waits_facet_plot_spec <- renderPlotly({waits_specs(input_data = app_data[["dow_4wk_qtr_pub_jun"]],
-                                                         qend=input$quarter_end_spec,
-                                                         hbt=input$hbt_filter_spec,
-                                                         specialties=input$specialty_filter)
+#Dow ongoing waits facetted by specialty
+plots$waits_spec_plot_ongoing <- renderPlotly({
+  
+  make_dow_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                   specialties = input$specialty_filter,
+                   n_specs = length(input$specialty_filter),
+                   waiting_status = "waiting",
+                   qend = input$quarter_end_spec,
+                   hbt = input$hbt_filter_spec)
 
 })
+
+#Dow admissions facetted by specialty
+plots$waits_spec_plot_admitted <- renderPlotly({
+  
+  make_dow_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                   specialties = input$specialty_filter,
+                   n_specs = length(input$specialty_filter),
+                   waiting_status = "admitted",
+                   qend = input$quarter_end_spec,
+                   hbt = input$hbt_filter_spec)
+  
+})
+
+
 
 ## Data
 
