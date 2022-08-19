@@ -85,7 +85,16 @@ output$hbt_ui <-  renderUI({
                                               tagList(
                                                 h3("Distribution of waits"),
                                                 br(),
-                                                plots[["waits_facet_plot_hbt"]],
+                                                fluidRow(
+                                                  column(6, 
+                                                         plots[["waits_hbt_plot_ongoing"]]
+                                                         ),#colum
+                                                  
+                                                  column(6,
+                                                         plots[["waits_hbt_plot_admitted"]]
+                                                         )#column
+                                                ),#fluidrow
+                                                # plots[["waits_facet_plot_hbt"]],
                                                 linebreaks(35),
                                                 materialSwitch(inputId = "show_data_waits_hbt",
                                                                label = "Show data",
@@ -142,10 +151,34 @@ plots$activity_facet_plot_hbt <- renderPlotly({
                                 })
 
 
-plots$waits_facet_plot_hbt <- renderPlotly({waits_specs_hbt(input_data=app_data[["dow_4wk_qtr_pub_jun"]],
-                                                           qend=input$quarter_end_spec_hbt,
-                                                           hbts=input$hbt_filter_hbt,
-                                                           specialty_choice=input$spec_filter_hbt)})
+#Dow ongoing waits facetted by hbt
+plots$waits_hbt_plot_ongoing <- renderPlotly({
+  
+  make_dow_hbt_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                        healthboards = input$hbt_filter_hbt,
+                        n_hbts = length(input$hbt_filter_hbt),
+                        waiting_status = "waiting",
+                        qend = input$quarter_end_spec_hbt,
+                        spec = input$spec_filter_hbt)
+  
+})
+
+#Dow admissions facetted by hbt
+plots$waits_hbt_plot_admitted <- renderPlotly({
+  
+  make_dow_hbt_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                        healthboards = input$hbt_filter_hbt,
+                        n_hbts = length(input$hbt_filter_hbt),
+                        waiting_status = "admitted",
+                        qend = input$quarter_end_spec_hbt,
+                        spec = input$spec_filter_hbt)
+  
+})
+
+# plots$waits_facet_plot_hbt <- renderPlotly({waits_specs_hbt(input_data=app_data[["dow_4wk_qtr_pub_jun"]],
+#                                                            qend=input$quarter_end_spec_hbt,
+#                                                            hbts=input$hbt_filter_hbt,
+#                                                            specialty_choice=input$spec_filter_hbt)})
 
 
 

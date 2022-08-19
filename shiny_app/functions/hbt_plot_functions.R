@@ -91,89 +91,205 @@ activity_specs_hbt <- function(input_data, waiting_status,
 # --------------------------------------------------------------------------
 ## Faceted waits graph
 
-waits_specs_hbt <- function(input_data,
+#makes hbt DoW plot
+waits_hbt <- function(input_data, waiting_status,
                         qend="March 2022",
-                        hbts=c("NHS Scotland"),
-                        specialty_choice="All Specialties") {
-
-
-
+                        spec="All Specialties",
+                        hbt="NHS Scotland",
+                        legend = FALSE) {
+  
+  indicator_string <- case_when(waiting_status == "waiting" ~ "Ongoing",
+                                waiting_status == "admitted" ~ "Completed",
+                                TRUE ~ "")
+  
+  
   dataset <- input_data %>%
-    filter(nhs_board_of_treatment %in% hbts,
-           date == get_short_date(qend),
+    filter(nhs_board_of_treatment == hbt,
+           ongoing_completed == indicator_string,
            !urgency == "Total",
-           specialty == specialty_choice) %>%
+           date == get_short_date(qend),
+           specialty == spec) %>%
+    distinct() %>% 
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks),
            seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
                                        ongoing_completed == "Completed" ~ "Number seen")) %>%
     mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
-    )
+    ) %>% 
+    group_by(across(c(-urgency, -`number_seen/on_list`))) %>%
+    mutate(total = sum(`number_seen/on_list`)) %>%
+    ungroup() %>% 
+    unique()
+  
+  
+  yaxis_title <- hbt
+  
+  yaxis_plots[["title"]] <- yaxis_title
+  xaxis_plots[["title"]] <- "Weeks waiting"
+  
+  
+  tooltip_trend <- glue("Quarter ending: {qend}<br>",
+                        "Weeks waiting: {dataset$weeks}<br>",
+                        "HBT: {dataset$nhs_board_of_treatment}<br>",
+                        "Clinical prioritisation: {dataset$urgency}<br>",
+                        "Specialty: {dataset$specialty}<br>",
+                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+                        "<b>Total</b>: {format(dataset$total, big.mark=',')}")
+  
+  
+  p <- dataset %>%
+    plot_ly(x = ~weeks, height = 1200) %>%
+    add_bars(y = ~`number_seen/on_list`,
+             color = ~urgency,
+             colors = waiting_times_palette,
+             text = tooltip_trend,
+             stroke = I("black"),
+             hoverinfo = "text",
+             legendgroup = ~urgency,
+             name = ~urgency,
+             showlegend = legend) %>%
+    #Layout
+    layout(#to avoid labels getting cut out
+      yaxis = yaxis_plots, xaxis = xaxis_plots,
+      paper_bgcolor = phs_colours("phs-liberty-10"),
+      plot_bgcolor = phs_colours("phs-liberty-10"),
+      legend = list(x = 100, y = 0.5), #position of legend
+      barmode = "stack") %>% #split by group
+    # leaving only save plot button
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+  
+  return(p)
+  
+}
 
-
-  facets <- unique(dataset$nhs_board_of_treatment)
-
-  # Checking there are 1 or more facets and the dataset is not entirely populated by zeros
+#calls waits_hbt and wraps them in facetted view for chosen waiting_status
+make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts, 
+                                  waiting_status, qend, spec){
+  
   validate(
-    need(((length(facets)>=1) & (unique(dataset$`number_seen/on_list`) != 0)),
+    need((length(healthboards)>=1),
          "There are no entries matching your selection. Please choose again.")
   )
-
-
-  p <- ggplot(dataset, aes(x=weeks, y=`number_seen/on_list`, group=urgency,
-                           text = paste0(
-                             '</br>Weeks waiting: ', weeks,
-                             '</br>HBT: ', nhs_board_of_treatment,
-                             '</br>Urgency: ', urgency,
-                             '</br>', seen_or_on_list, ': ', format(`number_seen/on_list`, big.mark=","))
-  )) +
-    geom_col(aes(fill = urgency),
-             position = position_stack(reverse = TRUE)) +
-    scale_fill_manual(values = waiting_times_palette) +
-    scale_y_continuous() +
-    xlab("Weeks waiting") +
-    ylab("Number seen / on list") +
-    theme_minimal() +
-    theme(legend.title = element_blank(),
-          strip.text.x = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
-          strip.text.y = element_text(colour = phs_colours("phs-purple"), size=12, angle=360),
-          axis.text.x = element_text(angle=70, size=12),
-          axis.title.x = element_text(margin=margin(t=500)),
-          axis.title.y = element_text(margin=margin(r=500))) +
-    facet_grid(nhs_board_of_treatment ~ ongoing_completed,  scales="free_y",
-               # This wraps the facet label text to fit it on the plot
-               labeller = label_wrap_gen(width=10))
-
-
-  plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%
-    #Layout
-    layout(margin = list(l=100, r=150, b=160, t=50, pad=0), #to avoid labels getting cut out
-           yaxis = yaxis_plots, xaxis = xaxis_plots,
-           paper_bgcolor = phs_colours("phs-liberty-10"),
-           plot_bgcolor = phs_colours("phs-liberty-10"),
-           # Explanation of this legend nightmare:
-           # -------------------------------------
-           # 1. orientation h means horizontal i.e. the legend reads left to right
-           # 2. paper means that the reference scale for x/y axes are set to [0,1]
-           #    where 0 is left/bottom and 1 is right/top, respectively
-           #    (numbers outwith this interval are outwith the plot area)
-           # 3. anchors set to center means that the centre of the legend is its
-           #    reference point
-           # 4. x and y are the locations of the centre of the legend on this paper scale
-           #    i.e. legend x is in middle of plot and legend y is 15% of plot's size below
-           #    the plot
-           legend = list(orientation = "h", xref="paper", yref="paper",
-                         xanchor="center", yanchor="center",
-                         x=0.5, y=-0.15), #position of legend
-           barmode = "stack") %>% #split by group
-    # leaving only save plot button
-    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove ) %>%
-    stop_axis_title_overlap()
-
-  return(plotlyp)
-
-
+  
+  plot_list <- vector("list", length = n_hbts) #initialize empty list to store plots
+  
+  #create patients waiting DoW plots for each spec
+  for(i in seq_along(healthboards)){
+    
+    if(i < n_hbts){ 
+      hbt_plot <- waits_hbt(input_data = data,
+                               waiting_status = waiting_status,
+                               qend=qend,
+                               spec=spec,
+                               hbt = healthboards[[i]])
+    }
+    
+    else{ #add legend to last plot 
+      hbt_plot <- waits_hbt(input_data = data,
+                               waiting_status = waiting_status,
+                               qend=input$quarter_end_spec,
+                               spec=input$hbt_filter_spec,
+                               hbt = healthboards[[i]],
+                               legend = TRUE)
+    }
+    
+    plot_list[[i]] <- hbt_plot #save plot
+  }
+  
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
+                          waiting_status == "admitted" ~ "Patients admitted",
+                          TRUE ~ "")
+  
+  #create facetted plot by specialty
+  subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>% 
+    layout(title=plot_title, margin = list(b = 10, t = 40))
+  
 }
+
+###ggplot version of DoW hbt plots
+# waits_specs_hbt <- function(input_data,
+#                         qend="March 2022",
+#                         hbts=c("NHS Scotland"),
+#                         specialty_choice="All Specialties") {
+# 
+# 
+# 
+#   dataset <- input_data %>%
+#     filter(nhs_board_of_treatment %in% hbts,
+#            date == get_short_date(qend),
+#            !urgency == "Total",
+#            specialty == specialty_choice) %>%
+#     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
+#            weeks = get_pretty_weeks(weeks),
+#            seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
+#                                        ongoing_completed == "Completed" ~ "Number seen")) %>%
+#     mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
+#     )
+# 
+# 
+#   facets <- unique(dataset$nhs_board_of_treatment)
+# 
+#   # Checking there are 1 or more facets and the dataset is not entirely populated by zeros
+#   validate(
+#     need(((length(facets)>=1) & (unique(dataset$`number_seen/on_list`) != 0)),
+#          "There are no entries matching your selection. Please choose again.")
+#   )
+# 
+# 
+#   p <- ggplot(dataset, aes(x=weeks, y=`number_seen/on_list`, group=urgency,
+#                            text = paste0(
+#                              '</br>Weeks waiting: ', weeks,
+#                              '</br>HBT: ', nhs_board_of_treatment,
+#                              '</br>Urgency: ', urgency,
+#                              '</br>', seen_or_on_list, ': ', format(`number_seen/on_list`, big.mark=","))
+#   )) +
+#     geom_col(aes(fill = urgency),
+#              position = position_stack(reverse = TRUE)) +
+#     scale_fill_manual(values = waiting_times_palette) +
+#     scale_y_continuous() +
+#     xlab("Weeks waiting") +
+#     ylab("Number seen / on list") +
+#     theme_minimal() +
+#     theme(legend.title = element_blank(),
+#           strip.text.x = element_text(colour = phs_colours("phs-purple"), size=12, angle=0),
+#           strip.text.y = element_text(colour = phs_colours("phs-purple"), size=12, angle=360),
+#           axis.text.x = element_text(angle=70, size=12),
+#           axis.title.x = element_text(margin=margin(t=500)),
+#           axis.title.y = element_text(margin=margin(r=500))) +
+#     facet_grid(nhs_board_of_treatment ~ ongoing_completed,  scales="free_y",
+#                # This wraps the facet label text to fit it on the plot
+#                labeller = label_wrap_gen(width=10))
+# 
+# 
+#   plotlyp <- ggplotly(p, height=1200, tooltip=c("text"))%>%
+#     #Layout
+#     layout(margin = list(l=100, r=150, b=160, t=50, pad=0), #to avoid labels getting cut out
+#            yaxis = yaxis_plots, xaxis = xaxis_plots,
+#            paper_bgcolor = phs_colours("phs-liberty-10"),
+#            plot_bgcolor = phs_colours("phs-liberty-10"),
+#            # Explanation of this legend nightmare:
+#            # -------------------------------------
+#            # 1. orientation h means horizontal i.e. the legend reads left to right
+#            # 2. paper means that the reference scale for x/y axes are set to [0,1]
+#            #    where 0 is left/bottom and 1 is right/top, respectively
+#            #    (numbers outwith this interval are outwith the plot area)
+#            # 3. anchors set to center means that the centre of the legend is its
+#            #    reference point
+#            # 4. x and y are the locations of the centre of the legend on this paper scale
+#            #    i.e. legend x is in middle of plot and legend y is 15% of plot's size below
+#            #    the plot
+#            legend = list(orientation = "h", xref="paper", yref="paper",
+#                          xanchor="center", yanchor="center",
+#                          x=0.5, y=-0.15), #position of legend
+#            barmode = "stack") %>% #split by group
+#     # leaving only save plot button
+#     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove ) %>%
+#     stop_axis_title_overlap()
+# 
+#   return(plotlyp)
+# 
+# 
+# }
 
 # --------------------------------------------------------------------------
 ## Data tables
