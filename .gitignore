@@ -1,10 +1,15 @@
 
 # ---> R
+
+#personal proj files
 r_code_maiana.Rproj
 Clinical_Prioritisation_RP.Rproj
 
+#admin
 shiny_app/AppDeployment.R
-
+shiny_app/admin
+shiny_app/admin/credentials.rds
+shiny_app/admin/create_credentials.R
 # History files
 .Rhistory
 .Rapp.history

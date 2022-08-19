@@ -4,8 +4,10 @@
 source("setup.R")
 
 # UI
-ui <- fluidPage(
-
+ui <- #secure_app( #uncomment if needing password protection
+    
+  fluidPage(
+    
   tagList(
     useShinyjs(),
     # Specify most recent fontawesome library
@@ -82,12 +84,24 @@ ui <- fluidPage(
       ) # navbar
     ) # taglist
 ) # ui fluidpage
-
+#) #secureapp
 # ----------------------------------------------------------------------
 # Server
 
+credentials <- readRDS("admin/credentials.rds") #read in credentials
+
 server <- function(input, output, session) {
 
+  # Shinymanager Auth
+  
+  res_auth <- secure_server(
+    check_credentials = check_credentials(credentials)
+  )
+  
+  output$auth_output <- renderPrint({
+    reactiveValuesToList(res_auth)
+  })
+  
   # Get navigation buttons
   source(file.path("functions/navigation_buttons.R"), local = TRUE)$value
 
