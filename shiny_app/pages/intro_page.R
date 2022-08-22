@@ -23,12 +23,12 @@ output$intro_page_ui <-  renderUI({
       # Overview
       column(6, class="intro-page-column",
                 intro_main_box(button_name = 'intro_jump_to_landing_page',
-                            title_box = "Overview",
+                            title_box = "Overview of waiting list activity",
                             description = 'Summary statistics')),
       # Specialties
       column(6, class="intro-page-column",
                 intro_main_box(button_name = 'intro_jump_to_specialties',
-                            title_box = "Specialties",
+                            title_box = "Variation by specialty",
                             description = 'Breakdown by specialties'))
     ), # fluid row
     fluidRow(
@@ -36,7 +36,7 @@ output$intro_page_ui <-  renderUI({
       # HBT
       column(6, class="intro-page-column",
          intro_main_box(button_name = 'intro_jump_to_hbt',
-                        title_box = "Health Board of Treatment",
+                        title_box = "Variation by Health Board of Treatment",
                         description = 'Breakdown by Health Board of Treatment')),
      # Data download
       column(6, class="intro-page-column",

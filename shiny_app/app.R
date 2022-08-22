@@ -31,40 +31,44 @@ ui <- fluidPage(
                icon = icon_no_warning_fn("circle-info"),
                value = "intro",
 
-               h1("Welcome to the dashboard"),
+               h1("Waiting times and Clinical Prioritisation"),
+               h2("Inpatients and day cases covered by the Treatment Time Guarantee (TTG)"),
+               linebreaks(1),
+               p(strong("An Official Statistics release for Scotland (Experimental)")),
+               linebreaks(1),
                uiOutput("intro_page_ui")
 
       ), # tabpanel
       ##############################################.
       # OVERVIEW PAGE ----
       ##############################################.
-      tabPanel(title = "Overview",
+      tabPanel(title = "Overview of waiting list activity",
                icon = icon_no_warning_fn("magnifying-glass-chart"),
                value = "overview",
 
-               h2("Overview - Waiting list activity across all specialties"),
+               h2("Overview of waiting list activity by Clinical Prioritisation category"),
                uiOutput("landing_page_ui")
 
                ), # tabpanel
       ##############################################.
       # SPECIALTY VARIATION PAGE ----
       ##############################################.
-      tabPanel(title = "Specialties",
+      tabPanel(title = "Variation by specialty",
                icon = icon_no_warning_fn("stethoscope"),
                value = "specialties",
 
-               h2("Application of clinical prioritisation by specialty"),
+               h2("Variation in Clinical Prioritisation of patients by specialty"),
                uiOutput("specialties_ui")
 
       ), # tabpanel
       ##############################################.
       # HEALTH BOARD TREATMENT PAGE ----
       ##############################################.
-      tabPanel(title = "Health Board of Treatment",
+      tabPanel(title = "Variation by Health Board of Treatment",
                icon = icon_no_warning_fn("people-roof"),
                value = "hbt",
 
-               h2("Application of clinical prioritisation by Health Board of Treatment"),
+               h2("Variation in Clinical Prioritisation of patients by Health Board of Treatment"),
                uiOutput("hbt_ui")
 
       ), # tabpanel
