@@ -2,8 +2,12 @@
 # ---> R
 *.Rproj
 
-shiny_app/AppDeployment.R
 
+#admin
+shiny_app/AppDeployment.R
+shiny_app/admin
+shiny_app/admin/credentials.rds
+shiny_app/admin/create_credentials.R
 # History files
 .Rhistory
 .Rapp.history
