@@ -6,7 +6,7 @@ library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
 library(shinyBS)
-library(shinymanager)
+# library(shinymanager) uncomment to secure app
 
 # Data wrangling packages
 library(dplyr)
