@@ -1,9 +1,7 @@
 
 # ---> R
+*.Rproj
 
-#personal proj files
-r_code_maiana.Rproj
-Clinical_Prioritisation_RP.Rproj
 
 #admin
 shiny_app/AppDeployment.R
