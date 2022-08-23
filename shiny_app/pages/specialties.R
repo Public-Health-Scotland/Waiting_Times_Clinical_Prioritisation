@@ -83,10 +83,10 @@ output$specialties_ui <-  renderUI({
                                                 br(),
                                                 fluidRow(
                                                   column(6,
-                                                         plots[["waits_spec_plot_ongoing"]]
+                                                         plots[["waits_spec_plot_admitted"]]
                                                          ), #column
                                                   column(6,
-                                                         plots[["waits_spec_plot_admitted"]]
+                                                         plots[["waits_spec_plot_ongoing"]]
                                                          ) #column
                                                 ), #fluidrow
                                                 linebreaks(35),

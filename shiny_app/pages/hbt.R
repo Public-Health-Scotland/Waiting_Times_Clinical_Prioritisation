@@ -87,11 +87,11 @@ output$hbt_ui <-  renderUI({
                                                 br(),
                                                 fluidRow(
                                                   column(6, 
-                                                         plots[["waits_hbt_plot_ongoing"]]
+                                                         plots[["waits_hbt_plot_admitted"]]
                                                          ),#colum
                                                   
                                                   column(6,
-                                                         plots[["waits_hbt_plot_admitted"]]
+                                                         plots[["waits_hbt_plot_ongoing"]]
                                                          )#column
                                                 ),#fluidrow
                                                 # plots[["waits_facet_plot_hbt"]],
