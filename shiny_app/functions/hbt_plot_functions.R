@@ -21,7 +21,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
            specialty == specialty_choice) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) ) %>%
     mutate(nhs_board_of_treatment = forcats::fct_reorder(as.factor(nhs_board_of_treatment),
-                                                       p2_proportion, .desc=FALSE))
+                                                       p2_proportion, .desc=FALSE)) %>%
+    arrange(desc(nhs_board_of_treatment))
 
   # Wrapping text on specialties for plotting
   dataset$nhs_board_of_treatment_wrapped <- purrr::map_chr(dataset$nhs_board_of_treatment, wrap_label)
@@ -40,11 +41,13 @@ activity_specs_hbt <- function(input_data, waiting_status,
                            waiting_status == "additions" ~ "Additions to list",
                            TRUE ~ "")
    yaxis_plots[["tickfont"]] <- 14
+   yaxis_plots[["categoryorder"]] <-"trace"
    xaxis_plots[["title"]] <- "Proportion of Patients (%)"
 
 
   p <- dataset %>%
-    plot_ly(x = ~round(proportion,2),
+    arrange(nhs_board_of_treatment, p2_proportion) %>%
+    plot_ly(x = ~proportion,
             y = ~factor(nhs_board_of_treatment_wrapped),
             height = 600,
             type = "bar",
@@ -126,6 +129,7 @@ waits_hbt <- function(input_data, waiting_status,
   
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- "Weeks waiting"
+
   
   
   tooltip_trend <- glue("Quarter ending: {qend}<br>",
