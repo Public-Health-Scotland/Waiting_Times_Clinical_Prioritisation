@@ -211,9 +211,12 @@ info_table <- function(input_data_table,
                                      # style header
                                      initComplete = htmlwidgets::JS(
                                        "function(settings, json) {",
-                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685', 'justify-content': 'left', 'align-items': 'left'});",
                                        "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "}")))
+                                       "}"),
+                                     columnDefs = list(list(className = 'dt-center', targets = '_all'))
+                                     )
+                      )#datable
 
 
   return(dt)
