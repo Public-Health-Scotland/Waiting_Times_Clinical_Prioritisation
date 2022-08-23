@@ -26,7 +26,7 @@ output$intro_page_ui <-  renderUI({
                                                                        "NHS Shetland",
                                                                        "NHS Tayside",
                                                                        "NHS Western Isles",
-                                                                       "Golden Jubille National Hospital"),
+                                                                       "Golden Jubilee National Hospital"),
                                                            selected = "NHS Scotland",
                                                            multiple = FALSE)
                                                ),

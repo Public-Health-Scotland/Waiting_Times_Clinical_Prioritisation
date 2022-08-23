@@ -43,7 +43,7 @@ output$hbt_ui <-  renderUI({
                                                                 "NHS Shetland",
                                                                 "NHS Tayside",
                                                                 "NHS Western Isles",
-                                                                "Golden Jubille National Hospital"),
+                                                                "Golden Jubilee National Hospital"),
                                                     # Selected those with most patients waiting
                                                     selected = c("NHS Greater Glasgow & Clyde",
                                                                  "NHS Lothian",
