@@ -50,7 +50,7 @@ replace_colnames <- function(old_colnames){
                             "waited_waiting_over_26_weeks" = "Waited_or_waiting_over_26_weeks",
                             "waited_waiting_over_52_weeks" = "Waited_or_waiting_over_52_weeks",
                             "waited_waiting_over_104_weeks" = "Waited_or_waiting_over_104_weeks",
-                            "monthly_avg" = "Monthly_average",
+                            "monthly_avg" = "2019_monthly_average",
                             "y_max" = "y_max",
                             "y_max2" = "y_max2",
                             "ongoing_completed" = "Waiting_status",
