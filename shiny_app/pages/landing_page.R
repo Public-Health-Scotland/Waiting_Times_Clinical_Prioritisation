@@ -55,8 +55,7 @@ output$landing_page_ui <-  renderUI({
 
                                      tabPanel("Charts",
                                               tagList(
-                                                h3("Number of TTG patients added to the list,
-                                                   admitted and waiting"),
+                                                h3("Number of TTG patients added to the list"),
                                                 br(),
                                                 # Additions
 
@@ -66,9 +65,9 @@ output$landing_page_ui <-  renderUI({
                                                 # Have restyled them as PHS colours in the css file.
                                                 # green: phs-green; purple: phs-purple; blue: phs-blue;
                                                 # fuchsia: phs-magenta; olive: phs-graphite;
-                                                shinydashboard::valueBox(value=numbers[["ban_additions_p1"]],
-                                                                         subtitle="P1", width=2,
-                                                                         color="green"),
+                                              shinydashboard::valueBox(value="P1",
+                                                                       subtitle= numbers[["ban_additions_p1"]], width=2,
+                                                                       color="green"),
                                                 shinydashboard::valueBox(value=numbers[["ban_additions_p2"]],
                                                                          subtitle="P2", width=2,
                                                                          color="purple"),
@@ -84,6 +83,8 @@ output$landing_page_ui <-  renderUI({
                                                 column(width = 12,
                                                        plots[["activity_additions"]]),
                                                 # Admitted
+                                              column(width = 12,h3("Number of TTG patients admitted for treatment")),
+                                              br(),
                                                 shinydashboard::valueBox(value=numbers[["ban_admitted_p1"]],
                                                                          subtitle="P1", width=2,
                                                                          color="green"),
@@ -102,8 +103,10 @@ output$landing_page_ui <-  renderUI({
                                                 # Activity plot
                                                 column(width = 12,
                                                        plots[["activity_admitted"]]),
-
+                                            
                                                           # Waiting
+                                              column(width = 12,h3("Number of TTG patients waiting for treatment")),
+                                              br(),
                                                shinydashboard::valueBox(value=numbers[["ban_waiting_p1"]],
                                                                         subtitle="P1", width=2,
                                                                         color="green"),
