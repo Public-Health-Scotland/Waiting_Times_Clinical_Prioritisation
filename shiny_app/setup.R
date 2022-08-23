@@ -9,6 +9,7 @@ library(shinyBS)
 library(shinymanager) 
 
 # Data wrangling packages
+library(tidyr)
 library(dplyr)
 library(magrittr)
 library(lubridate)
@@ -17,9 +18,13 @@ library(glue)
 # Plotting packages
 library(ggplot2)
 library(plotly)
+library(sparkline)
 
 # PHS styling packages
 library(phsstyles)
+
+#html dpendencies
+library(htmlwidgets)
 
 
 # Load packages and functions, and data wrangling
