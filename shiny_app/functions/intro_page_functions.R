@@ -17,13 +17,32 @@ dq_table <- function(dq_data, hbt, month_year){
   
   dataset <- dq_data %>% 
     filter(nhs_board_of_treatment==hbt ) %>%
-    mutate(comp_format = paste0(round(completeness, 1), "%"),
+    mutate(completeness = round(completeness, 1),
+           comp_format = paste0(round(completeness, 1), "%"),
            indicator = case_when(indicator=="additions_to_list"~"Additions to the list",
                                  indicator=="Completed" ~ "Admitted", 
                                  indicator=="Ongoing" ~ "Waiting")
           ) %>% 
     group_by(indicator) %>% 
-    summarise(comp_format = comp_format, date = date, mini_plot = spk_chr(completeness, height = 30, width = 100)) %>% 
+    summarise(comp_format = comp_format, date = date, 
+              # mini_plot = spk_chr(completeness, tooltipFormat = '{{x}}: {{y}}', height = 30, width = 100)) %>% 
+              mini_plot = spk_chr(
+                completeness,
+                type="bar",
+                tooltipFormatter = htmlwidgets::JS(
+                  sprintf(
+                    "function(sparkline, options, field){
+                    debugger;
+                    return %s[field[0].offset] + '<br/>' + field[0].value;}",
+      jsonlite::toJSON(
+        format(
+          date
+        )
+      )
+    )
+  )
+)
+               ) %>% 
     filter(date == get_short_date(month_year)) %>% 
     # pivot_wider(names_from = indicator, values_from = completeness) %>% 
     select(indicator, comp_format, mini_plot) %>% 
