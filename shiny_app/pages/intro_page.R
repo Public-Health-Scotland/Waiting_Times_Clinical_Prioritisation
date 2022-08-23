@@ -1,7 +1,8 @@
 ####################### Intro Page #######################
 
 output$intro_page_ui <-  renderUI({
-
+  # getDependency('sparkline') #load dependencies for sparkline plot
+  
   div(
     wellPanel(
       column(12,
@@ -132,7 +133,7 @@ output$accessibility_notes <- renderUI({
 
 numbers$dq_table <- DT::renderDataTable({
   
-  info_table(dq_table(total_comp_jun, input$hbt_dq_filter, input$month_dq_filter))
+  sparkline_table(dq_table(total_comp_jun, input$hbt_dq_filter, input$month_dq_filter))
   
 })
 

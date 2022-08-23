@@ -223,3 +223,40 @@ info_table <- function(input_data_table,
 
 
 }
+
+#mini data table for summary stats with sparkline
+
+sparkline_table <- function(input_data_table,
+                       add_separator_cols = NULL
+){
+  
+  # Add column formatting
+  for (i in add_separator_cols){
+    input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
+  }
+  
+  dt <- DT::datatable(input_data_table, style = 'bootstrap',
+                      class = 'table-bordered table-condensed',
+                      rownames = FALSE,
+                      escape = FALSE,
+                      options = list(paging=FALSE,
+                                     searching=FALSE,
+                                     info=FALSE,
+                                     dom = 't',
+                                     autoWidth = TRUE,
+                                     fnDrawCallback = htmlwidgets::JS('function(){HTMLWidgets.staticRender();}'),                                     # style header
+                                     initComplete = htmlwidgets::JS(
+                                       "function(settings, json) {",
+                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685', 'justify-content': 'left', 'align-items': 'left'});",
+                                       "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+                                       "}"),
+                                     columnDefs = list(list(className = 'dt-center', targets = '_all'))
+                      )
+  ) %>% #datable
+    spk_add_deps() 
+  
+  
+  return(dt)
+  
+  
+}
