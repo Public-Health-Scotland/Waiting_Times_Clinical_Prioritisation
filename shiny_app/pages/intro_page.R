@@ -9,7 +9,10 @@ output$intro_page_ui <-  renderUI({
              h3("Select a topic to see background information"),
              bsCollapse(id = "collapse_notes", open = "Panel 1",
                         bsCollapsePanel("About Clinical Prioritisation", uiOutput("about_cp_notes")),
-                        bsCollapsePanel("Data quality", uiOutput("data_quality_notes"),                                        column(6,
+                        bsCollapsePanel("Data quality", uiOutput("data_quality_notes"),
+                                        numbers[["dq_summary"]],
+                                        br(),
+                                        column(6,
                                                pickerInput("hbt_dq_filter",
                                                            "1. Select Health Board of Treatment ",
                                                            choices = c("NHS Scotland",
@@ -37,6 +40,7 @@ output$intro_page_ui <-  renderUI({
                                                            choices = get_month(unique(app_data[["total_comp_jun"]]$date)),
                                                            selected = "June 2022")
                                                ),
+                                        br(),
                                         numbers[["dq_table"]]
                                         ),
                         bsCollapsePanel("Using the dashboard", uiOutput("using_dashboard_notes")),
@@ -97,7 +101,7 @@ output$about_cp_notes <- renderUI({
 output$data_quality_notes <- renderUI({
 
   tagList(
-    h4("Data quality")
+    h4("Data quality summary")
 
   )
 }) # render UI close bracket
@@ -135,6 +139,14 @@ numbers$dq_table <- DT::renderDataTable({
   
   sparkline_table(dq_table(app_data[["total_comp_jun"]], input$hbt_dq_filter, input$month_dq_filter))
   
+})
+
+numbers$dq_summary <- renderText({
+  select_text <- app_data[["dq_summaries"]] %>% 
+    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
+    select(summary)
+  
+  paste(select_text)
 })
 
 
