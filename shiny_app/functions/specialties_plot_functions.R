@@ -228,7 +228,7 @@ spec_activity_table <-  function(input_data,
            date == get_short_date(qend),
            specialty %in% input$specialty_filter) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
-           indicator = recode_indicator(indicator)) %>%
+           indicator = factor(recode_indicator(indicator), levels=c("Additions", "Admitted", "Waiting"))) %>%
     select(date, indicator, nhs_board_of_treatment, specialty, urgency, number)
 
   names(dataset) <- replace_colnames(names(dataset))
