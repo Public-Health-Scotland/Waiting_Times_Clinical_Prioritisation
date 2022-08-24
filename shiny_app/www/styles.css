@@ -271,7 +271,9 @@ a {
   white-space: nowrap;
   padding: 0;
 }
-.small-box p {
+
+/* For the numbers inside the boxes */
+.small-box .shiny-text-output {
   font-size: 15px;
   color: var(--white);
 }

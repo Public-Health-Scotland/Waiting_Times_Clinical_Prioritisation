@@ -148,8 +148,10 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
 
                                               #make facets
                                               subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
+                                                      plotly_empty(), 
                                                       style(p2, showlegend = FALSE),
-                                                      p3, nrows = 3, shareX = TRUE, # share axis between plots
+                                                      plotly_empty(), 
+                                                      p3, nrows = 5, heights = c(0.26, 0.1, 0.26, 0.1, 0.26), shareX = TRUE, # share axis between plots
                                                       titleY = TRUE)
                                               })
 
