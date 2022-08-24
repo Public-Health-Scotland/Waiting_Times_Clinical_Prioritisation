@@ -10,8 +10,7 @@ intro_main_box <- function(title_box, button_name, description) {
   )
 }
 
-#make hb completeness table
-
+# Make HB completeness table (data quality)
 dq_table <- function(dq_data, hbt, month_year){
 
 
@@ -28,6 +27,8 @@ dq_table <- function(dq_data, hbt, month_year){
                mini_plot = spk_chr(completeness,
                                    type="bar",
                                    barColor = phs_colours("phs-teal"),
+                                   # NB if there are more releases of the dashboard you will need to manually
+                                   # add the new dates to the list below - bit hacky sorry!
                                    tooltipFormatter = htmlwidgets::JS(
                                      "function(sparkline, options, field){
                                           let dates = ['Jul 21', 'Aug 21', 'Sep 21', 'Oct 21', 'Nov 21', 'Dec 21', 'Jan 22', 'Feb 22', 'Mar 22', 'Apr 22', 'May 22', 'Jun 22'];
@@ -35,7 +36,6 @@ dq_table <- function(dq_data, hbt, month_year){
                                    ),
                                    height = 30, width = 100)) %>%
     filter(date == get_short_date(month_year)) %>%
-    # pivot_wider(names_from = indicator, values_from = completeness) %>%
     select(indicator, comp_format, mini_plot) %>%
     rename("Waiting Status" = "indicator", "Completeness (%)"="comp_format", "Trend"="mini_plot")
 
