@@ -10,7 +10,8 @@ output$intro_page_ui <-  renderUI({
              bsCollapse(id = "collapse_notes", open = "Panel 1",
                         bsCollapsePanel("About Clinical Prioritisation", uiOutput("about_cp_notes")),
                         bsCollapsePanel("Data quality", uiOutput("data_quality_notes"),
-                                        numbers[["dq_summary"]],
+                                        # numbers[["dq_summary"]],
+                                        uiOutput("dq_summary"),
                                         br(),
                                         column(6,
                                                pickerInput("hbt_dq_filter",
@@ -141,7 +142,7 @@ numbers$dq_table <- DT::renderDataTable({
   
 })
 
-numbers$dq_summary <- renderText({
+output$dq_summary <- renderUI({
   select_text <- app_data[["dq_summaries"]] %>% 
     filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
     select(summary)
