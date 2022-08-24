@@ -6,7 +6,7 @@ library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
 library(shinyBS)
-library(shinymanager) 
+library(shinymanager)
 
 # Data wrangling packages
 library(tidyr)
@@ -46,10 +46,6 @@ for (rds in rds_files){
 # Style of x and y axis
 xaxis_plots <- list(title = FALSE, tickfont = list(size=14), titlefont = list(size=14),
                     showline = TRUE, fixedrange=TRUE)
-
-xaxis_pc <- list(title = FALSE, tickfont = list(size=14), titlefont = list(size=14),
-                    showline = TRUE, fixedrange=TRUE,
-                 tickformat="%")
 
 yaxis_plots <- list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4,
                     tickfont = list(size=14), titlefont = list(size=14))
