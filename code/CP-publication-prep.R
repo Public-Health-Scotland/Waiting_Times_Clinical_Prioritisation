@@ -287,19 +287,20 @@ hb_var_data <- perf_qtr_split %>%
 hb_p2_prop <- hb_var_data %>% 
   ungroup() %>%
   filter(indicator == "additions_to_list", urgency=="P2") %>% 
-  select(date, specialty, nhs_board_of_treatment, indicator, p2_proportion)
+  select(date, specialty, nhs_board_of_treatment, p2_proportion)
 
 
 #Subset data for plotting and bind on 
 hb_var_plotdata <- hb_var_data %>% 
   filter(indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>% 
-  left_join(ungroup(hb_p2_prop)) %>% 
+  select(-p2_proportion) %>%
+  left_join(ungroup(hb_p2_prop), by = c("date", "nhs_board_of_treatment", "specialty")) %>% 
   arrange(date, indicator,-`p2_proportion`)
 
 #Bind p2_proportion onto dow_4wk_qtr_pub to allow sorting in the app
 dow_4wk_qtr_pub %<>% 
-  left_join(ungroup(hb_p2_prop)) %>% 
-  arrange(date, indicator,-`p2_proportion`)
+  left_join(ungroup(hb_p2_prop), by = c("date", "nhs_board_of_treatment", "specialty")) %>% 
+  arrange(date, -`p2_proportion`)
 
 # 2.7 Top 6 Specialties Lookup  ------
 #Identify top 6 specialties by number waiting, calculate what proportion of waiting and seen these represent 
