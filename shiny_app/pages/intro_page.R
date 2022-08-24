@@ -172,7 +172,7 @@ output$accessibility_notes <- renderUI({
     br(),
     p(strong("Reporting any accessibility problems with this website")),
     p("If you with to contact us about any accessibility issues you encounter on this site, please email",
-      tags$a(href="mailto:phs.qualityindicators@phs.scot", "phs.qualityindicators@phs.scot")),
+      tags$a(href="mailto:phs.waitingtimes@phs.scot", "phs.waitingtimes@phs.scot")),
     br(),
     p(strong("Enforcement procedure")),
     p("The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector
