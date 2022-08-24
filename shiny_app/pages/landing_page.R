@@ -86,7 +86,8 @@ output$landing_page_ui <-  renderUI({
                                                 column(width = 12,
                                                        plots[["activity_additions"]]),
                                                 # Admitted
-                                              column(width = 12,h3("Number of TTG patients admitted for treatment")),
+                                                br(),
+                                              h3("Number of TTG patients admitted for treatment"),
                                               br(),
                                               tags$div(class = "bans",
                                               h4(ban_header[["admitted"]]),
@@ -112,7 +113,8 @@ output$landing_page_ui <-  renderUI({
                                                        plots[["activity_admitted"]]),
 
                                                           # Waiting
-                                              column(width = 12,h3("Number of TTG patients waiting for treatment")),
+                                              br(),
+                                              h3("Number of TTG patients waiting for treatment"),
                                               br(),
                                               tags$div(class = "bans",
                                               h4(ban_header[["waiting"]]),
