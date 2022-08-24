@@ -296,6 +296,10 @@ hb_var_plotdata <- hb_var_data %>%
   left_join(ungroup(hb_p2_prop)) %>% 
   arrange(date, indicator,-`p2_proportion`)
 
+#Bind p2_proportion onto dow_4wk_qtr_pub to allow sorting in the app
+dow_4wk_qtr_pub %<>% 
+  left_join(ungroup(hb_p2_prop)) %>% 
+  arrange(date, indicator,-`p2_proportion`)
 
 # 2.7 Top 6 Specialties Lookup  ------
 #Identify top 6 specialties by number waiting, calculate what proportion of waiting and seen these represent 
