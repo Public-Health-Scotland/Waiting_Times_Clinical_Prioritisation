@@ -65,7 +65,7 @@ output$landing_page_ui <-  renderUI({
                                                 # green: phs-green; purple: phs-purple; blue: phs-blue;
                                                 # fuchsia: phs-magenta; olive: phs-graphite;
                                                 tags$div(class = "bans",
-                                                h4(glue("Number of patients added to the list in the latest {timescale_short()}")),
+                                                h4(glue("Number of patients added to the list in the latest {gsub('ly', ' ', input$timescale_choice)}")),
                                                 shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_additions_p1"]], width=2,
                                                                        color="green"),
@@ -89,7 +89,7 @@ output$landing_page_ui <-  renderUI({
                                               column(width = 12,h3("Number of TTG patients admitted for treatment")),
                                               br(),
                                               tags$div(class = "bans",
-                                              h4(glue("Number of patients admitted for treatment in the latest {timescale_short()}")),
+                                              h4(glue("Number of patients admitted for treatment in the latest{gsub('ly', ' ', input$timescale_choice)}")),
                                               shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_admitted_p1"]], width=2,
                                                                        color="green"),
@@ -115,7 +115,7 @@ output$landing_page_ui <-  renderUI({
                                               column(width = 12,h3("Number of TTG patients waiting for treatment")),
                                               br(),
                                               tags$div(class = "bans",
-                                              h4(glue("Number of patients waiting for treatment in the latest {timescale_short()}")),
+                                              h4(glue("Number of patients waiting for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")),
                                               shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_waiting_p1"]], width=2,
                                                                        color="green"),
@@ -212,11 +212,6 @@ output$landing_page_ui <-  renderUI({
 
 timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
                           "quarterly" = get_month(unique(app_data[["perf_qtr_split_jun"]]$date)))
-
-timescale_short <- reactive({
-  case_when(input$timescale_choice == "monthly" ~ "month",
-            input$timescale_choice == "quarterly" ~ "quarter")
-})
 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
