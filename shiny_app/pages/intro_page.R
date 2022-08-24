@@ -165,17 +165,14 @@ output$accessibility_notes <- renderUI({
             "has advice on making your device easier to use if you have a disability"),
     br(),
     p(strong("Compliance status")),
-    br(),
     p("This site has not yet been evaluated against Web Content Accessibility Guidelines version 2.1
       level AA standard."),
     br(),
     p(strong("Reporting any accessibility problems with this website")),
-    br(),
     p("If you with to contact us about any accessibility issues you encounter on this site, please email",
       tags$a(href="mailto:phs.qualityindicators@phs.scot", "phs.qualityindicators@phs.scot")),
     br(),
     p(strong("Enforcement procedure")),
-    br(),
     p("The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector
       Bodies (Websites and Mobile Applications)(No.2) Accessibility Regulations 2018 (the 'accessibility
       regulations'). If you are not happy with how we respond to your complaint,",
@@ -198,8 +195,8 @@ numbers$dq_table <- DT::renderDataTable({
 
 
 numbers$dq_summary <- renderUI({
-  select_text <- app_data[["dq_summaries"]] %>% 
-    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
+  select_text <- app_data[["dq_summaries"]] %>%
+    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>%
     select(summary)
 
   paste(select_text)
