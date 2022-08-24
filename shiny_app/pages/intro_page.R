@@ -62,7 +62,9 @@ output$intro_page_ui <-  renderUI({
 output$about_cp_notes <- renderUI({
 
   tagList(
-    h4("About Clinical Prioritisation")
+    h4("About Clinical Prioritisation"),
+    br(),
+    includeHTML("about_cp.html")
 
   )
 }) # render UI close bracket
