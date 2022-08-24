@@ -40,27 +40,29 @@ ban <- function(input_data, cp,
 
 ## Activity
 
-activity_table <- function(input_data, hbt="NHS Scotland", timescale="monthly",
-                           chosen_specialty="All Specialties") {
-
+activity_table <- function(input_data,
+                   hbt="NHS Scotland",
+                   timescale="monthly",
+                   chosen_specialty="All Specialties")  {
 
     if (timescale == "monthly"){
       dataset <- input_data$monthly
-      cols_to_keep <- c("date", "indicator", "urgency", "number", "monthly_avg")
     } else {
       dataset <- input_data$quarterly
-      cols_to_keep <- c("date", "indicator", "urgency", "number", "quarterly_avg")
-
     }
 
-
     dataset %<>%
-      filter(nhs_board_of_treatment == hbt) %>%
-      mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
+      filter(nhs_board_of_treatment == hbt,
+             specialty == chosen_specialty,
+             urgency != "Total") %>%
+      distinct() %>% # removes duplicate rows
+      mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
              indicator = case_when(indicator == "Ongoing" ~ "Waiting",
                                    indicator == "Completed" ~ "Admitted",
                                    indicator == "additions_to_list" ~ "Additions to list")) %>%
-      select(cols_to_keep) %>%
+      group_by(across(c(-urgency, -number))) %>%
+      mutate(total = sum(number)) %>%
+      ungroup() %>%
       unique()
 
     names(dataset) <- replace_colnames(names(dataset))

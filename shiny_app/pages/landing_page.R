@@ -339,9 +339,9 @@ numbers$activity_table_output <- DT::renderDataTable({
                             hbt=input$hbt_filter,
                             chosen_specialty = input$specialty_filter_lp,
                             timescale=input$timescale_choice),
-             rows_to_display = 33,
+             rows_to_display = 25,
              # These columns have thousand separator added
-             add_separator_cols = c(4,5))
+             add_separator_cols = c(7,8,9))
 
 })
 
