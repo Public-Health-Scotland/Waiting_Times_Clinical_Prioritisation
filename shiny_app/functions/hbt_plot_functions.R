@@ -43,7 +43,9 @@ activity_specs_hbt <- function(input_data, waiting_status,
    yaxis_plots[["tickfont"]] <- 14
    yaxis_plots[["categoryorder"]] <-"trace"
    xaxis_plots[["title"]] <- "Proportion of Patients (%)"
-
+   # To stop plotly being stupid and rounding to whole number in tooltip on the sly
+   # https://stackoverflow.com/questions/68007438/r-how-to-stop-rounding-percentages-to-0-decimal-places-on-plotly-chart
+   xaxis_plots[["tickformat"]] <- ".1%"
 
   p <- dataset %>%
     arrange(nhs_board_of_treatment, p2_proportion) %>%
@@ -79,7 +81,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
     )
 
   p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
-                 yaxis = yaxis_plots, xaxis = xaxis_pc,
+                 yaxis = yaxis_plots, xaxis = xaxis_plots,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
                  plot_bgcolor = phs_colours("phs-liberty-10"),
                  legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend

@@ -49,14 +49,15 @@ activity_specs <- function(input_data,
                            TRUE ~ "")
 
   xaxis_plots[["categoryorder"]] <-"trace"
-  yaxis_plots[["tickformat"]] <- "%"
-
+  # To stop plotly being stupid and rounding to whole number in tooltip on the sly
+  # https://stackoverflow.com/questions/68007438/r-how-to-stop-rounding-percentages-to-0-decimal-places-on-plotly-chart
+  yaxis_plots[["tickformat"]] <- ".1%"
 
   # facets <- unique(dataset$indicator)
 
   p <- dataset %>%
     plot_ly(x = ~factor(specialty_wrapped),
-            y = ~round(proportion,2),
+            y = ~round(proportion,3),
             height = 600,
             type = "bar",
             customdata = ~number,
@@ -84,13 +85,14 @@ activity_specs <- function(input_data,
       font = list(size = 14, face = "bold")
     )
 
-  p %<>%  layout(margin = list(b = 80, t = 50), #to avoid labels getting cut out
+  p %<>%  layout(margin = list(b = 80, t = 50), # To avoid labels getting cut out
                  yaxis = yaxis_plots, xaxis = xaxis_plots,
                  paper_bgcolor = phs_colours("phs-liberty-10"),
                  plot_bgcolor = phs_colours("phs-liberty-10"),
-                 legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
+                 # Position of legend
+                 legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')),
                  barmode = "stack") %>% #split by group
-    # leaving only save plot button
+    # Leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
   return(p)
 
