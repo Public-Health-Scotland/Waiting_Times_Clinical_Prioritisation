@@ -48,6 +48,27 @@ The code for the shiny app can be found in the `shiny_app` folder
 
 * Open `shiny_app/app.R` and select "run app"
 
+### Password protect the shiny app (PRA)
+
+You can password protect the app for pre-release access.
+
+* Open `admin/create_crententials.R` (hidden file not pushed to Github - obtain this separately from collaborators).
+
+* Edit the script with the chosen username and password for pre-realease access
+
+    credentials_df <- data.frame(
+    user = c("username"), # insert username here
+    password = c("password"), # insert password here
+    stringsAsFactors = FALSE)
+
+* Save your changes and run the script. The script creates a folder called `admin` (if it doesn't already exist). Check that the `credentials.rds` file is saved to your admin folder.
+
+* Go to `shiny_app/app.R`, uncomment the `secure_app()` function in the ui. (make sure to uncomment both opening and closing brackets)
+
+* Run the app to check that the login page is active and test your credentials.
+
+* Note: the `admin` folder is ignored but git to prevent the sharing credentials on Github.
+
 ### Deploying the shiny app
 
 * Open `shiny_app/AppDeployment.R` (hidden file not committed to Github - obtain this separately) and edit the paths to point to your local `shiny_app` folder
