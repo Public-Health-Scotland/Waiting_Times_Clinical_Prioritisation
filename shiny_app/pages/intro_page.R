@@ -58,12 +58,14 @@ output$intro_page_ui <-  renderUI({
       column(6, class="intro-page-column",
                 intro_main_box(button_name = 'intro_jump_to_landing_page',
                             title_box = "Overview of waiting list activity",
-                            description = 'Summary statistics')),
+                            description = 'Number of additions to list, patients admitted for treatment
+                            and patients waiting for treatment, alongside distribution of waiting times')),
       # Specialties
       column(6, class="intro-page-column",
                 intro_main_box(button_name = 'intro_jump_to_specialties',
                             title_box = "Variation by specialty",
-                            description = 'Breakdown by specialties'))
+                            description = 'Variation of waiting list activity and distribution of
+                            wait times by specialty'))
     ), # fluid row
     fluidRow(
       br(),
@@ -71,7 +73,8 @@ output$intro_page_ui <-  renderUI({
       column(6, class="intro-page-column",
          intro_main_box(button_name = 'intro_jump_to_hbt',
                         title_box = "Variation by Health Board of Treatment",
-                        description = 'Breakdown by Health Board of Treatment')),
+                        description = 'Variation of waiting list activity and distribution of
+                            wait times by Health Board')),
      # Data download
       column(6, class="intro-page-column",
             intro_main_box(button_name = 'intro_jump_to_data',
@@ -227,8 +230,8 @@ numbers$dq_table <- DT::renderDataTable({
 })
 
 output$dq_summary <- renderUI({
-  select_text <- app_data[["dq_summaries"]] %>% 
-    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
+  select_text <- app_data[["dq_summaries"]] %>%
+    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>%
     select(summary)
 
   paste(select_text)
