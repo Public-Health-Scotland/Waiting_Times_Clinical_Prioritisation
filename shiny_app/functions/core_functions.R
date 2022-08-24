@@ -229,12 +229,12 @@ info_table <- function(input_data_table,
 sparkline_table <- function(input_data_table,
                        add_separator_cols = NULL
 ){
-  
+
   # Add column formatting
   for (i in add_separator_cols){
     input_data_table[i] <- apply(input_data_table[i], MARGIN=1, FUN=format_entry)
   }
-  
+
   dt <- DT::datatable(input_data_table, style = 'bootstrap',
                       class = 'table-bordered table-condensed',
                       rownames = FALSE,
@@ -252,11 +252,11 @@ sparkline_table <- function(input_data_table,
                                        "}"),
                                      columnDefs = list(list(className = 'dt-center', targets = '_all'))
                       )
-  ) %>% #datable
-    spk_add_deps() 
-  
-  
+  ) %>% #datatable
+    spk_add_deps()
+
+
   return(dt)
-  
-  
+
+
 }
