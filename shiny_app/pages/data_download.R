@@ -145,7 +145,7 @@ chosen_dataset <- reactive({
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "monthly") ~ "dow_4wk_mon_jun",
             (input$download_dataset == "Distribution of waits" &
-               input$download_timescale == "quarterly") ~ "dow_4wk_qtr_jun",
+               input$download_timescale == "quarterly") ~ "dow_4wk_qtr_pub_jun",
             (input$download_dataset == "Activity" &
                input$download_timescale == "quarterly") ~ "hb_plotdata_jun",
             (input$download_dataset == "Summary of patients waiting and admitted" &
