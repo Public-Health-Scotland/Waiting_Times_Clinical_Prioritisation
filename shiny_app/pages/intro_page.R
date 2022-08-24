@@ -9,40 +9,7 @@ output$intro_page_ui <-  renderUI({
              h3("Select a topic to see background information"),
              bsCollapse(id = "collapse_notes", open = "Panel 1",
                         bsCollapsePanel("About Clinical Prioritisation", uiOutput("about_cp_notes")),
-                        bsCollapsePanel("Data quality", uiOutput("data_quality_notes"),
-                                        uiOutput("dq_summary"),
-                                        br(),
-                                        column(6,
-                                               pickerInput("hbt_dq_filter",
-                                                           "1. Select Health Board of Treatment ",
-                                                           choices = c("NHS Scotland",
-                                                                       "NHS Ayrshire & Arran",
-                                                                       "NHS Borders",
-                                                                       "NHS Dumfries & Galloway",
-                                                                       "NHS Fife",
-                                                                       "NHS Forth Valley",
-                                                                       "NHS Grampian",
-                                                                       "NHS Greater Glasgow & Clyde",
-                                                                       "NHS Highland",
-                                                                       "NHS Lanarkshire",
-                                                                       "NHS Lothian",
-                                                                       "NHS Orkney",
-                                                                       "NHS Shetland",
-                                                                       "NHS Tayside",
-                                                                       "NHS Western Isles",
-                                                                       "Golden Jubilee National Hospital"),
-                                                           selected = "NHS Scotland",
-                                                           multiple = FALSE)
-                                               ),
-                                        column(6,
-                                               pickerInput("month_dq_filter",
-                                                           "2. Select month",
-                                                           choices = get_month(unique(app_data[["total_comp_jun"]]$date)),
-                                                           selected = "June 2022")
-                                               ),
-                                        br(),
-                                        numbers[["dq_table"]]
-                                        ),
+                        bsCollapsePanel("Data quality", uiOutput("data_quality_notes")),
                         bsCollapsePanel("Using the dashboard", uiOutput("using_dashboard_notes")),
                         bsCollapsePanel("Further information", uiOutput("further_info_notes")),
                         bsCollapsePanel("Accessibility", uiOutput("accessibility_notes"))
@@ -174,7 +141,7 @@ numbers$dq_table <- DT::renderDataTable({
 
 })
 
-output$dq_summary <- renderUI({
+numbers$dq_summary <- renderUI({
   select_text <- app_data[["dq_summaries"]] %>% 
     filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
     select(summary)
