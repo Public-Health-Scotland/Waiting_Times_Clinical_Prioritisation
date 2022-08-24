@@ -174,15 +174,9 @@ numbers$dq_table <- DT::renderDataTable({
 
 })
 
-<<<<<<< HEAD
 output$dq_summary <- renderUI({
   select_text <- app_data[["dq_summaries"]] %>% 
     filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
-=======
-numbers$dq_summary <- renderText({
-  select_text <- app_data[["dq_summaries"]] %>%
-    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>%
->>>>>>> a0f3f80959a53821251fbb266684a54987f3e603
     select(summary)
 
   paste(select_text)
