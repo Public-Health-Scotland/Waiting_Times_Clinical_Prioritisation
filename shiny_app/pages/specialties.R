@@ -151,7 +151,7 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
                                                       plotly_empty(), 
                                                       style(p2, showlegend = FALSE),
                                                       plotly_empty(), 
-                                                      p3, nrows = 5, heights = c(0.26, 0.1, 0.26, 0.1, 0.26), shareX = TRUE, # share axis between plots
+                                                      p3, nrows = 5, heights = c(0.26, 0.1, 0.26, 0.1, 0.26), shareX = FALSE, # share axis between plots
                                                       titleY = TRUE)
                                               })
 
