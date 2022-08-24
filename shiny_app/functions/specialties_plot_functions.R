@@ -173,13 +173,22 @@ waits_specs <- function(input_data, waiting_status,
 }
 
 #calls wait_specs and wraps them in facetted view for chosen waiting_status
-make_dow_spec_suplots <- function(data, specialties = c("All Specialties"), n_specs,
+make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialties"), n_specs,
                              waiting_status, qend, hbt){
-
+  
   validate(
     need((length(specialties)>=1),
          "There are no entries matching your selection. Please choose again.")
   )
+  
+  # spec_order <- plotdata %>% 
+  #   filter(indicator == "additions_to_list", urgency == "Total",
+  #          nhs_board_of_treatment == hbt, date == get_short_date(qend),
+  #          specialty %in% specialties) %>% 
+  #   select(specialty, p2_proportion) %>% 
+  #   mutate(specialty = reorder(factor(specialty), -p2_proportion))
+  # 
+  # specialties <-as.character(spec_order$specialty)
 
   plot_list <- vector("list", length = n_specs) #initialize empty list to store plots
 

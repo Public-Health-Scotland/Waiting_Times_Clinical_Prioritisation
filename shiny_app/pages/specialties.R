@@ -148,9 +148,9 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
 
                                               #make facets
                                               subplot(style(p1, showlegend = FALSE), # keep one legend for all plots
-                                                      plotly_empty(), 
+                                                      plotly_empty(),
                                                       style(p2, showlegend = FALSE),
-                                                      plotly_empty(), 
+                                                      plotly_empty(),
                                                       p3, nrows = 5, heights = c(0.26, 0.1, 0.26, 0.1, 0.26), shareX = FALSE, # share axis between plots
                                                       titleY = TRUE)
                                               })
@@ -159,6 +159,7 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
 plots$waits_spec_plot_ongoing <- renderPlotly({
   
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                        plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
                    n_specs = length(input$specialty_filter),
                    waiting_status = "waiting",
@@ -171,6 +172,7 @@ plots$waits_spec_plot_ongoing <- renderPlotly({
 plots$waits_spec_plot_admitted <- renderPlotly({
   
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
+                        plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
                    n_specs = length(input$specialty_filter),
                    waiting_status = "admitted",
