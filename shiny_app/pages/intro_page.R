@@ -2,7 +2,7 @@
 
 output$intro_page_ui <-  renderUI({
   # getDependency('sparkline') #load dependencies for sparkline plot
-  
+
   div(
     wellPanel(
       column(12,
@@ -10,7 +10,6 @@ output$intro_page_ui <-  renderUI({
              bsCollapse(id = "collapse_notes", open = "Panel 1",
                         bsCollapsePanel("About Clinical Prioritisation", uiOutput("about_cp_notes")),
                         bsCollapsePanel("Data quality", uiOutput("data_quality_notes"),
-                                        # numbers[["dq_summary"]],
                                         uiOutput("dq_summary"),
                                         br(),
                                         column(6,
@@ -102,7 +101,40 @@ output$about_cp_notes <- renderUI({
 output$data_quality_notes <- renderUI({
 
   tagList(
-    h4("Data quality summary")
+    h4("Data quality summary"),
+
+    numbers[["dq_summary"]],
+    br(),
+    column(6,
+           pickerInput("hbt_dq_filter",
+                       "1. Select Health Board of Treatment ",
+                       choices = c("NHS Scotland",
+                                   "NHS Ayrshire & Arran",
+                                   "NHS Borders",
+                                   "NHS Dumfries & Galloway",
+                                   "NHS Fife",
+                                   "NHS Forth Valley",
+                                   "NHS Grampian",
+                                   "NHS Greater Glasgow & Clyde",
+                                   "NHS Highland",
+                                   "NHS Lanarkshire",
+                                   "NHS Lothian",
+                                   "NHS Orkney",
+                                   "NHS Shetland",
+                                   "NHS Tayside",
+                                   "NHS Western Isles",
+                                   "Golden Jubilee National Hospital"),
+                       selected = "NHS Scotland",
+                       multiple = FALSE)
+    ),
+    column(6,
+           pickerInput("month_dq_filter",
+                       "2. Select month",
+                       choices = get_month(unique(app_data[["total_comp_jun"]]$date)),
+                       selected = "June 2022")
+    ),
+    br(),
+    numbers[["dq_table"]]
 
   )
 }) # render UI close bracket
@@ -137,16 +169,22 @@ output$accessibility_notes <- renderUI({
 
 
 numbers$dq_table <- DT::renderDataTable({
-  
+
   sparkline_table(dq_table(app_data[["total_comp_jun"]], input$hbt_dq_filter, input$month_dq_filter))
-  
+
 })
 
+<<<<<<< HEAD
 output$dq_summary <- renderUI({
   select_text <- app_data[["dq_summaries"]] %>% 
     filter(nhs_board_of_treatment == input$hbt_dq_filter) %>% 
+=======
+numbers$dq_summary <- renderText({
+  select_text <- app_data[["dq_summaries"]] %>%
+    filter(nhs_board_of_treatment == input$hbt_dq_filter) %>%
+>>>>>>> a0f3f80959a53821251fbb266684a54987f3e603
     select(summary)
-  
+
   paste(select_text)
 })
 

@@ -5,9 +5,9 @@ source("setup.R")
 
 # UI
 ui <- #secure_app( #uncomment if needing password protection
-    
+
   fluidPage(
-    
+
   tagList(
     useShinyjs(),
     # Specify most recent fontawesome library
@@ -19,7 +19,7 @@ ui <- #secure_app( #uncomment if needing password protection
                href = "https://www.publichealthscotland.scot/",
                target = "_blank"), # PHS logo links to PHS website
         style = "position: relative; top: -5px;"),
-      windowTitle = "PHS Waiting Times Dashboard",    # Title for browser tab
+      windowTitle = "PHS Waiting Times and Clinical Prioritisation",    # Title for browser tab
       header = tags$head(includeCSS("www/styles.css"),  # CSS stylesheet
                          tags$link(rel = "shortcut icon", href = "favicon_phs.ico"), # Icon for browser tab
                          #TODO: Include Google analytics
@@ -97,15 +97,15 @@ credentials <- readRDS("admin/credentials.rds") #read in credentials
 server <- function(input, output, session) {
 
   # Shinymanager Auth
-  
+
   res_auth <- secure_server(
     check_credentials = check_credentials(credentials)
   )
-  
+
   output$auth_output <- renderPrint({
     reactiveValuesToList(res_auth)
   })
-  
+
   # Get navigation buttons
   source(file.path("functions/navigation_buttons.R"), local = TRUE)$value
 

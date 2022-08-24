@@ -49,9 +49,8 @@ output$landing_page_ui <-  renderUI({
              ) # box
     ),
 
-
     fluidRow(
-             shinydashboard::tabBox( width=NULL, type="pills", height="1400px", side="right",
+             shinydashboard::tabBox( width=NULL, type="pills", height="1700px", side="right",
 
                                      tabPanel("Charts",
                                               tagList(
@@ -65,6 +64,8 @@ output$landing_page_ui <-  renderUI({
                                                 # Have restyled them as PHS colours in the css file.
                                                 # green: phs-green; purple: phs-purple; blue: phs-blue;
                                                 # fuchsia: phs-magenta; olive: phs-graphite;
+                                                tags$div(class = "bans",
+                                                h4(ban_header[["additions"]]),
                                                 shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_additions_p1"]], width=2,
                                                                        color="green"),
@@ -80,11 +81,15 @@ output$landing_page_ui <-  renderUI({
                                                 shinydashboard::valueBox(value="Other",
                                                                          subtitle=numbers[["ban_additions_other"]], width=2,
                                                                          color="olive"),
+                                                linebreaks(3)
+                                                ), # div
                                                 column(width = 12,
                                                        plots[["activity_additions"]]),
                                                 # Admitted
                                               column(width = 12,h3("Number of TTG patients admitted for treatment")),
                                               br(),
+                                              tags$div(class = "bans",
+                                              h4(ban_header[["admitted"]]),
                                               shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_admitted_p1"]], width=2,
                                                                        color="green"),
@@ -100,6 +105,8 @@ output$landing_page_ui <-  renderUI({
                                               shinydashboard::valueBox(value="Other",
                                                                        subtitle=numbers[["ban_admitted_other"]], width=2,
                                                                        color="olive"),
+                                              linebreaks(3)
+                                              ), # div
                                                 # Activity plot
                                                 column(width = 12,
                                                        plots[["activity_admitted"]]),
@@ -107,6 +114,8 @@ output$landing_page_ui <-  renderUI({
                                                           # Waiting
                                               column(width = 12,h3("Number of TTG patients waiting for treatment")),
                                               br(),
+                                              tags$div(class = "bans",
+                                              h4(ban_header[["waiting"]]),
                                               shinydashboard::valueBox(value="P1A-1B",
                                                                        subtitle= numbers[["ban_waiting_p1"]], width=2,
                                                                        color="green"),
@@ -122,6 +131,8 @@ output$landing_page_ui <-  renderUI({
                                               shinydashboard::valueBox(value="Other",
                                                                        subtitle=numbers[["ban_waiting_other"]], width=2,
                                                                        color="olive"),
+                                              linebreaks(3)
+                                              ), # div
                                                # Activity plot
                                                column(width = 12,
                                                       plots[["activity_waiting"]])
@@ -201,6 +212,10 @@ output$landing_page_ui <-  renderUI({
 
 timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
                           "quarterly" = get_month(unique(app_data[["perf_qtr_split_jun"]]$date)))
+
+ban_header <- reactiveValues("additions" = renderText({glue("Number of patients added to the list in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
+                             "admitted" = renderText({glue("Number of patients admitted for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
+                             "waiting" = renderText({glue("Number of patients waiting for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}))
 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
