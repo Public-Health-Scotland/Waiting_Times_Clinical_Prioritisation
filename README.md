@@ -56,10 +56,13 @@ You can password protect the app for pre-release access.
 
 * Edit the script with the chosen username and password for pre-realease access
 
-    credentials_df <- data.frame(
-    user = c("username"), # insert username here
-    password = c("password"), # insert password here
-    stringsAsFactors = FALSE)
+
+```
+  credentials_df <- data.frame(
+  user = c("username"), # insert username here
+  password = c("password"), # insert password here
+  stringsAsFactors = FALSE)
+```
 
 * Save your changes and run the script. The script creates a folder called `admin` (if it doesn't already exist). Check that the `credentials.rds` file is saved to your admin folder.
 
