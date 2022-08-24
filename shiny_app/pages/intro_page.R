@@ -74,8 +74,6 @@ output$data_quality_notes <- renderUI({
 
   tagList(
     h4("Data quality summary"),
-
-    numbers[["dq_summary"]],
     br(),
     column(6,
            pickerInput("hbt_dq_filter",
@@ -105,6 +103,8 @@ output$data_quality_notes <- renderUI({
                        choices = get_month(unique(app_data[["total_comp_jun"]]$date)),
                        selected = "June 2022")
     ),
+    br(),
+    numbers[["dq_summary"]],
     br(),
     numbers[["dq_table"]]
 
