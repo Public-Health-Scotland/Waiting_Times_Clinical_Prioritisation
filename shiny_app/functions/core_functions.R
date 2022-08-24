@@ -84,6 +84,14 @@ cols_to_not_display <- c("y_max", "y_max2", "waited_waiting_over_26_weeks",
                             "monthly_avg", "proportion"
 )
 
+recode_indicator <- function(ind){
+  new_ind <- case_when(ind == "Ongoing" ~ "Waiting",
+                       ind == "Completed" ~ "Admitted",
+                       ind == "additions_to_list" ~ "Additions")
+
+  return(new_ind)
+}
+
 
 
 # Move x and y axis labels of ggplotly so they don't overlap plot
