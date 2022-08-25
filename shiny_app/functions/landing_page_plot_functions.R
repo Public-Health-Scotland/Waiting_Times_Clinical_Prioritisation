@@ -155,7 +155,20 @@ waits_distribution_plot <- function(input_data, waiting_status,
                         "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
-
+  vline <- function(x = 0, color = "black") {
+    list(
+      type = "line", 
+      y0 = 0, 
+      y1 = 1, 
+      yref = "paper",
+      xref = "x",
+      x0 = x, 
+      x1 = x, 
+      line = list(color = color, dash = "dash")
+    )
+  }
+  
+  
   p <- dataset %>%
     plot_ly(x = ~weeks, height = 600) %>%
     add_bars(y = ~`number_seen/on_list`,
@@ -171,6 +184,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
+           shapes = list(vline(12.5)),
            legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button

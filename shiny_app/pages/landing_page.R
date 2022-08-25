@@ -165,6 +165,7 @@ output$landing_page_ui <-  renderUI({
                                                        plots[["waits_breakdown_facets"]] # facetted DoW plot
                                               ), #column
                                               column(5,
+                                                     h4("Median and 90th percentile waits for TTG patients admitted for treatment"),
                                                      # shunting table down to make it more centred
                                                      numbers[["median_table_output"]],
                                                      br(), br(),
@@ -318,10 +319,28 @@ plots$waits_breakdown_facets <- renderPlotly({
                                 chosen_specialty = input$specialty_filter_lp,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
+  
+  # Create annotations for graphs
+  annotations = list(
+    
+    list(
+      x = "65-78",
+      y = 0.8,
+      font = list(size = 12),
+      text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
+      xref = "x",
+      yref = "paper",
+      xanchor = "center",
+      yanchor = "bottom",
+      showarrow = FALSE,
+      align = "left"
+    )
+    )
 
   # make facets
   subplot(style(p5, showlegend = FALSE), p4,
-          nrows = 2, titleY = TRUE, shareX = TRUE)
+          nrows = 2, titleY = TRUE, shareX = TRUE) %>%
+    layout(annotations = annotations)
   })
 
 })

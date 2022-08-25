@@ -115,13 +115,13 @@ median_byurgency_table <- function(input_data,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
            `90th_percentile` = round(`90th_percentile`, 0), `number_seen/on_list` = formatC(`number_seen/on_list`, big.mark = ",", format = "fg" )) %>%
-    select(urgency, median, `90th_percentile`, `number_seen/on_list`) %>%
+    select(urgency, `number_seen/on_list`, median, `90th_percentile`) %>%
     unique() %>%
     arrange(urgency) %>%
-    dplyr::rename("Final Prioritisation" = "urgency",
+    dplyr::rename("Final prioritisation" = "urgency",
                   "Median (days)" = "median",
                   "90th percentile (days)" = "90th_percentile",
-                  "Patients Admitted" = "number_seen/on_list")
+                  "Patients admitted" = "number_seen/on_list")
 
   return(dataset)
 
