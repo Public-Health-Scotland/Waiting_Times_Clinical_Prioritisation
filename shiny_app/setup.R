@@ -52,6 +52,30 @@ yaxis_plots <- list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4
 
 waiting_times_palette <- phs_colours(c("phs-green","phs-purple", "phs-blue", "phs-magenta", "phs-graphite"))
 
+hb_ordered <- c("NHS Scotland",
+                "NHS Ayrshire & Arran",
+                "NHS Borders",
+                "NHS Dumfries & Galloway",
+                "NHS Fife",
+                "NHS Forth Valley",
+                "NHS Grampian",
+                "NHS Greater Glasgow & Clyde",
+                "NHS Highland",
+                "NHS Lanarkshire",
+                "NHS Lothian",
+                "NHS Orkney",
+                "NHS Shetland",
+                "NHS Tayside",
+                "NHS Western Isles",
+                "Golden Jubilee National Hospital")
+
+hb_most_waiting <- c("NHS Greater Glasgow & Clyde",
+                     "NHS Lothian",
+                     "NHS Grampian",
+                     "NHS Lanarkshire",
+                     "NHS Tayside",
+                     "NHS Ayrshire & Arran")
+
 # Buttons to remove from plotly plots
 bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
                      'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
