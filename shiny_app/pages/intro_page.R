@@ -109,7 +109,7 @@ output$data_quality_notes <- renderUI({
     br(),
     numbers[["dq_table"]],
     br()
-    
+
 
   )
 }) # render UI close bracket
@@ -174,7 +174,7 @@ output$accessibility_notes <- renderUI({
       level AA standard."),
     br(),
     p(strong("Reporting any accessibility problems with this website")),
-    p("If you with to contact us about any accessibility issues you encounter on this site, please email",
+    p("If you wish to contact us about any accessibility issues you encounter on this site, please email",
       tags$a(href="mailto:phs.waitingtimes@phs.scot", "phs.waitingtimes@phs.scot")),
     br(),
     p(strong("Enforcement procedure")),
