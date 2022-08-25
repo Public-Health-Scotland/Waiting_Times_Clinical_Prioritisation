@@ -29,9 +29,10 @@ data_download_table_head <-  function(input_data,
   remove_cols <- intersect(names(input_data), cols_to_not_display)
 
   dataset <- input_data %>%
-    head(10) %>%
+    
     filter(nhs_board_of_treatment %in% hbts,
            specialty %in% chosen_specialties) %>%
+    head(10) %>%
     select(-remove_cols) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")) )
 
