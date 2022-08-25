@@ -52,6 +52,7 @@ ui <- #secure_app( #uncomment if needing password protection
                value = "overview",
 
                h2("Overview of waiting list activity by Clinical Prioritisation category"),
+               h4("This page presents the trend in TTG patients added to the waiting list, admitted and waiting, for the selected Health Board of treatment, specialty and time period. The distribution of waits for patients admitted and waiting is shown, with median and 90th percentile statistics for admitted patients."),
                uiOutput("landing_page_ui")
 
                ), # tabpanel
@@ -63,6 +64,7 @@ ui <- #secure_app( #uncomment if needing password protection
                value = "specialties",
 
                h2("Variation in Clinical Prioritisation of patients by specialty"),
+               h4("This page presents the percentage of TTG patients in each clinical prioritisation category by specialty, for the selected Health Board of treatment, quarter and specialties. Data are shown for patients added to the waiting list, admitted and waiting, as well as distributions of wait. The specialty filter defaults to the top six specialties by volume of patients waiting for the chosen Board and date."),
                uiOutput("specialties_ui")
 
       ), # tabpanel
@@ -74,6 +76,7 @@ ui <- #secure_app( #uncomment if needing password protection
                value = "hbt",
 
                h2("Variation in Clinical Prioritisation of patients by Health Board of Treatment"),
+               h4("This page presents the percentage of TTG patients in each clinical prioritisation category by Health Board of treatment, for the selected specialty, quarter and Health Boards of treatment. Data are shown for patients added to the waiting list, admitted and waiting, as well as distributions of wait. The health board filter defaults to the six largest board by population."),
                uiOutput("hbt_ui")
 
       ), # tabpanel
