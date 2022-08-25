@@ -220,6 +220,7 @@ info_table <- function(input_data_table,
                                      searching=FALSE,
                                      info=FALSE,
                                      dom = 't',
+                                     scrollX=T, #seems to make table resize to window better
                                      autoWidth = TRUE,
                                      # style header
                                      initComplete = htmlwidgets::JS(

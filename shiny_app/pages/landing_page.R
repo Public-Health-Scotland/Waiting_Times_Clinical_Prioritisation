@@ -324,7 +324,7 @@ plots$waits_breakdown_facets <- renderPlotly({
   annotations = list(
     
     list(
-      x = "65-78",
+      x = "78-91",
       y = 0.8,
       font = list(size = 12),
       text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
