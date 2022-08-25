@@ -7,7 +7,7 @@ source("setup.R")
 ui <- #secure_app( #uncomment if needing password protection
 
   # Theme for shinymanager
-  theme = shinythemes::shinytheme("flatly"),
+ # theme = shinythemes::shinytheme("flatly"),
 
   fluidPage(
 
