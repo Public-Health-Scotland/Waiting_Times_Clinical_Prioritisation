@@ -46,6 +46,11 @@ activity_specs_hbt <- function(input_data, waiting_status,
    # To stop plotly being stupid and rounding to whole number in tooltip on the sly
    # https://stackoverflow.com/questions/68007438/r-how-to-stop-rounding-percentages-to-0-decimal-places-on-plotly-chart
    xaxis_plots[["tickformat"]] <- ".1%"
+   # Hack to move board names so they're not crammed up against the y axis
+   # Adding invisible ticks which will force the board names left
+   yaxis_plots[["ticks"]] <- "outside"
+   yaxis_plots[["ticklen"]] <- 10
+   yaxis_plots[["tickcolor"]] <- phs_colours("phs-liberty-10")
 
   p <- dataset %>%
     arrange(nhs_board_of_treatment, p2_proportion) %>%
