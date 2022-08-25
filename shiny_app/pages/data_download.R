@@ -195,7 +195,7 @@ numbers$data_download_table_output <- DT::renderDataTable({
                              chosen_specialties=input$download_specialty),
             # These columns have thousand separator added
             add_separator_cols = c(6),
-            rows_to_display = 4,
+            rows_to_display = 10,
             scrollX = TRUE,
             scrollY = TRUE)
 

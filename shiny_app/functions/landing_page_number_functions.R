@@ -60,6 +60,7 @@ activity_table <- function(input_data,
              indicator = case_when(indicator == "Ongoing" ~ "Waiting",
                                    indicator == "Completed" ~ "Admitted",
                                    indicator == "additions_to_list" ~ "Additions to list")) %>%
+      make_cols_factors(c("indicator", "nhs_board_of_treatment", "specialty", "patient_type")) %>%
       group_by(across(c(-urgency, -number))) %>%
       mutate(total = sum(number)) %>%
       ungroup() %>%
@@ -88,7 +89,9 @@ waits_table <- function(input_data,
            nhs_board_of_treatment == hbt) %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
            weeks = get_pretty_weeks(weeks)) %>%
-    mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
+    mutate(ongoing_completed = recode_indicator(ongoing_completed),
+            weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
+    make_cols_factors(c("ongoing_completed")) %>%
     select(date, ongoing_completed, specialty, nhs_board_of_treatment, urgency, weeks, `number_seen/on_list`) %>%
     unique()
 

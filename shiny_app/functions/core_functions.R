@@ -92,7 +92,12 @@ recode_indicator <- function(ind){
   return(new_ind)
 }
 
+make_cols_factors <- function(df, cols){
 
+  df %<>% mutate_at(cols, as.factor)
+
+  return(df)
+}
 
 # Move x and y axis labels of ggplotly so they don't overlap plot
 # (Function from https://stackoverflow.com/questions/42763280/r-ggplot-and-plotly-axis-margin-wont-change)
