@@ -54,6 +54,17 @@ body {
 .shiny-output-error:before { visibility: hidden; }
 */
 
+/* For progress bars for loading plots and tables */
+.shiny-notification {
+  background-color: var(--phs-liberty-30);
+  color: var(--phs-purple);
+
+}
+
+.shiny-notification .progress {
+  background-color: var(--white);
+}
+
 /* Style sidebars/well panels */
 .well {background-color:var(--white); border: 0 solid var(--phs-blue);
        padding: 5px; box-shadow: none; }
