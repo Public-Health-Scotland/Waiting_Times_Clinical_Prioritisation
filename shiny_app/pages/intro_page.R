@@ -63,7 +63,6 @@ output$about_cp_notes <- renderUI({
 
   tagList(
     h4("About Clinical Prioritisation"),
-    br(),
     includeHTML("about_cp.html")
 
   )
