@@ -175,20 +175,12 @@ waits_specs <- function(input_data, waiting_status,
 #calls wait_specs and wraps them in facetted view for chosen waiting_status
 make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialties"), n_specs,
                              waiting_status, qend, hbt){
-  
+
   validate(
     need((length(specialties)>=1),
          "There are no entries matching your selection. Please choose again.")
   )
-  
-  # spec_order <- plotdata %>% 
-  #   filter(indicator == "additions_to_list", urgency == "Total",
-  #          nhs_board_of_treatment == hbt, date == get_short_date(qend),
-  #          specialty %in% specialties) %>% 
-  #   select(specialty, p2_proportion) %>% 
-  #   mutate(specialty = reorder(factor(specialty), -p2_proportion))
-  # 
-  # specialties <-as.character(spec_order$specialty)
+
 
   plot_list <- vector("list", length = n_specs) #initialize empty list to store plots
 
@@ -224,57 +216,3 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
     layout(title=plot_title, margin = list(b = 10, t = 40))
 
 }
-
-# --------------------------------------------------------------------------
-## Data tables
-
-spec_activity_table <-  function(input_data,
-                                 qend="March 2022",
-                                 hbt="NHS Scotland",
-                                 specialties=c("All Specialties")) {
-
-
-  dataset <- input_data %>%
-    filter(nhs_board_of_treatment == hbt,
-           date == get_short_date(qend),
-           specialty %in% input$specialty_filter) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
-           indicator = factor(recode_indicator(indicator), levels=c("Additions", "Admitted", "Waiting"))) %>%
-    select(date, indicator, nhs_board_of_treatment, specialty, urgency, number)
-
-  names(dataset) <- replace_colnames(names(dataset))
-
-
-  return(dataset)
-
-
-}
-
-spec_waits_table <- function(input_data,
-                             qend="March 2022",
-                             hbt="NHS Scotland",
-                             specialties=c("All Specialties")) {
-
-
-
-  dataset <- input_data %>%
-    filter(nhs_board_of_treatment == hbt,
-           date == get_short_date(qend),
-           specialty %in% specialties) %>%
-    mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other", "Total")),
-           weeks = get_pretty_weeks(weeks),
-           seen_or_on_list = case_when(ongoing_completed == "Ongoing" ~ "Number on list",
-                                       ongoing_completed == "Completed" ~ "Number seen")) %>%
-    mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
-    ) %>%
-    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, `number_seen/on_list`)
-
-  names(dataset) <- replace_colnames(names(dataset))
-
-  return(dataset)
-
-}
-
-
-
-
