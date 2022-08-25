@@ -218,7 +218,9 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>%
-    layout(title=plot_title, margin = list(b = 10, t = 40))
+    layout(title=plot_title, margin = list(b = 10, t = 40)) %>% #split by group
+    # leaving only save plot button
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
 
 }
 

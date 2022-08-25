@@ -93,7 +93,8 @@ activity_specs <- function(input_data,
                  legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')),
                  barmode = "stack") %>% #split by group
     # Leaving only save plot button
-    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
+    config(displaylogo = F, displayModeBar = FALSE,  modeBarButtonsToRemove = bttn_remove )
+
   return(p)
 
 }
@@ -224,6 +225,8 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>%
-    layout(title=plot_title, margin = list(b = 10, t = 40))
+    layout(title=plot_title, margin = list(b = 10, t = 40)) %>% #split by group
+    # leaving only save plot button
+    config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
 
 }
