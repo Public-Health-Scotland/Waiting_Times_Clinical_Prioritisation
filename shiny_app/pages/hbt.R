@@ -21,7 +21,7 @@ output$hbt_ui <-  renderUI({
                                  column(width=4,
                                         pickerInput("quarter_end_spec_hbt",
                                                     "2. Select quarter end date ",
-                                                    choices = c("September 2021", "December 2021", "June 2022"),
+                                                    choices = quarter_end_dates,
                                                     selected = "June 2022",
                                                     multiple = FALSE)
                                  ), # column

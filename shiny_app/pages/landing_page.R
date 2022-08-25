@@ -197,8 +197,8 @@ output$landing_page_ui <-  renderUI({
 
 })
 
-timescale_choices <- list("monthly" = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
-                          "quarterly" = get_month(unique(app_data[["perf_qtr_split_jun"]]$date)))
+timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_split_jun"]]$date), decreasing=TRUE)),
+                          "quarterly" = get_month(sort(unique(app_data[["perf_qtr_split_jun"]]$date), decreasing=TRUE)))
 
 ban_header <- reactiveValues("additions" = renderText({glue("Number of patients added to the list in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
                              "admitted" = renderText({glue("Number of patients admitted for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
@@ -366,6 +366,8 @@ numbers$median_table_output <- DT::renderDataTable({
 # Raw data table
 numbers$waits_table_output <- DT::renderDataTable({
 
+  withProgress(message="Loading data table ... please wait", {
+
   make_table(waits_table(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
                               monthly=app_data[["dow_4wk_mon_jun"]]),
                             hbt=input$hbt_filter,
@@ -375,5 +377,7 @@ numbers$waits_table_output <- DT::renderDataTable({
              # These columns have thousand separator added
              add_separator_cols = c(3),
              rows_to_display = 10)
+
+  })
 
 })

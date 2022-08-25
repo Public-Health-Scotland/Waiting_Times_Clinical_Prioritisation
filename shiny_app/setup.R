@@ -83,6 +83,8 @@ hb_most_waiting <- c("NHS Greater Glasgow & Clyde",
                      "NHS Tayside",
                      "NHS Ayrshire & Arran")
 
+quarter_end_dates <- c("June 2022", "March 2022", "December 2021", "September 2021")
+
 # Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
 # Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R
 # And it is bad practice to call output$ objects from within another output$. In this case it leads
