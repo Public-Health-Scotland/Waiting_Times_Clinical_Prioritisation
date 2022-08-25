@@ -28,11 +28,9 @@ output$download_ui <-  renderUI({
                                    ),
                                    pickerInput("download_dataset",
                                                "3. Choose dataset    ",
-                                               choices = c("Patients waiting, admitted and seen",
-                                                           "Distribution of waits",
-                                                           "Activity",
-                                                           "Summary of patients waiting and admitted"),
-                                               selected = "Patients waiting, admitted and seen",
+                                               choices = c("Patients added, admitted and waiting",
+                                                           "Distribution of waits"),
+                                               selected = "Patients added, admitted and waiting",
                                                inline = TRUE,
                                                multiple = FALSE,
                                                width = "100%",
@@ -107,13 +105,10 @@ output$download_ui <-  renderUI({
 
 ### ---- CHOOSING CORRECT DATASET
 
-data_choices <- list("monthly" = c("Patients waiting, admitted and seen",
-                                   "Distribution of waits",
-                                   "Summary of patients waiting and admitted"),
-                     "quarterly" = c("Patients waiting, admitted and seen",
-                                     "Distribution of waits",
-                                     "Activity",
-                                     "Summary of patients waiting and admitted"))
+data_choices <- list("monthly" = c("Patients added, admitted and waiting",
+                                   "Distribution of waits"),
+                     "quarterly" = c("Patients added, admitted and waiting",
+                                     "Distribution of waits"))
 
 # This makes sure that choice of datasets update depending on whether
 # monthly or quarterly is selected
@@ -126,7 +121,7 @@ observeEvent(
     if( !is.null(input$download_timescale) ) {
 
       updatePickerInput(session, inputId="download_dataset",
-                        selected = "Patients waiting, admitted and seen",
+                        selected = "Patients added, admitted and waiting",
                         choices = data_choices[[input$download_timescale]]
       )
 
@@ -138,19 +133,20 @@ observeEvent(
 # ## Choices of dataset for filtering
 chosen_dataset <- reactive({
 
-   case_when((input$download_dataset == "Patients waiting, admitted and seen" &
-               input$download_timescale == "monthly") ~ "add_perf_mon_jun",
-            (input$download_dataset == "Patients waiting, admitted and seen" &
-               input$download_timescale == "quarterly") ~ "add_perf_qtr_jun",
+   case_when(
+        #    (input$download_dataset == "Patients waiting, admitted and seen" &
+        #       input$download_timescale == "monthly") ~ "add_perf_mon_jun",
+        #    (input$download_dataset == "Patients waiting, admitted and seen" &
+        #       input$download_timescale == "quarterly") ~ "add_perf_qtr_jun",
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "monthly") ~ "dow_4wk_mon_jun",
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "quarterly") ~ "dow_4wk_qtr_pub_jun",
-            (input$download_dataset == "Activity" &
-               input$download_timescale == "quarterly") ~ "hb_plotdata_jun",
-            (input$download_dataset == "Summary of patients waiting and admitted" &
+         #   (input$download_dataset == "Activity" &
+         #       input$download_timescale == "quarterly") ~ "hb_plotdata_jun",
+            (input$download_dataset == "Patients added, admitted and waiting" &
                input$download_timescale == "monthly") ~ "perf_mon_split_jun",
-            (input$download_dataset == "Summary of patients waiting and admitted" &
+            (input$download_dataset == "Patients added, admitted and waiting" &
                input$download_timescale == "quarterly") ~ "perf_qtr_split_jun",
             TRUE ~ "no_choice"
 
