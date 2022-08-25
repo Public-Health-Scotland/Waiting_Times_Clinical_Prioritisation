@@ -179,15 +179,25 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
 
   plot_list <- vector("list", length = n_hbts) #initialize empty list to store plots
 
+  # Get health boards in order by descending P2 proportion
+  hb_ordered <- data %>%
+    filter(specialty == spec,
+           date==get_short_date(qend),
+           nhs_board_of_treatment %in% healthboards) %>%
+    select("nhs_board_of_treatment", "p2_proportion") %>%
+    unique() %>%
+    arrange(desc(p2_proportion)) %>%
+    .$nhs_board_of_treatment
+
   #create patients waiting DoW plots for each spec
-  for(i in seq_along(healthboards)){
+  for(i in seq_along(hb_ordered)){
 
     if(i < n_hbts){
       hbt_plot <- waits_hbt(input_data = data,
                                waiting_status = waiting_status,
                                qend=qend,
                                chosen_specialty=spec,
-                               hbt = healthboards[[i]])
+                               hbt = hb_ordered[[i]])
     }
 
     else{ #add legend to last plot
@@ -195,7 +205,7 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
                                waiting_status = waiting_status,
                                qend=qend,
                                chosen_specialty=spec,
-                               hbt = healthboards[[i]],
+                               hbt = hb_ordered[[i]],
                                legend = TRUE)
     }
 

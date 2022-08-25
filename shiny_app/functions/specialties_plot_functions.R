@@ -184,15 +184,26 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
 
   plot_list <- vector("list", length = n_specs) #initialize empty list to store plots
 
+  # Get specialties in order by descending P2 proportion
+  specs_ordered <- data %>%
+    filter(specialty %in% specialties,
+           date==get_short_date(qend),
+           nhs_board_of_treatment == hbt) %>%
+    select("specialty", "p2_proportion") %>%
+    unique() %>%
+    arrange(desc(p2_proportion)) %>%
+    .$specialty
+
+
   #create patients waiting DoW plots for each spec
-  for(i in seq_along(specialties)){
+  for(i in seq_along(specs_ordered)){
 
     if(i < n_specs){
       spec_plot <- waits_specs(input_data = data,
                                waiting_status = waiting_status,
                                qend=input$quarter_end_spec,
                                hbt=input$hbt_filter_spec,
-                               chosen_specialty = specialties[[i]])
+                               chosen_specialty = specs_ordered[[i]])
     }
 
     else{ #add legend to last plot
@@ -200,7 +211,7 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
                                waiting_status = waiting_status,
                                qend=input$quarter_end_spec,
                                hbt=input$hbt_filter_spec,
-                               chosen_specialty = specialties[[i]],
+                               chosen_specialty = specs_ordered[[i]],
                                legend = TRUE)
     }
 
