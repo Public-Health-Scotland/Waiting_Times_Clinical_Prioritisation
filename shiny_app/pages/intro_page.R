@@ -109,7 +109,7 @@ output$data_quality_notes <- renderUI({
     numbers[["dq_summary"]],
     br(),
     numbers[["dq_table"]],
-    br(),
+    br()
     
 
   )

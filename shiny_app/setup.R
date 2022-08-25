@@ -57,6 +57,32 @@ bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
                      'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
                      'hoverClosestCartesian')
 
+# Filter options ---------------------------------------------------------
+
+hb_ordered <- c("NHS Scotland",
+                "NHS Ayrshire & Arran",
+                "NHS Borders",
+                "NHS Dumfries & Galloway",
+                "NHS Fife",
+                "NHS Forth Valley",
+                "NHS Grampian",
+                "NHS Greater Glasgow & Clyde",
+                "NHS Highland",
+                "NHS Lanarkshire",
+                "NHS Lothian",
+                "NHS Orkney",
+                "NHS Shetland",
+                "NHS Tayside",
+                "NHS Western Isles",
+                "Golden Jubilee National Hospital")
+
+hb_most_waiting <- c("NHS Greater Glasgow & Clyde",
+                     "NHS Lothian",
+                     "NHS Grampian",
+                     "NHS Lanarkshire",
+                     "NHS Tayside",
+                     "NHS Ayrshire & Arran")
+
 # Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
 # Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R
 # And it is bad practice to call output$ objects from within another output$. In this case it leads
