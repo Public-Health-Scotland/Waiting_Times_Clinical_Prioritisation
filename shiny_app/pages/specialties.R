@@ -128,7 +128,11 @@ observe({
 
 ## Plots
 
-plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=app_data[["hb_plotdata_jun"]],
+plots$activity_facet_plot_spec <- renderPlotly({
+
+  withProgress(message="Loading plots ... please wait", {
+
+                                              p1 <- activity_specs(input_data=app_data[["hb_plotdata_jun"]],
                                                                      waiting_status = "additions",
                                                                      qend=input$quarter_end_spec,
                                                                      hbt=input$hbt_filter_spec,
@@ -153,11 +157,14 @@ plots$activity_facet_plot_spec <- renderPlotly({p1 <- activity_specs(input_data=
                                                       plotly_empty(),
                                                       p3, nrows = 5, heights = c(0.26, 0.1, 0.26, 0.1, 0.26), shareX = FALSE, # share axis between plots
                                                       titleY = TRUE)
-                                              })
+  })
+})
 
 #Dow ongoing waits facetted by specialty
 plots$waits_spec_plot_ongoing <- renderPlotly({
-  
+
+  withProgress(message="Loading plots ... please wait", {
+
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
@@ -165,12 +172,15 @@ plots$waits_spec_plot_ongoing <- renderPlotly({
                    waiting_status = "waiting",
                    qend = input$quarter_end_spec,
                    hbt = input$hbt_filter_spec)
+  })
 
 })
 
 #Dow admissions facetted by specialty
 plots$waits_spec_plot_admitted <- renderPlotly({
-  
+
+  withProgress(message="Loading plots ... please wait", {
+
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
@@ -178,7 +188,8 @@ plots$waits_spec_plot_admitted <- renderPlotly({
                    waiting_status = "admitted",
                    qend = input$quarter_end_spec,
                    hbt = input$hbt_filter_spec)
-  
+  })
+
 })
 
 
@@ -187,6 +198,8 @@ plots$waits_spec_plot_admitted <- renderPlotly({
 
 numbers$spec_activity_table_output <- DT::renderDataTable({
 
+  withProgress(message="Loading data table ... please wait", {
+
   make_table(spec_activity_table(input_data=app_data[["hb_plotdata_jun"]],
                          qend=input$quarter_end_spec,
                          hbt=input$hbt_filter_spec,
@@ -194,11 +207,13 @@ numbers$spec_activity_table_output <- DT::renderDataTable({
              # These columns have thousand separator added
              add_separator_cols = c(6),
              rows_to_display = 22)
-
+})
 })
 
 
 numbers$spec_waits_table_output <- DT::renderDataTable({
+
+  withProgress(message="Loading data table ... please wait", {
 
   make_table(spec_waits_table(input_data=app_data[["dow_4wk_qtr_pub_jun"]],
                          qend=input$quarter_end_spec,
@@ -207,5 +222,7 @@ numbers$spec_waits_table_output <- DT::renderDataTable({
              # These columns have thousand separator added
              add_separator_cols = c(6),
              rows_to_display = 10)
+
+  })
 
 })

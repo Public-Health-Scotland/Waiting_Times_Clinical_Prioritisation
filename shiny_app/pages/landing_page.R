@@ -275,31 +275,37 @@ for (waiting_status in waiting_statuses){
 
 # plot patients waiting
 plots$activity_waiting <- renderPlotly({
+  withProgress(message="Loading plot ... please wait", {
   activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                    monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "waiting",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
+  })
 })
   # plot patients admitted
 plots$activity_admitted <- renderPlotly({
+  withProgress(message="Loading plot ... please wait", {
   activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "admitted",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
+  })
 })
 
   # plot additions to the list
 plots$activity_additions <- renderPlotly({
+  withProgress(message="Loading plot ... please wait", {
   activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                 monthly=app_data[["add_perf_mon_specs_jun"]]),
                               waiting_status = "additions",
                               hbt=input$hbt_filter,
                               chosen_specialty = input$specialty_filter_lp,
                               timescale=input$timescale_choice)
+  })
 })
 
 
@@ -308,6 +314,7 @@ plots$activity_additions <- renderPlotly({
 ## Distribution of waits plots
 
 plots$waits_breakdown_facets <- renderPlotly({
+  withProgress(message="Loading plot ... please wait", {
 
   # DoW plot patients waiting
   p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
@@ -330,11 +337,13 @@ plots$waits_breakdown_facets <- renderPlotly({
   # make facets
   subplot(style(p5, showlegend = FALSE), p4,
           nrows = 2, titleY = TRUE, shareX = TRUE)
+  })
 
 })
 
 ## Activity numbers
 numbers$activity_table_output <- DT::renderDataTable({
+  withProgress(message="Loading data table ... please wait", {
 
   make_table(activity_table(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                                  monthly=app_data[["add_perf_mon_specs_jun"]]),
@@ -344,6 +353,7 @@ numbers$activity_table_output <- DT::renderDataTable({
              rows_to_display = 25,
              # These columns have thousand separator added
              add_separator_cols = c(7,8,9))
+  })
 
 })
 
@@ -351,6 +361,7 @@ numbers$activity_table_output <- DT::renderDataTable({
 
 # Median and 90th percentile
 numbers$median_table_output <- DT::renderDataTable({
+  withProgress(message="Loading data table ... please wait", {
 
     info_table(median_byurgency_table(list(quarterly=app_data[["perf_qtr_split_jun"]],
                                            monthly=app_data[["perf_mon_split_jun"]]),
@@ -359,6 +370,8 @@ numbers$median_table_output <- DT::renderDataTable({
                      time_chunk_end=input$timescale_filter_waits_f,
                      hbt=input$hbt_filter)
                  )
+
+  })
 
 
 })

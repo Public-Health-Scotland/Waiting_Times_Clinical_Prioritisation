@@ -190,6 +190,8 @@ observeEvent(
 
 numbers$data_download_table_output <- DT::renderDataTable({
 
+  withProgress(message="Loading data table ... please wait", {
+
   make_table(data_download_table_head(input_data=app_data[[chosen_dataset()]],
                              hbts=input$download_hbt,
                              chosen_specialties=input$download_specialty),
@@ -198,22 +200,27 @@ numbers$data_download_table_output <- DT::renderDataTable({
             rows_to_display = 10,
             scrollX = TRUE,
             scrollY = TRUE)
+  })
 
 })
 
 numbers$data_download_summary_output <- renderPrint({
+  withProgress(message="Loading download summary ... please wait", {
   data_download_table_summary(input_data=app_data[[chosen_dataset()]],
                                                                     hbts=input$download_hbt,
                                                                     chosen_specialties=input$download_specialty)
+  })
 })
 
 # ---- DATA DOWNLOAD BUTTON
 
 ## Download button
 data_download <- reactive({
+  withProgress(message="Loading data download ... please wait", {
   data_download_table(input_data=app_data[[chosen_dataset()]],
                       hbts=input$download_hbt,
                       chosen_specialties=input$download_specialty)
+  })
 })
 
 output$data_download_output <- downloadHandler(
