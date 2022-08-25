@@ -46,7 +46,7 @@ output$intro_page_ui <-  renderUI({
       column(6, class="intro-page-column",
             intro_main_box(button_name = 'intro_jump_to_data',
                            title_box = "Download data",
-                           description = 'Interactive page to dowload selected data'))
+                           description = 'Interactive page to download selected data'))
     ), # fluid row
    # End of first row
 
@@ -74,6 +74,8 @@ output$data_quality_notes <- renderUI({
 
   tagList(
     h4("Data quality summary"),
+    p("Local and national systems were developed and configured to capture the recording of the new clinical prioritisation categories for all patients covered by the TTG. From July 2021, the national waiting times datamart was able to accept the new categories in records submitted and most Boards started submitting records with this information over the course of the summer of 2021. It then took some time for category recording to reach a high level of completeness due to the logistical challenges that changing local data collection presented."),
+    p("The national collection of patient level waiting times data for inpatients and day cases has been well established since 2008. By adding to this dataset and introducing clinical priority categories, there are a number of aspects that should be carefully considered when interpreting the data, in addition to the specific points below. Please see Page 58 of the ", tags$a(href = "https://publichealthscotland.scot/publications/nhs-waiting-times-stage-of-treatment", target="_blank", rel="noopener noreferrer", "September 2022 Inpatient, Day Case and Outpatient Stage of Treatment Waiting Times report")," for further information."),
     br(),
     column(6,
            pickerInput("hbt_dq_filter",
@@ -106,7 +108,9 @@ output$data_quality_notes <- renderUI({
     br(),
     numbers[["dq_summary"]],
     br(),
-    numbers[["dq_table"]]
+    numbers[["dq_table"]],
+    br(),
+    
 
   )
 }) # render UI close bracket
