@@ -52,6 +52,13 @@ yaxis_plots <- list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4
 
 waiting_times_palette <- phs_colours(c("phs-green","phs-purple", "phs-blue", "phs-magenta", "phs-graphite"))
 
+# Buttons to remove from plotly plots
+bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
+                     'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
+                     'hoverClosestCartesian')
+
+# Filter options ---------------------------------------------------------
+
 hb_ordered <- c("NHS Scotland",
                 "NHS Ayrshire & Arran",
                 "NHS Borders",
@@ -75,11 +82,6 @@ hb_most_waiting <- c("NHS Greater Glasgow & Clyde",
                      "NHS Lanarkshire",
                      "NHS Tayside",
                      "NHS Ayrshire & Arran")
-
-# Buttons to remove from plotly plots
-bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
-                     'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
-                     'hoverClosestCartesian')
 
 # Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
 # Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R

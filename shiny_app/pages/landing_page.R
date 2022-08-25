@@ -20,7 +20,7 @@ output$landing_page_ui <-  renderUI({
               column(width=4,
                      pickerInput("specialty_filter_lp",
                                  "2. Select specialty ",
-                                 choices = unique(app_data[["add_perf_qtr_specs_jun"]]$specialty),
+                                 choices = sort(unique(app_data[["add_perf_qtr_specs_jun"]]$specialty)),
                                  selected = "All Specialties",
                                  multiple = FALSE)
               ), # column

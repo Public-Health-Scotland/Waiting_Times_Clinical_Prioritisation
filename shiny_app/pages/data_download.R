@@ -176,7 +176,7 @@ observeEvent(
      # Updating specialty choice selection
      updatePickerInput(session, inputId="download_specialty",
                       selected = unique(app_data[[chosen_dataset()]]$specialty),
-                      choices = unique(app_data[[chosen_dataset()]]$specialty)
+                      choices = sort(unique(app_data[[chosen_dataset()]]$specialty))
         )
     }
 

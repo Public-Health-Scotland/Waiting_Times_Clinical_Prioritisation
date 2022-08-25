@@ -13,7 +13,7 @@ output$hbt_ui <-  renderUI({
                                  column(width=4,
                                         pickerInput("spec_filter_hbt",
                                                     "1. Select specialty ",
-                                                    choices = unique(app_data[["hb_plotdata_jun"]]$specialty),
+                                                    choices = sort(unique(app_data[["hb_plotdata_jun"]]$specialty)),
                                                     selected = "All Specialties",
                                                     options = pickerOptions(liveSearch = TRUE, showTick=TRUE),
                                                     multiple = FALSE)

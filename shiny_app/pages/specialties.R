@@ -28,7 +28,7 @@ output$specialties_ui <-  renderUI({
                                  column(width=4,
                                         pickerInput("specialty_filter",
                                                     "3. Select up to six specialties ",
-                                                    choices = unique(app_data[["hb_plotdata_jun"]]$specialty),
+                                                    choices = sort(unique(app_data[["hb_plotdata_jun"]]$specialty)),
                                                     selected = c("Orthopaedics", "General Surgery",
                                                                  "Opthalmology", "Urology",
                                                                  "Ear, Nose & Throat", "Gynaecology"),
