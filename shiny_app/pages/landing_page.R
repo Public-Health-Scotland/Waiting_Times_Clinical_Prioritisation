@@ -39,7 +39,7 @@ output$landing_page_ui <-  renderUI({
 
                               tabPanel("Charts",
                                        tagList(
-                                         h3("Number of TTG patients added to the list"),
+                                         h3("Number of TTG patients added to the waiting list"),
                                          br(),
                                          # Additions
 
@@ -203,7 +203,7 @@ timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_
 
 ban_header <- reactiveValues("additions" = renderText({glue("Number of patients added to the list in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
                              "admitted" = renderText({glue("Number of patients admitted for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
-                             "waiting" = renderText({glue("Number of patients waiting for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}))
+                             "waiting" = renderText({glue("Number of patients waiting for treatment at the latest {gsub('ly', ' ', input$timescale_choice)} end")}))
 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice

@@ -118,7 +118,7 @@ median_byurgency_table <- function(input_data,
     select(urgency, `number_seen/on_list`, median, `90th_percentile`) %>%
     unique() %>%
     arrange(urgency) %>%
-    dplyr::rename("Final prioritisation" = "urgency",
+    dplyr::rename("Final priority" = "urgency",
                   "Median (days)" = "median",
                   "90th percentile (days)" = "90th_percentile",
                   "Patients admitted" = "number_seen/on_list")

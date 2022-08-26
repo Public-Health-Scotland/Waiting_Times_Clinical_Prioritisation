@@ -43,9 +43,9 @@ activity_specs <- function(input_data,
   # Wrapping text on specialties for plotting
   dataset$specialty_wrapped <- purrr::map_chr(dataset$specialty, wrap_label)
 
-  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
-                           waiting_status == "admitted" ~ "Patients admitted",
-                           waiting_status == "additions" ~ "Additions to list",
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
+                           waiting_status == "admitted" ~ "Patients admitted for treatment",
+                           waiting_status == "additions" ~ "Additions to the waiting list",
                            TRUE ~ "")
 
   xaxis_plots[["categoryorder"]] <-"trace"
@@ -74,7 +74,7 @@ activity_specs <- function(input_data,
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
-      text = ~paste("\n",strwrap(unique(plot_title),25), collapse="\n"),
+      text = ~paste("\n",unique(plot_title), collapse="\n"),
       x = 0,
       y = 1,
       yref = "paper",
@@ -147,7 +147,20 @@ waits_specs <- function(input_data, waiting_status,
                         "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
-
+# code to create reference line
+  vline <- function(x = 0, color = "black") {
+    list(
+      type = "line", 
+      y0 = 0, 
+      y1 = 1, 
+      yref = "paper",
+      xref = "x",
+      x0 = x, 
+      x1 = x, 
+      line = list(color = color, dash = "dash")
+    )
+  }
+  
   p <- dataset %>%
     plot_ly(x = ~weeks, height = 1200) %>%
     add_bars(y = ~`number_seen/on_list`,
@@ -164,6 +177,7 @@ waits_specs <- function(input_data, waiting_status,
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
+           shapes = list(vline(12.5)),
            legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button
@@ -219,13 +233,30 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
     plot_list[[i]] <- spec_plot #save plot
   }
 
-  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
-                          waiting_status == "admitted" ~ "Patients admitted",
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment at quarter end",
+                          waiting_status == "admitted" ~ "Patients admitted for treatment during quarter",
                           TRUE ~ "")
 
+  # Create annotations for graphs
+  annotations = list(
+    
+    list(
+      x = "52-65",
+      y = 0.95,
+      font = list(size = 12),
+      text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
+      xref = "x",
+      yref = "paper",
+      xanchor = "left",
+      yanchor = "bottom",
+      showarrow = FALSE,
+      align = "left"
+    )
+  )
+  
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>%
-    layout(title=plot_title, margin = list(b = 10, t = 40)) %>% #split by group
+    layout(title=plot_title, margin = list(b = 10, t = 40),annotations = annotations) %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
 
