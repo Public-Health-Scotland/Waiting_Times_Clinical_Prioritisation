@@ -52,8 +52,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
    yaxis_plots[["ticklen"]] <- 10
    yaxis_plots[["tickcolor"]] <- phs_colours("phs-liberty-10")
 
-   
-   
+
+
   p <- dataset %>%
     arrange(nhs_board_of_treatment, p2_proportion) %>%
     plot_ly(x = ~proportion,
@@ -139,19 +139,6 @@ waits_hbt <- function(input_data, waiting_status,
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- "Weeks waiting"
 
-  vline <- function(x = 0, color = "black") {
-    list(
-      type = "line", 
-      y0 = 0, 
-      y1 = 1, 
-      yref = "paper",
-      xref = "x",
-      x0 = x, 
-      x1 = x, 
-      line = list(color = color, dash = "dash")
-    )
-  }
-
   tooltip_trend <- glue("Quarter ending: {qend}<br>",
                         "Weeks waiting: {dataset$weeks}<br>",
                         "HBT: {dataset$nhs_board_of_treatment}<br>",
@@ -234,23 +221,11 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment at quarter end",
                           waiting_status == "admitted" ~ "Patients admitted for treatment during quarter",
                           TRUE ~ "")
-  
+
   # Create annotations for graphs
-  annotations = list(
-    
-    list(
-      x = "52-65",
-      y = 0.95,
-      font = list(size = 12),
-      text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
-      xref = "x",
-      yref = "paper",
-      xanchor = "left",
-      yanchor = "bottom",
-      showarrow = FALSE,
-      align = "left"
-    )
-  )
+  # Create annotations for graphs
+  annotations = make_annotation(x_choice=13, y_choice=0.95,
+                                label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n"))
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>%

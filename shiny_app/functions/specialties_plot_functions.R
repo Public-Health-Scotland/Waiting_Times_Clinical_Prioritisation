@@ -147,20 +147,6 @@ waits_specs <- function(input_data, waiting_status,
                         "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
-# code to create reference line
-  vline <- function(x = 0, color = "black") {
-    list(
-      type = "line", 
-      y0 = 0, 
-      y1 = 1, 
-      yref = "paper",
-      xref = "x",
-      x0 = x, 
-      x1 = x, 
-      line = list(color = color, dash = "dash")
-    )
-  }
-  
   p <- dataset %>%
     plot_ly(x = ~weeks, height = 1200) %>%
     add_bars(y = ~`number_seen/on_list`,
@@ -238,22 +224,9 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
                           TRUE ~ "")
 
   # Create annotations for graphs
-  annotations = list(
-    
-    list(
-      x = "52-65",
-      y = 0.95,
-      font = list(size = 12),
-      text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
-      xref = "x",
-      yref = "paper",
-      xanchor = "left",
-      yanchor = "bottom",
-      showarrow = FALSE,
-      align = "left"
-    )
-  )
-  
+  annotations = make_annotation(x_choice=13, y_choice=0.95,
+                                label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n"))
+
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>%
     layout(title=plot_title, margin = list(b = 10, t = 40),annotations = annotations) %>% #split by group

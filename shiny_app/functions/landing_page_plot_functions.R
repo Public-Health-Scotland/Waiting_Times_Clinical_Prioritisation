@@ -128,12 +128,12 @@ waits_distribution_plot <- function(input_data, waiting_status,
            specialty == chosen_specialty,
            nhs_board_of_treatment == hbt,
            urgency!="Total") %>%
-    distinct() %>% 
+    distinct() %>%
     mutate(urgency = factor(urgency, levels=c("P1A-1B", "P2", "P3", "P4", "Other")),
            weeks = get_pretty_weeks(weeks)) %>%
     mutate(weeks=factor(weeks, levels=get_pretty_weeks(unique(input_data[[timescale]]$weeks)))) %>%
     group_by(across(c(-urgency, -`number_seen/on_list`))) %>%
-    mutate(total = sum(`number_seen/on_list`)) %>% 
+    mutate(total = sum(`number_seen/on_list`)) %>%
     select(date, weeks, `number_seen/on_list`, specialty, nhs_board_of_treatment, urgency,total) %>%
     unique()
 
@@ -155,20 +155,6 @@ waits_distribution_plot <- function(input_data, waiting_status,
                         "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
-  vline <- function(x = 0, color = "black") {
-    list(
-      type = "line", 
-      y0 = 0, 
-      y1 = 1, 
-      yref = "paper",
-      xref = "x",
-      x0 = x, 
-      x1 = x, 
-      line = list(color = color, dash = "dash")
-    )
-  }
-  
-  
   p <- dataset %>%
     plot_ly(x = ~weeks, height = 600) %>%
     add_bars(y = ~`number_seen/on_list`,

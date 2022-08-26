@@ -99,6 +99,42 @@ make_cols_factors <- function(df, cols){
   return(df)
 }
 
+
+## Annotation with vline
+vline <- function(x = 0, color = "black") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    xref = "x",
+    x0 = x,
+    x1 = x,
+    line = list(color = color, dash = "dash")
+  )
+}
+
+make_annotation <- function(x_choice, y_choice=0.8, label="Annotation"){
+
+  ann <- list(
+
+          list(
+            x = x_choice,
+            y = y_choice,
+            font = list(size = 12),
+            text = label,
+            xref = "x",
+            yref = "paper",
+            xanchor = "left",
+            yanchor = "bottom",
+            showarrow = FALSE,
+            align = "left"
+          )
+        )
+
+  return (ann)
+}
+
 # Move x and y axis labels of ggplotly so they don't overlap plot
 # (Function from https://stackoverflow.com/questions/42763280/r-ggplot-and-plotly-axis-margin-wont-change)
 stop_axis_title_overlap <- function(gg, x.y = -0.05, y.x = -0.09) {
