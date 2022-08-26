@@ -38,7 +38,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
 
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
                            waiting_status == "admitted" ~ "Patients admitted for treatment",
-                           waiting_status == "additions" ~ "Additions to the waiting list",
+                           waiting_status == "additions" ~ "Patients added to the waiting list",
                            TRUE ~ "")
    yaxis_plots[["tickfont"]] <- 14
    yaxis_plots[["categoryorder"]] <-"trace"

@@ -45,7 +45,7 @@ output$hbt_ui <-  renderUI({
              shinydashboard::tabBox( width=NULL, type="pills", height="2000px", side="right",
                                      tabPanel("Activity",
                                               tagList(
-                                                h3("Waiting list ctivity"),
+                                                h3("Waiting list activity"),
                                                 br(),
                                                 plots[["activity_facet_plot_hbt"]],
                                                 linebreaks(10),

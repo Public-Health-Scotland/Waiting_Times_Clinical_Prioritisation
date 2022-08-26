@@ -45,7 +45,7 @@ activity_specs <- function(input_data,
 
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
                            waiting_status == "admitted" ~ "Patients admitted for treatment",
-                           waiting_status == "additions" ~ "Additions to the waiting list",
+                           waiting_status == "additions" ~ "Patients added to the waiting list",
                            TRUE ~ "")
 
   xaxis_plots[["categoryorder"]] <-"trace"
