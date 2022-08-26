@@ -38,7 +38,7 @@ app_data <- list()
 rds_files <- list.files(path="data/", pattern="*.rds")
 
 for (rds in rds_files){
-  load_rds_file(rds)
+  load_rds_file(rds) 
 }
 
 ## Plot Parameters ---------------------------------------------------------
@@ -59,7 +59,7 @@ bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
 
 # Filter options ---------------------------------------------------------
 
-hb_ordered <- c("NHS Scotland",
+hb_ordered <- c("NHSScotland",
                 "NHS Ayrshire & Arran",
                 "NHS Borders",
                 "NHS Dumfries & Galloway",

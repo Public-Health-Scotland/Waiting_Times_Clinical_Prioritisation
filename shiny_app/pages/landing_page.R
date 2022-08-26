@@ -27,121 +27,121 @@ output$landing_page_ui <-  renderUI({
               column(width=4,
                      radioButtons("timescale_choice",
                                   "3. Select timescale ",
-                                 choices = c("monthly", "quarterly"),
-                                 selected = "monthly",
-                                 inline=TRUE)
-                  ) # column
+                                  choices = c("monthly", "quarterly"),
+                                  selected = "monthly",
+                                  inline=TRUE)
+              ) # column
              ) # box
     ),
-
+    
     fluidRow(
-             shinydashboard::tabBox( width=NULL, type="pills", height="1700px", side="right",
-
-                                     tabPanel("Charts",
-                                              tagList(
-                                                h3("Number of TTG patients added to the list"),
-                                                br(),
-                                                # Additions
-
-                                                # BANs
-                                                # NB: The colours below are proxy colours for PHS colours
-                                                # because only certain colours are accepted for this function.
-                                                # Have restyled them as PHS colours in the css file.
-                                                # green: phs-green; purple: phs-purple; blue: phs-blue;
-                                                # fuchsia: phs-magenta; olive: phs-graphite;
-                                                tags$div(class = "bans",
-                                                h4(ban_header[["additions"]]),
-                                                shinydashboard::valueBox(value="P1A-1B",
-                                                                       subtitle= numbers[["ban_additions_p1"]], width=2,
-                                                                       color="green"),
-                                                shinydashboard::valueBox(value="P2",
-                                                                         subtitle=numbers[["ban_additions_p2"]], width=2,
-                                                                         color="purple"),
-                                                shinydashboard::valueBox(value="P3",
-                                                                         subtitle=numbers[["ban_additions_p3"]], width=2,
-                                                                         color="blue"),
-                                                shinydashboard::valueBox(value="P4",
-                                                                         subtitle=numbers[["ban_additions_p4"]], width=2,
-                                                                         color="fuchsia"),
-                                                shinydashboard::valueBox(value="Other",
-                                                                         subtitle=numbers[["ban_additions_other"]], width=2,
-                                                                         color="olive"),
-                                                linebreaks(3)
-                                                ), # div
-                                                column(width = 12,
-                                                       plots[["activity_additions"]]),
-                                                # Admitted
-                                                br(),
-                                              h3("Number of TTG patients admitted for treatment"),
-                                              br(),
-                                              tags$div(class = "bans",
-                                              h4(ban_header[["admitted"]]),
-                                              shinydashboard::valueBox(value="P1A-1B",
-                                                                       subtitle= numbers[["ban_admitted_p1"]], width=2,
-                                                                       color="green"),
-                                              shinydashboard::valueBox(value="P2",
-                                                                       subtitle=numbers[["ban_admitted_p2"]], width=2,
-                                                                       color="purple"),
-                                              shinydashboard::valueBox(value="P3",
-                                                                       subtitle=numbers[["ban_admitted_p3"]], width=2,
-                                                                       color="blue"),
-                                              shinydashboard::valueBox(value="P4",
-                                                                       subtitle=numbers[["ban_admitted_p4"]], width=2,
-                                                                       color="fuchsia"),
-                                              shinydashboard::valueBox(value="Other",
-                                                                       subtitle=numbers[["ban_admitted_other"]], width=2,
-                                                                       color="olive"),
-                                              linebreaks(3)
-                                              ), # div
-                                                # Activity plot
-                                                column(width = 12,
-                                                       plots[["activity_admitted"]]),
-
-                                                          # Waiting
-                                              br(),
-                                              h3("Number of TTG patients waiting for treatment"),
-                                              br(),
-                                              tags$div(class = "bans",
-                                              h4(ban_header[["waiting"]]),
-                                              shinydashboard::valueBox(value="P1A-1B",
-                                                                       subtitle= numbers[["ban_waiting_p1"]], width=2,
-                                                                       color="green"),
-                                              shinydashboard::valueBox(value="P2",
-                                                                       subtitle=numbers[["ban_waiting_p2"]], width=2,
-                                                                       color="purple"),
-                                              shinydashboard::valueBox(value="P3",
-                                                                       subtitle=numbers[["ban_waiting_p3"]], width=2,
-                                                                       color="blue"),
-                                              shinydashboard::valueBox(value="P4",
-                                                                       subtitle=numbers[["ban_waiting_p4"]], width=2,
-                                                                       color="fuchsia"),
-                                              shinydashboard::valueBox(value="Other",
-                                                                       subtitle=numbers[["ban_waiting_other"]], width=2,
-                                                                       color="olive"),
-                                              linebreaks(3)
-                                              ), # div
-                                               # Activity plot
-                                               column(width = 12,
-                                                      plots[["activity_waiting"]])
-
-                                     ) # taglist
-                                     ), # tabPanel
-
-                                     tabPanel("Data",
-                                              tagList(
-                                                h3("Number of TTG patients added to the list,
+      shinydashboard::tabBox( width=NULL, type="pills", height="1700px", side="right",
+                              
+                              tabPanel("Charts",
+                                       tagList(
+                                         h3("Number of TTG patients added to the list"),
+                                         br(),
+                                         # Additions
+                                         
+                                         # BANs
+                                         # NB: The colours below are proxy colours for PHS colours
+                                         # because only certain colours are accepted for this function.
+                                         # Have restyled them as PHS colours in the css file.
+                                         # green: phs-green; purple: phs-purple; blue: phs-blue;
+                                         # fuchsia: phs-magenta; olive: phs-graphite;
+                                         tags$div(class = "bans",
+                                                  h4(ban_header[["additions"]]),
+                                                  shinydashboard::valueBox(value="P1A-1B",
+                                                                           subtitle= numbers[["ban_additions_p1"]], width=2,
+                                                                           color="green"),
+                                                  shinydashboard::valueBox(value="P2",
+                                                                           subtitle=numbers[["ban_additions_p2"]], width=2,
+                                                                           color="purple"),
+                                                  shinydashboard::valueBox(value="P3",
+                                                                           subtitle=numbers[["ban_additions_p3"]], width=2,
+                                                                           color="blue"),
+                                                  shinydashboard::valueBox(value="P4",
+                                                                           subtitle=numbers[["ban_additions_p4"]], width=2,
+                                                                           color="fuchsia"),
+                                                  shinydashboard::valueBox(value="Other",
+                                                                           subtitle=numbers[["ban_additions_other"]], width=2,
+                                                                           color="olive"),
+                                                  linebreaks(3)
+                                         ), # div
+                                         column(width = 12,
+                                                plots[["activity_additions"]]),
+                                         # Admitted
+                                         br(),
+                                         h3("Number of TTG patients admitted for treatment"),
+                                         br(),
+                                         tags$div(class = "bans",
+                                                  h4(ban_header[["admitted"]]),
+                                                  shinydashboard::valueBox(value="P1A-1B",
+                                                                           subtitle= numbers[["ban_admitted_p1"]], width=2,
+                                                                           color="green"),
+                                                  shinydashboard::valueBox(value="P2",
+                                                                           subtitle=numbers[["ban_admitted_p2"]], width=2,
+                                                                           color="purple"),
+                                                  shinydashboard::valueBox(value="P3",
+                                                                           subtitle=numbers[["ban_admitted_p3"]], width=2,
+                                                                           color="blue"),
+                                                  shinydashboard::valueBox(value="P4",
+                                                                           subtitle=numbers[["ban_admitted_p4"]], width=2,
+                                                                           color="fuchsia"),
+                                                  shinydashboard::valueBox(value="Other",
+                                                                           subtitle=numbers[["ban_admitted_other"]], width=2,
+                                                                           color="olive"),
+                                                  linebreaks(3)
+                                         ), # div
+                                         # Activity plot
+                                         column(width = 12,
+                                                plots[["activity_admitted"]]),
+                                         
+                                         # Waiting
+                                         br(),
+                                         h3("Number of TTG patients waiting for treatment"),
+                                         br(),
+                                         tags$div(class = "bans",
+                                                  h4(ban_header[["waiting"]]),
+                                                  shinydashboard::valueBox(value="P1A-1B",
+                                                                           subtitle= numbers[["ban_waiting_p1"]], width=2,
+                                                                           color="green"),
+                                                  shinydashboard::valueBox(value="P2",
+                                                                           subtitle=numbers[["ban_waiting_p2"]], width=2,
+                                                                           color="purple"),
+                                                  shinydashboard::valueBox(value="P3",
+                                                                           subtitle=numbers[["ban_waiting_p3"]], width=2,
+                                                                           color="blue"),
+                                                  shinydashboard::valueBox(value="P4",
+                                                                           subtitle=numbers[["ban_waiting_p4"]], width=2,
+                                                                           color="fuchsia"),
+                                                  shinydashboard::valueBox(value="Other",
+                                                                           subtitle=numbers[["ban_waiting_other"]], width=2,
+                                                                           color="olive"),
+                                                  linebreaks(3)
+                                         ), # div
+                                         # Activity plot
+                                         column(width = 12,
+                                                plots[["activity_waiting"]])
+                                         
+                                       ) # taglist
+                              ), # tabPanel
+                              
+                              tabPanel("Data",
+                                       tagList(
+                                         h3("Number of TTG patients added to the list,
                                                    admitted and waiting"),
-                                                br(),
-                                                numbers[["activity_table_output"]])
-                                     )
-
-
-             ) # box
-
+                                         br(),
+                                         numbers[["activity_table_output"]])
+                              )
+                              
+                              
+      ) # box
+      
     ), # fluidRow
-
+    
     fluidRow(width=12, height="50px", br()),
-
+    
     fluidRow(width=12,
              shinydashboard::box( width=NULL, height="100px",
                                   tagList(
@@ -149,53 +149,53 @@ output$landing_page_ui <-  renderUI({
                                     pickerInput("timescale_filter_waits_f", "4. Select month",
                                                 choices = get_month(unique(app_data[["perf_mon_split_jun"]]$date)),
                                                 selected = "June 2022")
-                                              ) # pickerInput
+                                  ) # pickerInput
              ) # box
     ),
-
+    
     fluidRow(width=12, height="50px", shinydashboard::box(width=NULL, height="50px", br())),
-
+    
     fluidRow(width=12,
              shinydashboard::tabBox( width=NULL, type="pills", height="800px", side="right",
-
+                                     
                                      tabPanel("Charts",
                                               tagList(
                                                 column(7,
                                                        br(), br(),
                                                        plots[["waits_breakdown_facets"]] # facetted DoW plot
-                                              ), #column
-                                              column(5,
-                                                     h4("Median and 90th percentile waits for TTG patients admitted for treatment"),
-                                                     # shunting table down to make it more centred
-                                                     numbers[["median_table_output"]],
-                                                     br(), br(),
-                                                     actionButton("btn_modal_median",
-                                                                  "What is the median?",
-                                                                  icon = icon('question-circle')),
-                                                     actionButton("btn_modal_90th",
-                                                                  "What is the 90th percentile?",
-                                                                  icon = icon('question-circle'))
-                                              ) # column
+                                                ), #column
+                                                column(5,
+                                                       h4("Median and 90th percentile waits for TTG patients admitted for treatment"),
+                                                       # shunting table down to make it more centred
+                                                       numbers[["median_table_output"]],
+                                                       br(), br(),
+                                                       actionButton("btn_modal_median",
+                                                                    "What is the median?",
+                                                                    icon = icon('question-circle')),
+                                                       actionButton("btn_modal_90th",
+                                                                    "What is the 90th percentile?",
+                                                                    icon = icon('question-circle'))
+                                                ) # column
                                               ) #taglist
-
-                                      ), # tabpanel
-
+                                              
+                                     ), # tabpanel
+                                     
                                      tabPanel("Data",
                                               tagList(
                                                 numbers[["waits_table_output"]]
                                               ) #taglist
-
+                                              
                                      ) # tabpanel
-
-
+                                     
+                                     
              ) # box
     ), # fluidRow
-
+    
     fluidRow(width=12, height="50px", br())
-
+    
   ) # div
-
-
+  
+  
 })
 
 timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_split_jun"]]$date), decreasing=TRUE)),
@@ -208,22 +208,22 @@ ban_header <- reactiveValues("additions" = renderText({glue("Number of patients 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
 observeEvent(
-
+  
   eventExpr=input$timescale_choice,
-
+  
   handlerExpr={
-
-  if( !is.null(input$timescale_choice) ) {
-
-        updatePickerInput(session, inputId="timescale_filter_waits_f",
-                      label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
-                                        input$timescale_choice=="quarterly" ~ "3. Select quarter"),
-                      selected = "June 2022",
-                      choices = timescale_choices[[input$timescale_choice]]
-    )
-
-  }
-
+    
+    if( !is.null(input$timescale_choice) ) {
+      
+      updatePickerInput(session, inputId="timescale_filter_waits_f",
+                        label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
+                                          input$timescale_choice=="quarterly" ~ "3. Select quarter"),
+                        selected = "June 2022",
+                        choices = timescale_choices[[input$timescale_choice]]
+      )
+      
+    }
+    
   }
 )
 
@@ -242,17 +242,17 @@ for (waiting_status in waiting_statuses){
       # Making local variables
       local_cpname <- cpname
       local_waiting_status <- waiting_status
-
-    numbers[[paste0("ban_", local_waiting_status, "_", local_cpname)]] <- renderText({
-      ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-               monthly=app_data[["add_perf_mon_specs_jun"]]),
-          cp=cps[[local_cpname]],
-          waiting_status=local_waiting_status,
-          hbt=input$hbt_filter,
-          chosen_specialty=input$specialty_filter_lp,
-          timescale=input$timescale_choice)
-        })# renderText
-
+      
+      numbers[[paste0("ban_", local_waiting_status, "_", local_cpname)]] <- renderText({
+        ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                 monthly=app_data[["add_perf_mon_specs_jun"]]),
+            cp=cps[[local_cpname]],
+            waiting_status=local_waiting_status,
+            hbt=input$hbt_filter,
+            chosen_specialty=input$specialty_filter_lp,
+            timescale=input$timescale_choice)
+      })# renderText
+      
     }) # local
   }
 }
@@ -262,35 +262,35 @@ for (waiting_status in waiting_statuses){
 # plot patients waiting
 plots$activity_waiting <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
-  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                   monthly=app_data[["add_perf_mon_specs_jun"]]),
-                              waiting_status = "waiting",
-                              hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter_lp,
-                              timescale=input$timescale_choice)
+    activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                            monthly=app_data[["add_perf_mon_specs_jun"]]),
+                       waiting_status = "waiting",
+                       hbt=input$hbt_filter,
+                       chosen_specialty = input$specialty_filter_lp,
+                       timescale=input$timescale_choice)
   })
 })
-  # plot patients admitted
+# plot patients admitted
 plots$activity_admitted <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
-  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                monthly=app_data[["add_perf_mon_specs_jun"]]),
-                              waiting_status = "admitted",
-                              hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter_lp,
-                              timescale=input$timescale_choice)
+    activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                            monthly=app_data[["add_perf_mon_specs_jun"]]),
+                       waiting_status = "admitted",
+                       hbt=input$hbt_filter,
+                       chosen_specialty = input$specialty_filter_lp,
+                       timescale=input$timescale_choice)
   })
 })
 
-  # plot additions to the list
+# plot additions to the list
 plots$activity_additions <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
-  activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
-                                monthly=app_data[["add_perf_mon_specs_jun"]]),
-                              waiting_status = "additions",
-                              hbt=input$hbt_filter,
-                              chosen_specialty = input$specialty_filter_lp,
-                              timescale=input$timescale_choice)
+    activity_trendplot(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
+                            monthly=app_data[["add_perf_mon_specs_jun"]]),
+                       waiting_status = "additions",
+                       hbt=input$hbt_filter,
+                       chosen_specialty = input$specialty_filter_lp,
+                       timescale=input$timescale_choice)
   })
 })
 
@@ -301,19 +301,19 @@ plots$activity_additions <- renderPlotly({
 
 plots$waits_breakdown_facets <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
-
-  # DoW plot patients waiting
-  p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
-                                      monthly=app_data[["dow_4wk_mon_jun"]]),
-                                 waiting_status="waiting",
-                                 timescale=input$timescale_choice,
-                                 chosen_specialty = input$specialty_filter_lp,
-                                 time_chunk_end=input$timescale_filter_waits_f,
-                                 hbt=input$hbt_filter)
-
-  # DoW plot patients admitted
-  p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
-                                     monthly=app_data[["dow_4wk_mon_jun"]]),
+    
+    # DoW plot patients waiting
+    p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
+                                       monthly=app_data[["dow_4wk_mon_jun"]]),
+                                  waiting_status="waiting",
+                                  timescale=input$timescale_choice,
+                                  chosen_specialty = input$specialty_filter_lp,
+                                  time_chunk_end=input$timescale_filter_waits_f,
+                                  hbt=input$hbt_filter)
+    
+    # DoW plot patients admitted
+    p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
+                                       monthly=app_data[["dow_4wk_mon_jun"]]),
                                 waiting_status="admitted",
                                 timescale=input$timescale_choice,
                                 chosen_specialty = input$specialty_filter_lp,
