@@ -61,18 +61,19 @@ activity_specs <- function(input_data,
             height = 600,
             type = "bar",
             customdata = ~number,
-            text = ~total,
             color = ~urgency,
             colors = waiting_times_palette,
             # stroke = I("black"),
             marker = list(line = list(color = "black", width = 1)),
             legendgroup = ~urgency,
-            hovertemplate = paste(
-              "<b>Specialty</b>:  %{x}",
-              "<b>Number of Patients</b>: %{customdata:,}",
-              "<b>Percentage</b>: %{y}",
-              "<b>Total</b>: %{text:,}",
-              sep = "\n")) %>%
+            text= ~paste0("<b>HBT</b>: ", nhs_board_of_treatment, "\n",
+                          "<b>Specialty</b>: ", specialty, "\n",
+                          "<b>Quarter ending</b>: ", qend, "\n",
+                          "<b>CP</b>: ", urgency, "\n",
+                          "<b>Number of patients</b>: ", format(number, big.mark=','), "\n",
+                          "<b>Percentage of patients</b>: ", paste0(100*round(proportion,3), '%'), "\n",
+                          "<b>Total</b>: ", format(total, big.mark=',')),
+            hovertemplate = "%{text}" ) %>%
     add_annotations(
       text = ~paste("\n",unique(plot_title), collapse="\n"),
       x = 0,
@@ -138,12 +139,12 @@ waits_specs <- function(input_data, waiting_status,
   xaxis_plots[["title"]] <- "Weeks waiting"
 
 
-  tooltip_trend <- glue("Quarter ending: {qend}<br>",
-                        "Weeks waiting: {dataset$weeks}<br>",
-                        "HBT: {dataset$nhs_board_of_treatment}<br>",
-                        "Clinical prioritisation: {dataset$urgency}<br>",
-                        "Specialty: {dataset$specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+  tooltip_trend <- glue("<b>HBT</b>: {dataset$nhs_board_of_treatment}<br>",
+                        "<b>Specialty</b>: {dataset$specialty}<br>",
+                        "<b>Quarter ending</b>: {qend}<br>",
+                        "<b>CP</b>: {dataset$urgency}<br>",
+                        "<b>Weeks waiting</b>: {dataset$weeks}<br>",
+                        "<b>Number of patients</b>: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
   p <- dataset %>%

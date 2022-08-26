@@ -63,7 +63,7 @@ activity_trendplot <- function(input_data, waiting_status,
 
   }
 
-
+  time_name = case_when(timescale == "monthly" ~ "Month", timescale == "quarterly" ~ "Quarter")
 
   p <- dataset %>%
     arrange(date_plot) %>%
@@ -74,10 +74,10 @@ activity_trendplot <- function(input_data, waiting_status,
              color = ~urgency,
              colors = waiting_times_palette,
              stroke = I("black"),
-             text= ~paste0("<b>Specialty</b>: ", specialty, "\n",
-                          "<b>HBT</b>: ", nhs_board_of_treatment, "\n",
-                          "<b>Date</b>: ", get_month(date_plot, format="%b %Y"), "\n",
-                          "<b>Urgency</b>: ", urgency, "\n",
+             text= ~paste0("<b>HBT</b>: ", nhs_board_of_treatment, "\n",
+                          "<b>Specialty</b>: ", specialty, "\n",
+                          "<b>", time_name, " ending</b>: ", get_month(date_plot, format="%b %Y"), "\n",
+                          "<b>CP</b>: ", urgency, "\n",
                           "<b>Number of patients</b>: ", format(number, big.mark=','), "\n",
                           "<b>Total</b>: ", format(total, big.mark=',')),
              hovertemplate = "%{text}"
@@ -145,12 +145,12 @@ waits_distribution_plot <- function(input_data, waiting_status,
 
   time_name = case_when(timescale == "monthly" ~ "Month", timescale == "quarterly" ~ "Quarter")
 
-  tooltip_trend <- glue("{time_name} ending: {time_chunk_end}<br>",
-                        "Weeks waiting: {dataset$weeks}<br>",
-                        "HBT: {dataset$nhs_board_of_treatment}<br>",
-                        "Clinical prioritisation: {dataset$urgency}<br>",
-                        "Specialty: {dataset$specialty}<br>",
-                        "Number of patients: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
+  tooltip_trend <- glue("<b>HBT</b>: {dataset$nhs_board_of_treatment}<br>",
+                        "<b>Specialty</b>: {dataset$specialty}<br>",
+                        "<b>{time_name} ending</b>: {time_chunk_end}<br>",
+                        "<b>CP</b>: {dataset$urgency}<br>",
+                        "<b>Weeks waiting</b>: {dataset$weeks}<br>",
+                        "<b>Number of patients</b>: {format(dataset$`number_seen/on_list`, big.mark=',')}<br>",
                         "<b>Total</b>: {format(dataset$total, big.mark=',')}")
 
   p <- dataset %>%
