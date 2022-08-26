@@ -114,7 +114,8 @@ vline <- function(x = 0, color = "black") {
   )
 }
 
-make_annotation <- function(x_choice, y_choice=0.8, label="Annotation"){
+make_annotation <- function(x_choice=13, y_choice=0.8,
+                            label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n")){
 
   ann <- list(
 

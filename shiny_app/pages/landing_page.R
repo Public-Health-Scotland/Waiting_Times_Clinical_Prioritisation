@@ -321,8 +321,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                 hbt=input$hbt_filter)
 
   # Create annotations for graphs
-  annotations = make_annotation(x_choice=13,
-                                label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n"))
+  annotations = make_annotation()
 
   # make facets
   subplot(style(p5, showlegend = FALSE), p4,

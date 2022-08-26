@@ -224,8 +224,7 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
 
   # Create annotations for graphs
   # Create annotations for graphs
-  annotations = make_annotation(x_choice=13, y_choice=0.95,
-                                label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n"))
+  annotations = make_annotation(y_choice=0.95)
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>%

@@ -224,8 +224,7 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
                           TRUE ~ "")
 
   # Create annotations for graphs
-  annotations = make_annotation(x_choice=13, y_choice=0.95,
-                                label=paste("Change in time", "bands to 13 week", "lengths", sep ="\n"))
+  annotations = make_annotation(y_choice=0.95)
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>%
