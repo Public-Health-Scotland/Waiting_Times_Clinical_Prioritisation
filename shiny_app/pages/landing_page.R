@@ -213,7 +213,7 @@ output$landing_page_ui <-  renderUI({
 timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_split_jun"]]$date), decreasing=TRUE)),
                           "quarterly" = get_month(sort(unique(app_data[["perf_qtr_split_jun"]]$date), decreasing=TRUE)))
 
-ban_header <- reactiveValues("additions" = renderText({glue("Number of patients added to the list in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
+ban_header <- reactiveValues("additions" = renderText({glue("Number of patients added to the waiting list in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
                              "admitted" = renderText({glue("Number of patients admitted for treatment in the latest {gsub('ly', ' ', input$timescale_choice)}")}),
                              "waiting" = renderText({glue("Number of patients waiting for treatment at the latest {gsub('ly', ' ', input$timescale_choice)} end")}))
 
