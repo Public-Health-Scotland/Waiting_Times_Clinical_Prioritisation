@@ -38,7 +38,7 @@ app_data <- list()
 rds_files <- list.files(path="data/", pattern="*.rds")
 
 for (rds in rds_files){
-  load_rds_file(rds) 
+  load_rds_file(rds)
 }
 
 ## Plot Parameters ---------------------------------------------------------
@@ -85,12 +85,6 @@ hb_most_waiting <- c("NHS Greater Glasgow & Clyde",
 
 quarter_end_dates <- c("June 2022", "March 2022", "December 2021", "September 2021")
 
-# Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
-# Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R
-# And it is bad practice to call output$ objects from within another output$. In this case it leads
-# to mysterious rendering errors due to breaking the reactive dependency tree.
-plots <- reactiveValues()
-numbers <- reactiveValues()
 
 
 

@@ -7,7 +7,7 @@ source("setup.R")
 ui <- #secure_app( #uncomment if needing password protection
 
   # Theme for shinymanager
- # theme = shinythemes::shinytheme("flatly"),
+  #theme = shinythemes::shinytheme("flatly"),
 
   fluidPage(
 
@@ -101,6 +101,13 @@ ui <- #secure_app( #uncomment if needing password protection
 credentials <- readRDS("admin/credentials.rds") #read in credentials
 
 server <- function(input, output, session) {
+
+  # Creating list of reactiveValues to store the plots and numbers in so that they can be accessed when needed.
+  # Note that these CANNOT be stored as output$ instead, because they are used in a uiOutput in ui.R
+  # And it is bad practice to call output$ objects from within another output$. In this case it leads
+  # to mysterious rendering errors due to breaking the reactive dependency tree.
+  plots <- reactiveValues()
+  numbers <- reactiveValues()
 
   # Shinymanager Auth
 
