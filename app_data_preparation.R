@@ -23,7 +23,7 @@ copy_to_shiny_data <- function(csv){
   # Given a .csv file name in processed_data_folder
   # copies it across to an .rds file in shiny_data_folder
   readfile <- readr::read_csv(paste0(processed_data_folder, csv)) %>%
-    mutate(across(any_of(c("nhs_board_of_treatment")), ~str_replace(.,"NHS Scotland", "NHSScotland")) )
+    mutate(across(any_of(c("nhs_board_of_treatment")), ~stringr::str_replace(.,"NHS Scotland", "NHSScotland")) )
   saveRDS(readfile, paste0(shiny_data_folder, gsub(".csv", ".rds", csv)))
 }
 
