@@ -33,16 +33,16 @@ output$landing_page_ui <-  renderUI({
               ) # column
              ) # box
     ),
-    
+
     fluidRow(
       shinydashboard::tabBox( width=NULL, type="pills", height="1700px", side="right",
-                              
+
                               tabPanel("Charts",
                                        tagList(
                                          h3("Number of TTG patients added to the waiting list"),
                                          br(),
                                          # Additions
-                                         
+
                                          # BANs
                                          # NB: The colours below are proxy colours for PHS colours
                                          # because only certain colours are accepted for this function.
@@ -96,7 +96,7 @@ output$landing_page_ui <-  renderUI({
                                          # Activity plot
                                          column(width = 12,
                                                 plots[["activity_admitted"]]),
-                                         
+
                                          # Waiting
                                          br(),
                                          h3("Number of TTG patients waiting for treatment"),
@@ -123,10 +123,10 @@ output$landing_page_ui <-  renderUI({
                                          # Activity plot
                                          column(width = 12,
                                                 plots[["activity_waiting"]])
-                                         
+
                                        ) # taglist
                               ), # tabPanel
-                              
+
                               tabPanel("Data",
                                        tagList(
                                          h3("Number of TTG patients added to the list,
@@ -134,14 +134,14 @@ output$landing_page_ui <-  renderUI({
                                          br(),
                                          numbers[["activity_table_output"]])
                               )
-                              
-                              
+
+
       ) # box
-      
+
     ), # fluidRow
-    
+
     fluidRow(width=12, height="50px", br()),
-    
+
     fluidRow(width=12,
              shinydashboard::box( width=NULL, height="100px",
                                   tagList(
@@ -152,12 +152,12 @@ output$landing_page_ui <-  renderUI({
                                   ) # pickerInput
              ) # box
     ),
-    
+
     fluidRow(width=12, height="50px", shinydashboard::box(width=NULL, height="50px", br())),
-    
+
     fluidRow(width=12,
              shinydashboard::tabBox( width=NULL, type="pills", height="800px", side="right",
-                                     
+
                                      tabPanel("Charts",
                                               tagList(
                                                 column(7,
@@ -177,25 +177,25 @@ output$landing_page_ui <-  renderUI({
                                                                     icon = icon('question-circle'))
                                                 ) # column
                                               ) #taglist
-                                              
+
                                      ), # tabpanel
-                                     
+
                                      tabPanel("Data",
                                               tagList(
                                                 numbers[["waits_table_output"]]
                                               ) #taglist
-                                              
+
                                      ) # tabpanel
-                                     
-                                     
+
+
              ) # box
     ), # fluidRow
-    
+
     fluidRow(width=12, height="50px", br())
-    
+
   ) # div
-  
-  
+
+
 })
 
 timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_split_jun"]]$date), decreasing=TRUE)),
@@ -208,22 +208,22 @@ ban_header <- reactiveValues("additions" = renderText({glue("Number of patients 
 # This makes sure that timescale filters on bottom box update dependent on whether
 # monthly or quarterly is selected in timescale_choice
 observeEvent(
-  
+
   eventExpr=input$timescale_choice,
-  
+
   handlerExpr={
-    
+
     if( !is.null(input$timescale_choice) ) {
-      
+
       updatePickerInput(session, inputId="timescale_filter_waits_f",
                         label = case_when(input$timescale_choice=="monthly" ~ "3. Select month",
                                           input$timescale_choice=="quarterly" ~ "3. Select quarter"),
                         selected = "June 2022",
                         choices = timescale_choices[[input$timescale_choice]]
       )
-      
+
     }
-    
+
   }
 )
 
@@ -242,7 +242,7 @@ for (waiting_status in waiting_statuses){
       # Making local variables
       local_cpname <- cpname
       local_waiting_status <- waiting_status
-      
+
       numbers[[paste0("ban_", local_waiting_status, "_", local_cpname)]] <- renderText({
         ban(list(quarterly=app_data[["add_perf_qtr_specs_jun"]],
                  monthly=app_data[["add_perf_mon_specs_jun"]]),
@@ -252,7 +252,7 @@ for (waiting_status in waiting_statuses){
             chosen_specialty=input$specialty_filter_lp,
             timescale=input$timescale_choice)
       })# renderText
-      
+
     }) # local
   }
 }
@@ -301,7 +301,7 @@ plots$activity_additions <- renderPlotly({
 
 plots$waits_breakdown_facets <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
-    
+
     # DoW plot patients waiting
     p4 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
                                        monthly=app_data[["dow_4wk_mon_jun"]]),
@@ -310,7 +310,7 @@ plots$waits_breakdown_facets <- renderPlotly({
                                   chosen_specialty = input$specialty_filter_lp,
                                   time_chunk_end=input$timescale_filter_waits_f,
                                   hbt=input$hbt_filter)
-    
+
     # DoW plot patients admitted
     p5 <- waits_distribution_plot(list(quarterly=app_data[["dow_4wk_qtr_pub_jun"]],
                                        monthly=app_data[["dow_4wk_mon_jun"]]),
@@ -319,18 +319,18 @@ plots$waits_breakdown_facets <- renderPlotly({
                                 chosen_specialty = input$specialty_filter_lp,
                                 time_chunk_end=input$timescale_filter_waits_f,
                                 hbt=input$hbt_filter)
-  
+
   # Create annotations for graphs
   annotations = list(
-    
+
     list(
-      x = "78-91",
+      x = 13,
       y = 0.8,
       font = list(size = 12),
       text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
       xref = "x",
       yref = "paper",
-      xanchor = "center",
+      xanchor = "left",
       yanchor = "bottom",
       showarrow = FALSE,
       align = "left"
