@@ -42,7 +42,8 @@ names(linecolours) <- c("Additions", "Seen", "All removals (including patients s
 
 # 1.4 Import Data -----
 add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
-  mutate(date = as.Date(date))
+  mutate(date = as.Date(date),
+         nhs_board_of_treatment = str_replace(nhs_board_of_treatment, "NHS Scotland", "NHSScotland"))
 
 perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
   mutate(date = as.Date(date))
@@ -71,7 +72,7 @@ spec_p2_prop <-  read.csv(file = here::here("data", "processed data", "spec_p2_p
 activity_trendplot_jun <- add_perf %>% 
   filter(specialty == "All Specialties", 
          !urgency=="Total",
-         nhs_board_of_treatment == "NHS Scotland") %>%
+         nhs_board_of_treatment == "NHSScotland") %>%
   ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
@@ -90,7 +91,7 @@ activity_trendplot_jun <- add_perf %>%
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
   facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
-             labeller = as_labeller(c(additions_to_list ="Number of patients added to the waiting list \n", Ongoing = "Number of patients waiting \n", Completed = "Number of patients admitted \n") )) +
+             labeller = as_labeller(c(additions_to_list ="Number of patients added to the waiting list \n", Ongoing = "Number of patients waiting for treatment \n", Completed = "Number of patients admitted for treatment\n") )) +
   ylab(NULL) +
   xlab("Month ending") +
   theme(text = element_text(size = 12),
