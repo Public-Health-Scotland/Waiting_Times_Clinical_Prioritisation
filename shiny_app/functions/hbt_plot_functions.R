@@ -1,7 +1,6 @@
 ####################### Health Board of Treatment Plot Functions #######################
 
-## Faceted activity graph
-
+## Faceted activity graph ----
 activity_specs_hbt <- function(input_data, waiting_status,
                            qend="March 2022",
                            hbts=c("NHS Scotland"),
@@ -100,10 +99,9 @@ activity_specs_hbt <- function(input_data, waiting_status,
 
 }
 
-# --------------------------------------------------------------------------
-## Faceted waits graph
+## Faceted waits graph ----
 
-#makes hbt DoW plot
+# Makes hbt DoW plot
 waits_hbt <- function(input_data, waiting_status,
                         qend="March 2022",
                         chosen_specialty="All Specialties",
@@ -159,13 +157,13 @@ waits_hbt <- function(input_data, waiting_status,
              legendgroup = ~urgency,
              name = ~urgency,
              showlegend = legend) %>%
-    #Layout
-    layout(#to avoid labels getting cut out
+    # Layout
+    layout(# to avoid labels getting cut out
       yaxis = yaxis_plots, xaxis = xaxis_plots,
       shapes = list(vline(12.5)),
       paper_bgcolor = phs_colours("phs-liberty-10"),
       plot_bgcolor = phs_colours("phs-liberty-10"),
-      legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
+      legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), # position of legend
       barmode = "stack") %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
@@ -174,7 +172,7 @@ waits_hbt <- function(input_data, waiting_status,
 
 }
 
-#calls waits_hbt and wraps them in facetted view for chosen waiting_status
+# Calls waits_hbt and wraps them in facetted view for chosen waiting_status
 make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
                                   waiting_status, qend, spec){
 

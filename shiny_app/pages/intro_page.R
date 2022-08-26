@@ -1,7 +1,7 @@
 ####################### Intro Page #######################
 
+# UI ----
 output$intro_page_ui <-  renderUI({
-  # getDependency('sparkline') #load dependencies for sparkline plot
 
   div(
     wellPanel(
@@ -58,6 +58,7 @@ output$intro_page_ui <-  renderUI({
 })
 
 
+# Separate UI components ----
 
 output$about_cp_notes <- renderUI({
 
@@ -191,6 +192,7 @@ output$accessibility_notes <- renderUI({
   )
 }) # render UI close bracket
 
+# Numbers ----
 
 numbers$dq_table <- DT::renderDataTable({
 

@@ -1,5 +1,6 @@
 ####################### Data download #######################
 
+# UI ----
 output$download_ui <-  renderUI({
 
   div(
@@ -103,7 +104,7 @@ output$download_ui <-  renderUI({
 }) # renderUI
 
 
-### ---- CHOOSING CORRECT DATASET
+# Reactive updates ----
 
 data_choices <- list("monthly" = c("Patients added, admitted and waiting",
                                    "Distribution of waits"),
@@ -134,16 +135,10 @@ observeEvent(
 chosen_dataset <- reactive({
 
    case_when(
-        #    (input$download_dataset == "Patients waiting, admitted and seen" &
-        #       input$download_timescale == "monthly") ~ "add_perf_mon_jun",
-        #    (input$download_dataset == "Patients waiting, admitted and seen" &
-        #       input$download_timescale == "quarterly") ~ "add_perf_qtr_jun",
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "monthly") ~ "dow_4wk_mon_jun",
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "quarterly") ~ "dow_4wk_qtr_pub_jun",
-         #   (input$download_dataset == "Activity" &
-         #       input$download_timescale == "quarterly") ~ "hb_plotdata_jun",
             (input$download_dataset == "Patients added, admitted and waiting" &
                input$download_timescale == "monthly") ~ "perf_mon_split_jun",
             (input$download_dataset == "Patients added, admitted and waiting" &
@@ -180,7 +175,7 @@ observeEvent(
   }
 )
 
-# ---- GETTING DOWNLOAD DISPLAY TABLE
+# Download display table ----
 
 ## Data table to be downloaded
 
@@ -208,7 +203,7 @@ numbers$data_download_summary_output <- renderPrint({
   })
 })
 
-# ---- DATA DOWNLOAD BUTTON
+# Data download button ----
 
 ## Download button
 data_download <- reactive({

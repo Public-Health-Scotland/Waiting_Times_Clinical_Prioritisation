@@ -16,7 +16,7 @@ topsix_specs <- function(qend, hbt){
 
 }
 
-## Faceted activity graph
+## Faceted activity graph ----
 
 activity_specs <- function(input_data,
                            waiting_status,
@@ -99,8 +99,7 @@ activity_specs <- function(input_data,
 
 }
 
-# --------------------------------------------------------------------------
-## Faceted waits graph
+## Faceted waits graph ----
 
 #makes spec DoW plot
 waits_specs <- function(input_data, waiting_status,

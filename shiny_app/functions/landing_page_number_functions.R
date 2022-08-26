@@ -1,6 +1,6 @@
 ####################### Landing Page Number Functions #######################
 
-## Get BANs
+## Get BANs ----
 ban <- function(input_data, cp,
                 waiting_status="waiting",
                 hbt="NHS Scotland", timescale="monthly",
@@ -38,7 +38,7 @@ ban <- function(input_data, cp,
 }
 
 
-## Activity
+## Activity ----
 
 activity_table <- function(input_data,
                    hbt="NHS Scotland",
@@ -74,8 +74,7 @@ activity_table <- function(input_data,
 }
 
 
-# ----------------------------------------------------------------------
-## Waits
+## Waits ----
 
 waits_table <- function(input_data,
                         timescale="monthly",

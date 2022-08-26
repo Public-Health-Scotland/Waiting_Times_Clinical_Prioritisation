@@ -1,6 +1,5 @@
 ####################### Data Download Functions #######################
 
-
 process_dataset_for_download <- function(df){
 
   # Removing unneeded columns

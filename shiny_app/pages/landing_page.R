@@ -1,5 +1,6 @@
 ####################### Landing Page (Overview) #######################
 
+## UI ----
 output$landing_page_ui <-  renderUI({
 
   div(
@@ -198,6 +199,8 @@ output$landing_page_ui <-  renderUI({
 
 })
 
+## Reactive updates ----
+
 timescale_choices <- list("monthly" = get_month(sort(unique(app_data[["perf_mon_split_jun"]]$date), decreasing=TRUE)),
                           "quarterly" = get_month(sort(unique(app_data[["perf_qtr_split_jun"]]$date), decreasing=TRUE)))
 
@@ -228,7 +231,7 @@ observeEvent(
 )
 
 
-## BANs
+## BANs ----
 waiting_statuses <- c("additions", "admitted", "waiting")
 cps <- c("p1"="P1A-1B", "p2"="P2", "p3"= "P3", "p4"="P4", "other"="Other")
 
@@ -257,7 +260,7 @@ for (waiting_status in waiting_statuses){
   }
 }
 
-## Activity plots
+## Activity plots ----
 
 # plot patients waiting
 plots$activity_waiting <- renderPlotly({
@@ -297,7 +300,7 @@ plots$activity_additions <- renderPlotly({
 
 
 
-## Distribution of waits plots
+## Distribution of waits plots ----
 
 plots$waits_breakdown_facets <- renderPlotly({
   withProgress(message="Loading plot ... please wait", {
@@ -331,7 +334,7 @@ plots$waits_breakdown_facets <- renderPlotly({
 
 })
 
-## Activity numbers
+## Activity numbers ----
 numbers$activity_table_output <- DT::renderDataTable({
   withProgress(message="Loading data table ... please wait", {
 
@@ -347,7 +350,7 @@ numbers$activity_table_output <- DT::renderDataTable({
 
 })
 
-## Distribution of waits numbers
+## Distribution of waits numbers ----
 
 # Median and 90th percentile
 numbers$median_table_output <- DT::renderDataTable({

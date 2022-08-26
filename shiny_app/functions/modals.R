@@ -1,7 +1,5 @@
 ####################### Modals #######################
 
-### Modals
-
 ## Modal to explain what median is
 median_modal <- modalDialog(
   h3("What is the median?"),
