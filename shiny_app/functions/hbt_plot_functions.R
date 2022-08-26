@@ -69,8 +69,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
             legendgroup = ~urgency,
             # showlegend = (~unique(indicator) == "additions_to_list"),
             hovertemplate = paste(
-              "<b>Healthboard</b>:  %{y}",
-              "<b>Number of Patients</b>: %{customdata:,}",
+              "<b>HBT</b>:  %{y}",
+              "<b>Number of patients</b>: %{customdata:,}",
               "<b>Percentage</b>: %{x}",
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%

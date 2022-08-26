@@ -74,15 +74,14 @@ activity_trendplot <- function(input_data, waiting_status,
              color = ~urgency,
              colors = waiting_times_palette,
              stroke = I("black"),
-             customdata = ~urgency,
-             text = ~total,
-             hovertemplate = paste(
-               "All Specialties",
-              "<b>Date</b>:  %{x}",
-              "<b>Urgency</b>: %{customdata}",
-              "<b>Number of Patients</b>: %{y:,}",
-              "<b>Total</b>: %{text:,}<extra></extra>",
-              sep = "\n"))
+             text= ~paste0("<b>Specialty</b>: ", specialty, "\n",
+                          "<b>HBT</b>: ", nhs_board_of_treatment, "\n",
+                          "<b>Date</b>: ", date_plot, "\n",
+                          "<b>Urgency</b>: ", urgency, "\n",
+                          "<b>Number of patients</b>: ", format(number, big.mark=','), "\n",
+                          "<b>Total</b>: ", format(total, big.mark=',')),
+             hovertemplate = "%{text}"
+             )
 
     if (timescale == "monthly"){
       p %<>% add_lines(y = ~monthly_avg, line = list(color = "black", dash="dash"),

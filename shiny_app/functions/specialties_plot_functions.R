@@ -93,7 +93,7 @@ activity_specs <- function(input_data,
                  legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')),
                  barmode = "stack") %>% #split by group
     # Leaving only save plot button
-    config(displaylogo = F, displayModeBar = FALSE,  modeBarButtonsToRemove = bttn_remove )
+    config(displaylogo = F, displayModeBar = TRUE,  modeBarButtonsToRemove = bttn_remove )
 
   return(p)
 
