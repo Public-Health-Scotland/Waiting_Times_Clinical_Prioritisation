@@ -1,5 +1,6 @@
 ####################### Health Board of Treatment #######################
 
+# UI ----
 output$hbt_ui <-  renderUI({
 
   div(
@@ -101,7 +102,7 @@ output$hbt_ui <-  renderUI({
 
 
 
-## Plots
+## Plots ----
 
 plots$activity_facet_plot_hbt <- renderPlotly({
   withProgress(message="Loading plots ... please wait", {
@@ -133,7 +134,7 @@ plots$activity_facet_plot_hbt <- renderPlotly({
 })
 
 
-#Dow ongoing waits facetted by hbt
+# Dow ongoing waits facetted by hbt
 plots$waits_hbt_plot_ongoing <- renderPlotly({
 
   withProgress(message="Loading plots ... please wait", {
@@ -149,7 +150,7 @@ plots$waits_hbt_plot_ongoing <- renderPlotly({
 
 })
 
-#Dow admissions facetted by hbt
+# Dow admissions facetted by hbt
 plots$waits_hbt_plot_admitted <- renderPlotly({
 
   withProgress(message="Loading plot ... please wait", {
@@ -166,7 +167,7 @@ plots$waits_hbt_plot_admitted <- renderPlotly({
 })
 
 
-## Data
+## Data ----
 
 numbers$spec_activity_table_output_hbt <- DT::renderDataTable({
 

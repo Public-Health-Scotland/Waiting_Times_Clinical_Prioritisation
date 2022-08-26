@@ -3,7 +3,7 @@
 # Get packages
 source("setup.R")
 
-# UI
+# UI ----------------------------------------------------------------------
 ui <- #secure_app( #uncomment if needing password protection
 
   # Theme for shinymanager
@@ -95,8 +95,8 @@ ui <- #secure_app( #uncomment if needing password protection
     ) # taglist
 ) # ui fluidpage
 #) #secureapp
-# ----------------------------------------------------------------------
-# Server
+
+# Server ----------------------------------------------------------------------
 
 credentials <- readRDS("admin/credentials.rds") #read in credentials
 

@@ -1,5 +1,6 @@
 ####################### Specialties #######################
 
+# UI ----
 output$specialties_ui <-  renderUI({
 
   div(
@@ -98,6 +99,7 @@ output$specialties_ui <-  renderUI({
 
 })
 
+# Reactive updates ----
 
 # This makes sure that specialty_filter default options update based off HBT and quarter
 observe({
@@ -111,7 +113,7 @@ observe({
 
 
 
-## Plots
+## Plots ----
 
 plots$activity_facet_plot_spec <- renderPlotly({
 
@@ -145,7 +147,7 @@ plots$activity_facet_plot_spec <- renderPlotly({
   })
 })
 
-#Dow ongoing waits facetted by specialty
+# Dow ongoing waits facetted by specialty
 plots$waits_spec_plot_ongoing <- renderPlotly({
 
   withProgress(message="Loading plots ... please wait", {
@@ -161,7 +163,7 @@ plots$waits_spec_plot_ongoing <- renderPlotly({
 
 })
 
-#Dow admissions facetted by specialty
+# Dow admissions facetted by specialty
 plots$waits_spec_plot_admitted <- renderPlotly({
 
   withProgress(message="Loading plots ... please wait", {
@@ -179,7 +181,7 @@ plots$waits_spec_plot_admitted <- renderPlotly({
 
 
 
-## Data
+## Data ----
 
 numbers$spec_activity_table_output <- DT::renderDataTable({
 

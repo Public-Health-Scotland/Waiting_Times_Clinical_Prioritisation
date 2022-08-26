@@ -1,6 +1,6 @@
 ####################### Landing Page Plot Functions #######################
 
-## Activity
+## Activity ----
 activity_trendplot <- function(input_data, waiting_status,
                                hbt="NHS Scotland",
                                timescale="monthly",
@@ -110,8 +110,7 @@ activity_trendplot <- function(input_data, waiting_status,
 
 }
 
-# ----------------------------------------------------------------------------
-## Distribution of waits
+## Distribution of waits ----
 waits_distribution_plot <- function(input_data, waiting_status,
                                     timescale="monthly",
                                     time_chunk_end="June 2022",
