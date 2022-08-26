@@ -162,19 +162,28 @@ output$landing_page_ui <-  renderUI({
                                      tabPanel("Charts",
                                               tagList(
                                                 column(7,
-                                                       br(), br(),
+                                                       linebreaks(2),
                                                        plots[["waits_breakdown_facets"]] # facetted DoW plot
                                                 ), #column
                                                 column(5,
                                                        h4("Median and 90th percentile waits for TTG patients admitted for treatment"),
                                                        # shunting table down to make it more centred
                                                        numbers[["median_table_output"]],
-                                                       br(), br(),
+                                                       linebreaks(2),
                                                        actionButton("btn_modal_median",
                                                                     "What is the median?",
                                                                     icon = icon('question-circle')),
+                                                       linebreaks(2),
                                                        actionButton("btn_modal_90th",
                                                                     "What is the 90th percentile?",
+                                                                    icon = icon('question-circle')),
+                                                       linebreaks(2),
+                                                       actionButton("btn_modal_cp1",
+                                                                    "What what what?",
+                                                                    icon = icon('question-circle')),
+                                                       linebreaks(2),
+                                                       actionButton("btn_modal_cp2",
+                                                                    "What something else?",
                                                                     icon = icon('question-circle'))
                                                 ) # column
                                               ) #taglist

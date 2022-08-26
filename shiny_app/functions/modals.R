@@ -16,8 +16,26 @@ p90_modal <- modalDialog(
   easyClose = TRUE, fade=TRUE, footer = modalButton("Close (Esc)")
 )
 
+cp_1_modal <- modalDialog(
+  h3("Some CP thing"),
+  p("blah blah blah :)"),
+  size = "l",
+  easyClose = TRUE, fade=TRUE, footer = modalButton("Close (Esc)")
+)
+
+cp_2_modal <- modalDialog(
+  h3("Some CP thing"),
+  p("blah blah blah :)"),
+  size = "l",
+  easyClose = TRUE, fade=TRUE, footer = modalButton("Close (Esc)")
+)
+
 
 ### Modal links
 observeEvent(input$btn_modal_median, { showModal(median_modal) })
 
 observeEvent(input$btn_modal_90th, { showModal(p90_modal) })
+
+observeEvent(input$btn_modal_cp1, { showModal(cp_1_modal) })
+
+observeEvent(input$btn_modal_cp2, { showModal(cp_2_modal) })
