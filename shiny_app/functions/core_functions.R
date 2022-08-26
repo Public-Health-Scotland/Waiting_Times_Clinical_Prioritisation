@@ -1,5 +1,7 @@
 ####################### Core Functions #######################
 
+# Data loading and manipulation ----
+
 # Load data from shiny_app/data
 load_rds_file <- function(rds){
   # Given a .rds file name in shiny_app/data
@@ -8,31 +10,6 @@ load_rds_file <- function(rds){
   app_data[[gsub(".rds", "", rds)]] <<- readRDS(paste0("data/", rds))
 }
 
-# Add n linebreaks
-linebreaks <- function(n){HTML(strrep(br(), n))}
-
-# Remove warnings from icons ----
-icon_no_warning_fn = function(icon_name) {
-  icon(icon_name, verify_fa=FALSE)
-}
-
-# Transforms e.g. 2021-09-30 to September 2021
-get_month <- function(short_date, format = "%B %Y"){
-  long_date <- format(as.Date(short_date, format="%Y-%m-%d"), format)
-  return(long_date)
-}
-
-# Transforms e.g. September 2021 to 2021-09-30
-get_short_date <- function(monthyear){
-  short_date <- rollforward(as.Date(paste0("01 ", monthyear), "%d %B %Y"))
-  return(short_date)
-}
-
-# Transform weeks waiting labels from e.g. 000-004 to "0-4"
-get_pretty_weeks <- function(ugly_weeks){
-  pretty_weeks <- gsub("\\b0+\\B", "", ugly_weeks)
-  return(pretty_weeks)
-}
 
 replace_colnames <- function(old_colnames){
 
@@ -61,7 +38,7 @@ replace_colnames <- function(old_colnames){
                             "proportion" = "Proportion",
                             "median" = "Median_waiting_time",
                             "90th_percentile" = "90th_percentile_waiting_time"
-                            )
+  )
 
   # If the column is in the list names, replace it with the list value
   replace_fn <- function(x){
@@ -80,8 +57,8 @@ replace_colnames <- function(old_colnames){
 }
 
 cols_to_not_display <- c("y_max", "y_max2", "waited_waiting_over_26_weeks",
-                            "waited_waiting_over_52_weeks", "waited_waiting_over_104_weeks",
-                            "monthly_avg", "proportion"
+                         "waited_waiting_over_52_weeks", "waited_waiting_over_104_weeks",
+                         "monthly_avg", "proportion"
 )
 
 recode_indicator <- function(ind){
@@ -99,6 +76,38 @@ make_cols_factors <- function(df, cols){
   return(df)
 }
 
+
+# UI ----
+
+# Add n linebreaks
+linebreaks <- function(n){HTML(strrep(br(), n))}
+
+# Remove warnings from icons
+icon_no_warning_fn = function(icon_name) {
+  icon(icon_name, verify_fa=FALSE)
+}
+
+# Dates ----
+
+# Transforms e.g. 2021-09-30 to September 2021
+get_month <- function(short_date, format = "%B %Y"){
+  long_date <- format(as.Date(short_date, format="%Y-%m-%d"), format)
+  return(long_date)
+}
+
+# Transforms e.g. September 2021 to 2021-09-30
+get_short_date <- function(monthyear){
+  short_date <- rollforward(as.Date(paste0("01 ", monthyear), "%d %B %Y"))
+  return(short_date)
+}
+
+# Transform weeks waiting labels from e.g. 000-004 to "0-4"
+get_pretty_weeks <- function(ugly_weeks){
+  pretty_weeks <- gsub("\\b0+\\B", "", ugly_weeks)
+  return(pretty_weeks)
+}
+
+# Plotting ----
 
 ## Annotation with vline
 vline <- function(x = 0, color = "black") {
@@ -173,6 +182,8 @@ wrap_label <- function(unwrapped_label, width=16){
   wrapped_label <- paste(strwrap(unwrapped_label, width=width), collapse = "<br>")
   return (wrapped_label)
 }
+
+# Data tables ----
 
 # Function to format a given entry in a table
 format_entry <- function(x, dp=0, perc=F){
@@ -275,8 +286,7 @@ info_table <- function(input_data_table,
 
 }
 
-#mini data table for summary stats with sparkline
-
+# Mini data table for summary stats with sparkline
 sparkline_table <- function(input_data_table,
                        add_separator_cols = NULL
 ){
