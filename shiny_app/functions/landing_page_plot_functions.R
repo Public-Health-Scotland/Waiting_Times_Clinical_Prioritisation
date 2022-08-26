@@ -184,7 +184,7 @@ waits_distribution_plot <- function(input_data, waiting_status,
            yaxis = yaxis_plots, xaxis = xaxis_plots,
            paper_bgcolor = phs_colours("phs-liberty-10"),
            plot_bgcolor = phs_colours("phs-liberty-10"),
-           shapes = list(vline(12.5)),
+           shapes = list(vline(12.5)), #Need to play around with where this sits on the graph
            legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
            barmode = "stack") %>% #split by group
     # leaving only save plot button

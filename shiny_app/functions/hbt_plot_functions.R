@@ -36,9 +36,9 @@ activity_specs_hbt <- function(input_data, waiting_status,
          "There are no entries matching your selection. Please choose again.")
   )
 
-  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
-                           waiting_status == "admitted" ~ "Patients admitted",
-                           waiting_status == "additions" ~ "Additions to list",
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment",
+                           waiting_status == "admitted" ~ "Patients admitted for treatment",
+                           waiting_status == "additions" ~ "Additions to the waiting list",
                            TRUE ~ "")
    yaxis_plots[["tickfont"]] <- 14
    yaxis_plots[["categoryorder"]] <-"trace"
@@ -52,6 +52,8 @@ activity_specs_hbt <- function(input_data, waiting_status,
    yaxis_plots[["ticklen"]] <- 10
    yaxis_plots[["tickcolor"]] <- phs_colours("phs-liberty-10")
 
+   
+   
   p <- dataset %>%
     arrange(nhs_board_of_treatment, p2_proportion) %>%
     plot_ly(x = ~proportion,
@@ -74,7 +76,7 @@ activity_specs_hbt <- function(input_data, waiting_status,
               "<b>Total</b>: %{text:,}",
               sep = "\n")) %>%
     add_annotations(
-      text = ~paste("\n",strwrap(unique(plot_title),25), collapse="\n"),
+      text = ~paste("\n",unique(plot_title), collapse="\n"),
       x = 0,
       y = 1,
       yref = "paper",
@@ -137,7 +139,18 @@ waits_hbt <- function(input_data, waiting_status,
   yaxis_plots[["title"]] <- yaxis_title
   xaxis_plots[["title"]] <- "Weeks waiting"
 
-
+  vline <- function(x = 0, color = "black") {
+    list(
+      type = "line", 
+      y0 = 0, 
+      y1 = 1, 
+      yref = "paper",
+      xref = "x",
+      x0 = x, 
+      x1 = x, 
+      line = list(color = color, dash = "dash")
+    )
+  }
 
   tooltip_trend <- glue("Quarter ending: {qend}<br>",
                         "Weeks waiting: {dataset$weeks}<br>",
@@ -162,6 +175,7 @@ waits_hbt <- function(input_data, waiting_status,
     #Layout
     layout(#to avoid labels getting cut out
       yaxis = yaxis_plots, xaxis = xaxis_plots,
+      shapes = list(vline(12.5)),
       paper_bgcolor = phs_colours("phs-liberty-10"),
       plot_bgcolor = phs_colours("phs-liberty-10"),
       legend = list(x = 100, y = 0.5, title=list(text='Clinical Prioritisation')), #position of legend
@@ -217,13 +231,30 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
     plot_list[[i]] <- hbt_plot #save plot
   }
 
-  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting",
-                          waiting_status == "admitted" ~ "Patients admitted",
+  plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment at quarter end",
+                          waiting_status == "admitted" ~ "Patients admitted for treatment during quarter",
                           TRUE ~ "")
+  
+  # Create annotations for graphs
+  annotations = list(
+    
+    list(
+      x = "52-65",
+      y = 0.95,
+      font = list(size = 12),
+      text = paste("Change in time", "bands to 13 week", "lengths", sep ="\n"),
+      xref = "x",
+      yref = "paper",
+      xanchor = "left",
+      yanchor = "bottom",
+      showarrow = FALSE,
+      align = "left"
+    )
+  )
 
   #create facetted plot by specialty
   subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>%
-    layout(title=plot_title, margin = list(b = 10, t = 40)) %>% #split by group
+    layout(title=plot_title, margin = list(b = 10, t = 40), annotations = annotations) %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
 
