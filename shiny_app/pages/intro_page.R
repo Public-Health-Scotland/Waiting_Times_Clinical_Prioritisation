@@ -79,7 +79,7 @@ output$data_quality_notes <- renderUI({
     column(6,
            pickerInput("hbt_dq_filter",
                        "1. Select Health Board of Treatment ",
-                       choices = c("NHS Scotland",
+                       choices = c("NHSScotland",
                                    "NHS Ayrshire & Arran",
                                    "NHS Borders",
                                    "NHS Dumfries & Galloway",
