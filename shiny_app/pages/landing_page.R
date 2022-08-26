@@ -179,11 +179,7 @@ output$landing_page_ui <-  renderUI({
                                                                     icon = icon('question-circle')),
                                                        linebreaks(2),
                                                        actionButton("btn_modal_cp1",
-                                                                    "What what what?",
-                                                                    icon = icon('question-circle')),
-                                                       linebreaks(2),
-                                                       actionButton("btn_modal_cp2",
-                                                                    "What something else?",
+                                                                    "What is the final priority?",
                                                                     icon = icon('question-circle'))
                                                 ) # column
                                               ) #taglist

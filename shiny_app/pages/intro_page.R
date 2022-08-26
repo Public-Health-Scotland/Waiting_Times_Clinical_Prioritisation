@@ -102,7 +102,7 @@ output$data_quality_notes <- renderUI({
     column(6,
            pickerInput("month_dq_filter",
                        "2. Select month",
-                       choices = get_month(unique(app_data[["total_comp_jun"]]$date)),
+                       choices = get_month(sort(unique(app_data[["total_comp_jun"]]$date), decreasing=TRUE)),
                        selected = "June 2022")
     ),
     br(),
