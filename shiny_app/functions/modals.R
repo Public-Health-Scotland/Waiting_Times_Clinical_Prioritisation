@@ -17,18 +17,13 @@ p90_modal <- modalDialog(
 )
 
 cp_1_modal <- modalDialog(
-  h3("Some CP thing"),
-  p("blah blah blah :)"),
+  h3("What is the final priority?"),
+  p("The data captured and presented reflects the category most recently applied to the patient. If the patient's clinical need is deemed to have increased during a routine re-evaluation then their catgeory may be escalated, for example from category P4 to P3; conversely, if the patient's condition has stabilised, they may have been moved to a lower category. As a result, there may be occasions where patients are recorded as having waited beyond the recommended timescales outlined in the Framework but may have only been assigned to the more urgent category recently."),
   size = "l",
   easyClose = TRUE, fade=TRUE, footer = modalButton("Close (Esc)")
 )
 
-cp_2_modal <- modalDialog(
-  h3("Some CP thing"),
-  p("blah blah blah :)"),
-  size = "l",
-  easyClose = TRUE, fade=TRUE, footer = modalButton("Close (Esc)")
-)
+
 
 
 ### Modal links
@@ -38,4 +33,3 @@ observeEvent(input$btn_modal_90th, { showModal(p90_modal) })
 
 observeEvent(input$btn_modal_cp1, { showModal(cp_1_modal) })
 
-observeEvent(input$btn_modal_cp2, { showModal(cp_2_modal) })
