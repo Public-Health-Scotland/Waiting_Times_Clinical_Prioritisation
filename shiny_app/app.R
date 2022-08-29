@@ -77,6 +77,7 @@ ui <- secure_app( #uncomment if needing password protection
 
                h2("Variation in Clinical Prioritisation of patients by Health Board of Treatment"),
                h4("This page presents the percentage of TTG patients in each clinical prioritisation category by Health Board of Treatment, for the selected specialty, quarter and Health Boards of Treatment. Data are shown for patients added to the waiting list, admitted and waiting, as well as distributions of wait. The Health Board filter defaults to the six Boards with the largest waiting lists."),
+               h4("Note that direct comparisons cannot be drawn between Boards of Treatment due to variation in provision of services, complexity of care provided by Boards of varying sizes and the differing health needs across local populations, along with upstream levels of outpatient activity, which result in onward referrals for treatment."),
                uiOutput("hbt_ui")
 
       ), # tabpanel
