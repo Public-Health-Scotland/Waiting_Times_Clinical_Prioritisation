@@ -8,6 +8,8 @@ process_dataset_for_download <- function(df){
 
   # Replacing column names with more readable versions
   names(df) <- replace_colnames(names(df))
+  
+  df$Waiting_status <- recode_indicator(df$Waiting_status)
 
   # Making certain columns factors
   factorcols <- c("Clinical_Prioritisation",
@@ -16,6 +18,7 @@ process_dataset_for_download <- function(df){
                   "Specialty",
                   "Patient_type",
                   "Weeks_waiting")
+  
   df %<>% make_cols_factors(intersect(names(df), factorcols))
 
   return(df)
