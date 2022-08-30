@@ -140,9 +140,9 @@ chosen_dataset <- reactive({
             (input$download_dataset == "Distribution of waits" &
                input$download_timescale == "quarterly") ~ "dow_4wk_qtr_pub_jun",
             (input$download_dataset == "Patients added, admitted and waiting" &
-               input$download_timescale == "monthly") ~ "add_perf_qtr_specs_jun",
+               input$download_timescale == "monthly") ~ "add_perf_mon_specs_jun",
             (input$download_dataset == "Patients added, admitted and waiting" &
-               input$download_timescale == "quarterly") ~ "add_perf_mon_specs_jun",
+               input$download_timescale == "quarterly") ~ "add_perf_qtr_specs_jun",
             TRUE ~ "no_choice"
 
             ) # case when
