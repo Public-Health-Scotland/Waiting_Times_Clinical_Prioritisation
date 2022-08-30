@@ -4,7 +4,7 @@ process_dataset_for_download <- function(df){
 
   # Removing unneeded columns
   remove_cols <- intersect(names(df), cols_to_not_display)
-  df %<>% select(-remove_cols) %>% unique()
+  df %<>% select(-remove_cols) %>% filter(!urgency == "Total") %>% unique()
 
   # Replacing column names with more readable versions
   names(df) <- replace_colnames(names(df))
