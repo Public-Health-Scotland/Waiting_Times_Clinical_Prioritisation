@@ -8,9 +8,11 @@ The first release of the publication is scheduled for 06 September 2022. This pa
 
 ## Workflow
 
-* Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this.
+* Create a `data` folder with subfolder `processed_data`
 
-* Run `code/Main.R` (takes ~ 5 minutes). This 
+1. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this.
+
+2. Run `code/Main.R` (takes ~ 5 minutes). This 
 
     * Processes the data in `data` and saves it out in `data/processed data`
     
@@ -18,7 +20,7 @@ The first release of the publication is scheduled for 06 September 2022. This pa
     
     * Transfers the processed data from `data/processed data` to `shiny_app/data` as .rds files so that the shiny app can run
     
-* Launch shiny app by running `shiny_app/app.R`
+3. Launch shiny app by running `shiny_app/app.R`
     
     
 ## shiny app
