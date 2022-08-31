@@ -125,16 +125,6 @@ topsix_prop <- specstats %>%
   group_by(date, indicator) %>%
   summarise(`proportion of total` = sum(proportion))
 
-# #Calculate proportion of additions that are P2 per specialty
-# spec_p2_prop <- addrem_qtr  %>%
-#   filter(nhs_board_of_treatment == "NHS Scotland",
-#          indicator == "additions_to_list",
-#          date == max_date) %>%
-#   group_by(specialty) %>%
-#   mutate(total = sum(number[!urgency=="Total"], na.rm = T),
-#          p2_prop = sum(number[urgency == "P2"], na.rm = T)/total) %>%
-#   select(indicator, specialty, number, p2_prop)
-
 #Calculate proportion of additions by HB/spec/CP/date
 addrem_qtr_split <- hb_var_plotdata %>%
   filter(indicator == "additions_to_list") %>%
@@ -143,27 +133,6 @@ addrem_qtr_split <- hb_var_plotdata %>%
   mutate(total = sum(number[!urgency=="Total"], na.rm = T)) %>%
   ungroup() %>%
   mutate(proportion = number/total)
-
-# addrem_qtr_split <- addrem_qtr %>%
-# group_by(nhs_board_of_treatment, specialty, indicator,date) %>%
-# mutate(total = sum(number[!urgency=="Total"], na.rm = T)) %>%
-# ungroup() %>%
-# mutate(proportion = number/total)
-
-#topsix_plot_data <- perf_qtr_split %>%
-#  ungroup() %>%
-#  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed,
-#         urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
-#  mutate(proportion = proportion/100) %>%
-#  bind_rows(select(addrem_qtr_split, - total)) %>%
-#  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty),
-#         nhs_board_of_treatment=="NHS Scotland",
-#         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>%
-#  ungroup() %>%
-#  left_join(select(ungroup(spec_p2_prop), -c(indicator, number)),
-#            by = c("specialty")) %>%
-#  unique() %>%
-#  arrange(indicator,-p2_prop)
 
 #Save March and June graphs
 ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(max_date, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
