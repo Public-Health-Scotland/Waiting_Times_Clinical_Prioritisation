@@ -100,7 +100,7 @@ activity_trendplot_jun <- add_perf %>%
 
 
 #Save the image
-ggsave("allspecs_activity_trend_monthly_jun.png", plot = activity_trendplot_jun, dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("allspecs_activity_trend_monthly_jun.png", plot = activity_trendplot_jun, dpi=300, dev='png', height=20, width=18, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
 
 #2.1.2 - Top 6 specialties by additions/admitted/waiting ----
 
@@ -156,29 +156,29 @@ addrem_qtr_split <- hb_var_plotdata %>%
 #  arrange(indicator,-p2_prop)
 
 #Save March and June graphs
-ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(max_date, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("top_six_spec_plot_additions_jun.png", plot = topsixplot(max_date, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
 
-ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2, "NHS Scotland"), dpi=300, dev='png', height=10, width=20, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
 
 #2.1.3 - HBT variation ----
 #Graph
 #bar chart qe march, All Speciaties, stacked by urgency code, hbt on x axis, facet additions/seen/waiting
 
 #Save March and June graphs
-ggsave("hb_var_plot_jun.png", plot = hb_var_plot(max_date), dpi=300, dev='png', height=24, width=36, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("hb_var_plot_jun.png", plot = hb_var_plot(max_date), dpi=300, dev='png', height=24, width=36, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
 
-ggsave("hb_var_plot_mar.png", plot = hb_var_plot(max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("hb_var_plot_mar.png", plot = hb_var_plot(max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
 
 
 #2.1.4 - HBT comparison for a particular specialty ----
 #D&G and FV for ophthalmology?
 
 #Save version for QE June
-ggsave("hb_comparison_ophthalmology_dg_fv_jun.png", plot = hb_spec_plot(max_date, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("hb_comparison_ophthalmology_dg_fv_jun.png", plot = hb_spec_plot(max_date, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
 
 
 #Save version for QE March
-ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
 
 
 #2.2 - Distribution of waits ----
@@ -190,18 +190,18 @@ dow_4wk_plot <- dow_4wk_qtr_pub %>%
                             TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE)))
 
 #Save this plot
-ggsave("dow Scotland all specs qe mar 2022.png", plot = dow_barplot(dow_4wk_plot,"NHS Scotland", "All Specialties", max_date2), dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("dow Scotland all specs qe mar 2022.png", plot = dow_barplot(dow_4wk_plot,"NHS Scotland", "All Specialties", max_date2), dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
 
 #2.2.2 - Barplot of two contrasting specialties (Urology and Orthopaedics) ----
 #Save plot for QE March 2022
-ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar(dow_4wk_plot, c("Urology", "Orthopaedics"), max_date2, "NHS Scotland"), dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("dow_ortho_urology_mar2022.png", plot = spec_dow_bar(dow_4wk_plot, c("Urology", "Orthopaedics"), max_date2, "NHS Scotland"), dpi=300, dev='png', height=18, width=20, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
 
 
 #2.2.3 - Barplot of two contrasting Boards for single specialty (D&G and FV) ----
 
 #Save June Ophthalmology D&G and FV plot
-ggsave("dow_ophthalmology_d&g_fv_jun2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
+ggsave("dow_ophthalmology_d&g_fv_jun2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("plots", "Snapshot plots", "June 2022"))
 
 
 #Save March Ophthalmology D&G and FV plot
-ggsave("dow_ophthalmology_d&g_fv_mar2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date2, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("dow_ophthalmology_d&g_fv_mar2022.png", plot = hb_dow_bar(dow_4wk_plot,"Ophthalmology", max_date2, c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=15, width=20, units="cm", path = here::here("plots", "Snapshot plots", "March 2022"))
