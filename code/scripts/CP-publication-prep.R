@@ -27,18 +27,24 @@ exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
 #Read in the BOXI publication output, reformat dates and select correct specialties
 
 #Read in publication performance data to get 2019 all specs averages
-perf_2019 <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
+perf_2019 <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv",
+                      check.names = FALSE, stringsAsFactors = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   filter(year(Date) =="2019",
          Specialty == "All Specialties") %>%
   group_by(`NHS Board of Treatment`, `Ongoing/Completed`, Specialty) %>%
-  summarise(monthly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed", sum(`Number Seen/On list`, na.rm=T)/12, mean(`Number Seen/On list`, na.rm=T)),0),0),
-            quarterly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed", mean(`Number Seen/On list`, na.rm=T), mean(`Number Seen/On list`, na.rm=T)),0),0))%>%
+  summarise(monthly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed",
+                                                           sum(`Number Seen/On list`, na.rm=T)/12,
+                                                           mean(`Number Seen/On list`, na.rm=T)),0),0),
+            quarterly_avg = replace_na(round_half_up(if_else(`Ongoing/Completed` =="Completed",
+                                                             mean(`Number Seen/On list`, na.rm=T),
+                                                             mean(`Number Seen/On list`, na.rm=T)),0),0))%>%
   rename(Indicator = `Ongoing/Completed`) %>%
   unique()
 
 #Read in publication performance data to get 2019 individual specs averages
-perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv", check.names = FALSE, stringsAsFactors = FALSE) %>%
+perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/PerformanceIPDC.csv",
+                            check.names = FALSE, stringsAsFactors = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y"),
          `Number Seen/On list` = as.numeric(`Number Seen/On list`)) %>%
   filter(year(Date) =="2019",
@@ -60,9 +66,11 @@ perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, 
 #monthly ipdc wt data
 perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian Dental Monthly.xlsx"),
                       sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
-  mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))  #Rename T&O as orthopaedics
+  #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  clean_names(use_make_names = FALSE) %>%
+  mutate(date = openxlsx::convertToDate(date), #Convert dates from Excel format
+         #Rename T&O as orthopaedics
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty))
 
 
 #monthly data for report, July 2021 to latest complete quarter
@@ -80,22 +88,31 @@ perf <- perf_all %>%
 perf_split <- perf %>%
   filter(urgency!="Total") %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0,
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T), 0), 2),
-         y_max = sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T)) %>% #Need to exclude the Total group to avoid double-counting
+  mutate(`proportion_seen/on_list` = round(
+            ifelse(`number_seen/on_list`!=0,
+                    100*`number_seen/on_list`/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T),
+                   0),
+            2),
+         #Need to exclude the Total group to avoid double-counting
+         y_max = sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max, na.rm=TRUE))) #calculate max y for graph limits
 
 #Create version for Excel with monthly/qtrly averages
 perf_avg <- perf_split %>%
   left_join(perf_2019_specs,
-            by = c("nhs_board_of_treatment" = "NHS Board of Treatment", "ongoing_completed" = "Indicator", "specialty" = "Specialty")) %>%
+            by = c("nhs_board_of_treatment" = "NHS Board of Treatment",
+                   "ongoing_completed" = "Indicator",
+                   "specialty" = "Specialty")) %>%
   mutate(across(c(monthly_avg, quarterly_avg), ~ replace_na(.x,0)))
 
 #Completeness per month
 perf_comp <- perf %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  summarise(completeness = round(100*sum(`number_seen/on_list`[!urgency %in% c("Other", "Total")], na.rm=T)/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T),2)) %>%
+  summarise(completeness = round(
+    100*sum(`number_seen/on_list`[!urgency %in% c("Other", "Total")], na.rm=T)/sum(
+      `number_seen/on_list`[!urgency=="Total"], na.rm=T),
+    2)) %>%
   filter(specialty == "All Specialties") %>%
   rename(indicator = ongoing_completed)
 
@@ -123,8 +140,11 @@ perf_qtr <- perf_qtr_all %>%
 #Create version of data that has proportions per CP code per month
 perf_qtr_split <- perf_qtr %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty, date) %>%
-  mutate(`proportion_seen/on_list` = round(ifelse(`number_seen/on_list`!=0,
-                                                  100*`number_seen/on_list`/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T), 0), 1),
+  mutate(`proportion_seen/on_list` = round(
+              ifelse(`number_seen/on_list`!=0,
+                      100*`number_seen/on_list`/sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T),
+                     0),
+              1),
          y_max = sum(`number_seen/on_list`[!urgency=="Total"], na.rm=T)) %>%
   group_by(patient_type, ongoing_completed, nhs_board_of_treatment, specialty) %>%
   mutate(y_max = roundUpNice(max(y_max, na.rm=TRUE))) #calculate max y for graph limits
@@ -133,8 +153,10 @@ perf_qtr_split <- perf_qtr %>%
 #2.3 - Distribution of wait ----
 #dow 4 week bands data for publication, max date set to end of latest quarter
 
-dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 week bands.xlsx"), sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 week bands.xlsx"),
+                     sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
+  #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  clean_names(use_make_names = FALSE) %>%
   mutate(date = openxlsx::convertToDate(date),
          weeks = as.factor(ifelse(weeks != "Over 104 Weeks", substr(weeks, 1, 7), "Over 104")),
          specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>%
@@ -154,11 +176,14 @@ dow_4wk_qtr_pub <- dow_4wk %>%
   summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
 
 #dow large week bands data for publication, max date set to end of latest quarter
-dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits larger time bands.xlsx"), sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits larger time bands.xlsx"),
+                        sheet = "IPDC Clinical Prioritisation") %>%
+  #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  clean_names(use_make_names = FALSE) %>%
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
          weeks = as.factor(ifelse(weeks != ">104 Weeks", substr(weeks, 1, 7), "Over 104")),
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics%>%
+         #Rename T&O as orthopaedics
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>%
   filter(!specialty %in% exclusions$Specialties) %>%
   complete(urgency, weeks, date, ongoing_completed,
            nesting(nhs_board_of_treatment, specialty, patient_type),
@@ -167,17 +192,22 @@ dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits la
 #2.4 - Additions by HBT ----
 addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian Dental.xlsx"),
                     sheet = "IPDC Clinical Prioritisation") %>%
-  clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  #make column names sensible but allow `90th percentile` to start with a number rather than "x"
+  clean_names(use_make_names = FALSE) %>%
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
-         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>% #Rename T&O as orthopaedics
+         #Rename T&O as orthopaedics
+         specialty = if_else(specialty == "Trauma And Orthopaedic Surgery", "Orthopaedics", specialty)) %>%
   filter(!specialty %in% exclusions$Specialties) %>%
   pivot_longer(c(additions_to_list:other_reasons), values_to = "number", names_to = "indicator") %>%
   complete(urgency, date, indicator,
            nesting(nhs_board_of_treatment, specialty, patient_type),
            fill = list(number = 0)) %>%
   group_by(patient_type, nhs_board_of_treatment, specialty, date, indicator) %>%
-  mutate(proportion_CP = ifelse(urgency=="Total", NA, round(100*number/sum(number[!urgency=="Total"], na.rm=T),2)),
-         completeness = round(100*sum(number[!urgency %in% c("Other","Total")], na.rm=T)/sum(number[!urgency=="Total"], na.rm=T),2)) #Calculate proportion of indicator by CP
+  mutate(proportion_CP = ifelse(urgency=="Total",
+                                NA,
+                                round(100*number/sum(number[!urgency=="Total"], na.rm=T),2)),
+         completeness = round(100*sum(number[!urgency %in% c("Other","Total")], na.rm=T)/sum(
+           number[!urgency=="Total"], na.rm=T),2)) #Calculate proportion of indicator by CP
 
 
 #Additions only for Excel MI
@@ -196,13 +226,17 @@ total_comp <- bind_rows(add_comp, perf_comp) %>%
 
 #Quarterly additions ----
 addrem_qtr <- addrem %>%
-  group_by(patient_type, nhs_board_of_treatment, indicator,  specialty, urgency, date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
-  summarise(number = if_else(!urgency=="Total", sum(number[!urgency=="Total"], na.rm = T),sum(number[urgency=="Total"], na.rm = T))) %>% unique()
+  group_by(patient_type, nhs_board_of_treatment, indicator,  specialty, urgency,
+           date = as.Date(as.yearqtr(date, format = "Q%q/%y"), frac = 1)) %>%
+  summarise(number = if_else(!urgency=="Total", sum(number[!urgency=="Total"], na.rm = T),
+                             sum(number[urgency=="Total"], na.rm = T))) %>%
+  unique()
 
 
 #2.4.1 - long-term additions to get 2019 average ----
 #All Specialties only version
-add_2019 <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv", stringsAsFactors = FALSE, check.names = FALSE) %>%
+add_2019 <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv",
+                    stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   filter(year(Date) =="2019",
          Specialty == "All Specialties") %>%
@@ -212,7 +246,8 @@ add_2019 <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case
             quarterly_avg = replace_na(round_half_up(mean(`Additions to list`, na.rm = T),0),0))
 
 #Specialty level version
-add_2019_specs <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv", stringsAsFactors = FALSE, check.names = FALSE) %>%
+add_2019_specs <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Day case and Outpatient Stage of Treatment Waiting Times/Publication R Script/Publication/Output/Removal ReasonsIPDC.csv",
+                          stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   filter(year(Date) =="2019") %>%
   group_by(`NHS Board of Treatment`, Specialty) %>%
@@ -224,7 +259,9 @@ add_2019_specs <-read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, Da
 add_mon <- addrem %>%
   filter(indicator == "additions_to_list") %>%
   left_join(select(add_2019_specs, -quarterly_avg),
-            by = c("nhs_board_of_treatment" = "NHS Board of Treatment","specialty" = "Specialty", "indicator"="Indicator"))
+            by = c("nhs_board_of_treatment" = "NHS Board of Treatment",
+                   "specialty" = "Specialty",
+                   "indicator"="Indicator"))
 
 
 #2.4.2 - Create 2019 average combined lookup and combined data for additions, completed, waiting ----
@@ -235,10 +272,14 @@ add_perf_monthly  <- perf_split %>% #First modify perf_split
   rename(indicator = ongoing_completed,
          number = `number_seen/on_list`) %>%
   select(-c(waited_waiting_over_26_weeks:y_max)) %>%
-  bind_rows(select(addrem %>% select(-completeness) %>% filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
+  bind_rows(select(addrem %>% select(-completeness) %>%
+                     filter(indicator == "additions_to_list"),
+                   -c(starts_with("proportion")))) %>% #Then bind onto filtered additions
   # filter(specialty=="All Specialties") %>%
   left_join(select(avg_2019, -quarterly_avg),
-            by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
+            by=c("nhs_board_of_treatment" = "NHS Board of Treatment",
+                 "indicator" = "Indicator",
+                 "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
   group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
   mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
          y_max2 = roundUpNice(max(monthly_avg, na.rm=TRUE))) #Calculate max from 2019 data per group
@@ -248,9 +289,12 @@ add_perf_quarterly  <- perf_qtr_split %>% #First modify perf_split
          number = `number_seen/on_list`) %>%
   select(-c(waited_waiting_over_26_weeks:y_max)) %>%
   bind_rows(select(addrem_qtr %>%
-                     filter(indicator == "additions_to_list"),-c(starts_with("proportion")))) %>% #Then bind onto filtered additions
+                     filter(indicator == "additions_to_list"),
+                   -c(starts_with("proportion")))) %>% #Then bind onto filtered additions
   #filter(specialty=="All Specialties") %>%
-  left_join(select(avg_2019, -monthly_avg), by=c("nhs_board_of_treatment" = "NHS Board of Treatment", "indicator" = "Indicator", "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
+  left_join(select(avg_2019, -monthly_avg), by=c("nhs_board_of_treatment" = "NHS Board of Treatment",
+                                                 "indicator" = "Indicator",
+                                                 "specialty" = "Specialty")) %>% #Then bind on monthly averages from 2019
   group_by(nhs_board_of_treatment, specialty, indicator, date) %>%
   mutate(y_max = roundUpNice(sum(number[!urgency=="Total"], na.rm=T)), #Calculate max from current data per group
          y_max2 = roundUpNice(max(quarterly_avg, na.rm=TRUE))) #Calculate max from 2019 data per group
@@ -350,14 +394,6 @@ spec_p2_prop <- addrem_qtr  %>%
 ##Bind top six list onto hb_var_plotdata for use in topsix plot function
 hb_var_plotdata %<>%
   left_join(topsix, by = c("nhs_board_of_treatment", "date"))
-
-#Calculate proportion of additions by HB/spec/CP/date
-#addrem_qtr_split <- addrem_qtr %>%
-#  group_by(nhs_board_of_treatment, specialty, indicator,date) %>%
-#  mutate(total = sum(number[!urgency=="Total"], na.rm = T)) %>%
-#  ungroup() %>%
-#  mutate(proportion = round(number/total,2))
-
 
 # 2.8 - Save data for Excel and app ----
 
