@@ -28,9 +28,9 @@ copy_to_shiny_data <- function(csv){
 }
 
 # Copy all csv files in processed_data to shiny_data as rds files
+# Not copying march files across as only June needed
 files =  grep('.*(?<!mar)\\.csv', list.files(path=processed_data_folder), perl=T, value=T)
-
-purrr::walk(list.files(path=processed_data_folder, pattern="*.csv"), copy_to_shiny_data)
+purrr::walk(files, copy_to_shiny_data)
 
 
 
