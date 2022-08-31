@@ -12,17 +12,6 @@
 # Approximate run time - xx minutes
 #########################################################################
 
-#### 1 - Packages and functions ----
-#1.1 - Load packages ----
-source("packages/packages.R")
-source("functions/CP-functions.R")
-
-Sys.umask(002) #Used to ensure directory permissions are correct
-
-#1.2 - Dates ----
-max_date <- as.Date("2022-06-30")
-max_date2 <- as.Date("2022-03-31")
-
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
                                  "P2",
