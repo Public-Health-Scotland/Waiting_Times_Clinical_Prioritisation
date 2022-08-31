@@ -28,6 +28,8 @@ copy_to_shiny_data <- function(csv){
 }
 
 # Copy all csv files in processed_data to shiny_data as rds files
+files =  grep('.*(?<!mar)\\.csv', list.files(path=processed_data_folder), perl=T, value=T)
+
 purrr::walk(list.files(path=processed_data_folder, pattern="*.csv"), copy_to_shiny_data)
 
 
