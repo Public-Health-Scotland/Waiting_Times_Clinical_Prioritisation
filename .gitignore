@@ -1,7 +1,13 @@
 
 # ---> R
-r_code_maiana.Rproj
+*.Rproj
 
+
+#admin
+shiny_app/AppDeployment.R
+shiny_app/admin
+shiny_app/admin/credentials.rds
+shiny_app/admin/create_credentials.R
 # History files
 .Rhistory
 .Rapp.history
@@ -53,6 +59,13 @@ old scripts/**
 # excel files
 *.[xX][lL][sS]*
 *.[xX][lL][sS][xX]*
+
+# R data files #
+################
+# Note that *.Rda files are used in R packages
+
+*.[rR][dD][aA][tT][aA]
+*.[rR][dD][sS]
 
 #sav files
 *.[sS][aA][vV]*
