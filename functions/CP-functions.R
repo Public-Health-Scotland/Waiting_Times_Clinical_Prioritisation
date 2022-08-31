@@ -328,10 +328,12 @@ spec_dow_bar <-  function(df, specialty_list, date_choice, board_choice) {df %>%
 write_marjun_data <- function(dataname){
 
   write.csv((marjun_data[[dataname]] %>% filter(date <= max_date)),
-            file = here::here("data", "processed data", glue::glue("{dataname}_jun.csv"))
+            file = here::here("data", "processed data", glue::glue("{dataname}_jun.csv")),
+            row.names=F
             )
   write.csv((marjun_data[[dataname]] %>% filter(date <= max_date2)),
-            file = here::here("data", "processed data", glue::glue("{dataname}_mar.csv"))
+            file = here::here("data", "processed data", glue::glue("{dataname}_mar.csv")),
+            row.names=F
             )
 }
 
