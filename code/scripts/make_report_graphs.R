@@ -12,6 +12,9 @@
 # Approximate run time - xx minutes
 #########################################################################
 
+# Create output directory
+dir.create(here::here("plots"))
+
 #1.3 - Colours ----
 colourset = data.frame(codes = c("P1A-1B",
                                  "P2",
