@@ -397,54 +397,22 @@ hb_var_plotdata %<>%
 
 # 2.8 - Save data for Excel and app ----
 
-#place data in a list
-#write function that saves out two versions of the data and appends the month to the name
+# LHS is base for file name, RHS is object to write
+marjun_data <- list("add_perf_mon" = add_perf_monthly,
+              "add_perf_qtr" = add_perf_quarterly,
+              "add_mon" = add_mon,
+              "perf_qtr_split" = perf_qtr_split,
+              "perf_mon_split" = perf_split,
+              "perf_avg" = perf_avg,
+              "total_comp" = total_comp,
+              "dow_4wk_qtr_pub" = dow_4wk_qtr_pub,
+              "dow_4wk_mon" = dow_4wk,
+              "hb_plotdata" = hb_var_plotdata,
+              "topsix_specs" = topsix)
 
-#1A - add_perf_monthly
-write.csv(add_perf_monthly %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_mon_jun.csv"), row.names = FALSE)
-write.csv(add_perf_monthly %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_mon_mar.csv"), row.names = FALSE)
-
-#1B - add_perf_quarterly
-write.csv(add_perf_quarterly %>% filter(date <= max_date), file = here::here("data", "processed data", "add_perf_qtr_jun.csv"), row.names = FALSE)
-write.csv(add_perf_quarterly %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_perf_qtr_mar.csv"), row.names = FALSE)
-
-
-#2 - add_mon (for Excel)
-write.csv(add_mon %>% filter(date <= max_date), file = here::here("data", "processed data", "add_mon_jun.csv"), row.names = FALSE)
-write.csv(add_mon %>% filter(date <= max_date2), file = here::here("data", "processed data", "add_mon_mar.csv"), row.names = FALSE)
-
-
-#3A - perf_qtr_split
-write.csv(perf_qtr_split %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_qtr_split_mar.csv"), row.names = FALSE)
-write.csv(perf_qtr_split %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_qtr_split_jun.csv"), row.names = FALSE)
-
-#3B - perf_split
-write.csv(perf_split %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_mon_split_mar.csv"), row.names = FALSE)
-write.csv(perf_split %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_mon_split_jun.csv"), row.names = FALSE)
-
-#4 - perf_avg
-write.csv(perf_avg %>% filter(date <= max_date2), file = here::here("data", "processed data", "perf_avg_mar.csv"), row.names = FALSE)
-write.csv(perf_avg %>% filter(date <= max_date), file = here::here("data", "processed data", "perf_avg_jun.csv"), row.names = FALSE)
-
-#5 - total_comp ("All Specialties" completeness for Excel MI)
-write.csv(total_comp %>% filter(date <= max_date), file = here::here("data", "processed data", "total_comp_jun.csv"), row.names = FALSE)
-write.csv(total_comp %>% filter(date <= max_date2), file = here::here("data", "processed data", "total_comp_mar.csv"), row.names = FALSE)
-
-#6 - dow_4wk_qtr_pub
-write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date), file = here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), row.names = FALSE)
-write.csv(dow_4wk_qtr_pub %>% filter(date <= max_date2), file = here::here("data", "processed data", "dow_4wk_qtr_pub_mar.csv"), row.names = FALSE)
-
-#6B - dow_4wk_mon
-write.csv(dow_4wk %>% filter(date <= max_date), file = here::here("data", "processed data", "dow_4wk_mon_jun.csv"), row.names = FALSE)
-write.csv(dow_4wk %>% filter(date <= max_date2), file = here::here("data", "processed data", "dow_4wk_mon_mar.csv"), row.names = FALSE)
-
-##10 - hb_plotdata
-write.csv(hb_var_plotdata %>% filter(date <= max_date), file = here::here("data", "processed data", "hb_plotdata_jun.csv"), row.names = FALSE)
-write.csv(hb_var_plotdata %>% filter(date <= max_date2), file = here::here("data", "processed data", "hb_plotdata_mar.csv"), row.names = FALSE)
-
-##11 - topsix_specs
-write.csv(topsix %>% filter(date <= max_date), file = here::here("data", "processed data", "topsix_specs_jun.csv"), row.names = FALSE)
-write.csv(topsix %>% filter(date <= max_date2), file = here::here("data", "processed data", "topsix_specs_mar.csv"), row.names = FALSE)
+message("Writing data to processed_data")
+# Writing data for March and June
+purrr::walk(names(marjun_data), write_marjun_data)
 
 ##12 - specstats
 write.csv(specstats, file = here::here("data", "processed data", "specstats.csv"), row.names = FALSE)

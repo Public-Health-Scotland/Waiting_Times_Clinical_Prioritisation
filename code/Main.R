@@ -13,6 +13,9 @@
 # Approximate run time - xx minutes
 #########################################################################
 
+gc()
+rm(list=ls())
+
 #### Packages and functions ----
 # Load packages ----
 source("packages/packages.R")

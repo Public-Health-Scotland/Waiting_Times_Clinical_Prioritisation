@@ -322,3 +322,16 @@ spec_dow_bar <-  function(df, specialty_list, date_choice, board_choice) {df %>%
           legend.key.width= unit(0.25, 'cm'),
           legend.text = element_text(size = 8))
 }
+
+# 12. Write data for March and June
+
+write_marjun_data <- function(dataname){
+
+  write.csv((marjun_data[[dataname]] %>% filter(date <= max_date)),
+            file = here::here("data", "processed data", glue::glue("{dataname}_jun.csv"))
+            )
+  write.csv((marjun_data[[dataname]] %>% filter(date <= max_date2)),
+            file = here::here("data", "processed data", glue::glue("{dataname}_mar.csv"))
+            )
+}
+

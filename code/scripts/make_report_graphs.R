@@ -33,27 +33,34 @@ names(linecolours) <- c("Additions", "Seen", "All removals (including patients s
 
 
 # 1.4 Import Data -----
-add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
+
+add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"),
+                     stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date),
          nhs_board_of_treatment = str_replace(nhs_board_of_treatment, "NHS Scotland", "NHSScotland"))
 
-perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
+perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"),
+                           stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date))
 
-dow_4wk_qtr_pub <- read.csv(here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
+dow_4wk_qtr_pub <- read.csv(here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"),
+                            stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date))
 
-#addhbr <- read.csv(file = here::here("data", "processed data", "addhbr_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
-#  mutate(date = as.Date(date))
+hb_var_plotdata <- read.csv(here::here("data", "processed data", "hb_plotdata_jun.csv"),
+                            stringsAsFactors = FALSE, check.names = FALSE) %>%
+  mutate(date = as.Date(date))
 
-hb_var_plotdata <- read.csv(here::here("data", "processed data", "hb_plotdata_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+topsix <- read.csv(file = here::here("data", "processed data", "topsix_specs_jun.csv"),
+                   stringsAsFactors = FALSE, check.names = FALSE) %>%
+  mutate(date = as.Date(date))
 
-topsix <- read.csv(file = here::here("data", "processed data", "topsix_specs_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
+specstats <- read.csv(file = here::here("data", "processed data", "specstats.csv"),
+                      stringsAsFactors = FALSE, check.names = FALSE) %>%
+  mutate(date = as.Date(date))
 
-specstats <- read.csv(file = here::here("data", "processed data", "specstats.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
-
-spec_p2_prop <-  read.csv(file = here::here("data", "processed data", "spec_p2_prop.csv"), stringsAsFactors = FALSE, check.names = FALSE)
-
+spec_p2_prop <-  read.csv(file = here::here("data", "processed data", "spec_p2_prop.csv"),
+                          stringsAsFactors = FALSE, check.names = FALSE)
 
 
 #### 2 - Data wrangling & Graphs----
@@ -66,7 +73,8 @@ activity_trendplot_jun <- add_perf %>%
          !urgency=="Total",
          nhs_board_of_treatment == "NHSScotland") %>%
   ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
-  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
+  geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)),
+               fill=fct_rev(factor(urgency, levels = colourset$codes))), stat="identity") +
   geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
                  linetype = "2019 monthly average"),
              colour = "#000000") +
@@ -78,7 +86,6 @@ activity_trendplot_jun <- add_perf %>%
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
   scale_fill_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name ="") +
-  # scale_linetype_manual(name = "2019 average",values = c(1,1)) +
   theme(text = element_text(size = 12))+
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
