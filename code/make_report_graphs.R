@@ -41,18 +41,18 @@ names(linecolours) <- c("Additions", "Seen", "All removals (including patients s
 
 
 # 1.4 Import Data -----
-add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
+add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date),
          nhs_board_of_treatment = str_replace(nhs_board_of_treatment, "NHS Scotland", "NHSScotland"))
 
-perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
+perf_qtr_split <- read.csv(here::here("data", "processed data", "perf_qtr_split_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date))
 
-dow_4wk_qtr_pub <- read.csv(here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
+dow_4wk_qtr_pub <- read.csv(here::here("data", "processed data", "dow_4wk_qtr_pub_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date))
 
-addhbr <- read.csv(file = here::here("data", "processed data", "addhbr_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% 
-  mutate(date = as.Date(date))
+#addhbr <- read.csv(file = here::here("data", "processed data", "addhbr_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>%
+#  mutate(date = as.Date(date))
 
 hb_var_plotdata <- read.csv(here::here("data", "processed data", "hb_plotdata_jun.csv"), stringsAsFactors = FALSE, check.names = FALSE) %>% mutate(date = as.Date(date))
 
@@ -69,19 +69,19 @@ spec_p2_prop <-  read.csv(file = here::here("data", "processed data", "spec_p2_p
 #2.1 - Completed and ongoing waits ----
 
 #2.1.1 - Graph of ongoing and completed waits, by month ----
-activity_trendplot_jun <- add_perf %>% 
-  filter(specialty == "All Specialties", 
+activity_trendplot_jun <- add_perf %>%
+  filter(specialty == "All Specialties",
          !urgency=="Total",
          nhs_board_of_treatment == "NHSScotland") %>%
   ggplot(aes(x =floor_date(date, "month"), y = number), group = urgency) +
   geom_bar(aes(color = fct_rev(factor(urgency, levels = colourset$codes)), fill=fct_rev(factor(urgency, levels = colourset$codes))),stat="identity") +
   geom_hline(aes(yintercept=monthly_avg, #Add monthly averages
-                 linetype = "2019 monthly average"), 
+                 linetype = "2019 monthly average"),
              colour = "#000000") +
   scale_linetype_manual(name ="", values = c('dashed')) +
   theme_bw() +
   scale_x_date(labels = date_format("%b %y"),
-               breaks = seq(from = floor_date(min(add_perf$date), "month"), 
+               breaks = seq(from = floor_date(min(add_perf$date), "month"),
                             to = floor_date(max(add_perf$date), "month"), by = "1 months")) +
   scale_y_continuous(expand = c(0,0), labels=function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) +
   scale_colour_manual(values=phs_colours(colourset$colours), breaks = colourset$codes, name="")+
@@ -90,7 +90,7 @@ activity_trendplot_jun <- add_perf %>%
   theme(text = element_text(size = 12))+
   geom_blank(aes(y = y_max)) +
   geom_blank(aes(y = y_max2)) +
-  facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top", 
+  facet_wrap(~indicator, nrow = 3, scales = "free_y",  strip.position = "top",
              labeller = as_labeller(c(additions_to_list ="Number of patients added to the waiting list \n", Ongoing = "Number of patients waiting for treatment \n", Completed = "Number of patients admitted for treatment\n") )) +
   ylab(NULL) +
   xlab("Month ending") +
@@ -116,8 +116,8 @@ ggsave("allspecs_activity_trend_monthly_jun.png", plot = activity_trendplot_jun,
 #2.1.2 - Top 6 specialties by additions/admitted/waiting ----
 
 #Data for top six specialties
-specstats %<>% 
-  left_join(topsix, by=c("nhs_board_of_treatment", "date")) %>% 
+specstats %<>%
+  left_join(topsix, by=c("nhs_board_of_treatment", "date")) %>%
   filter(str_detect(specialties, specialty))
 
 #Proportion of total seen/waiting represented by these 6 specialties
@@ -134,12 +134,12 @@ topsix_prop <- specstats %>%
 #   group_by(specialty) %>%
 #   mutate(total = sum(number[!urgency=="Total"], na.rm = T),
 #          p2_prop = sum(number[urgency == "P2"], na.rm = T)/total) %>%
-#   select(indicator, specialty, number, p2_prop) 
+#   select(indicator, specialty, number, p2_prop)
 
 #Calculate proportion of additions by HB/spec/CP/date
-addrem_qtr_split <- hb_var_plotdata %>% 
-  filter(indicator == "additions_to_list") %>% 
-  select(- c(waited_waiting_over_26_weeks,p2_proportion)) %>% 
+addrem_qtr_split <- hb_var_plotdata %>%
+  filter(indicator == "additions_to_list") %>%
+  select(-p2_proportion) %>%
   group_by(nhs_board_of_treatment, specialty, indicator,date) %>%
   mutate(total = sum(number[!urgency=="Total"], na.rm = T)) %>%
   ungroup() %>%
@@ -153,11 +153,11 @@ addrem_qtr_split <- hb_var_plotdata %>%
 
 #topsix_plot_data <- perf_qtr_split %>%
 #  ungroup() %>%
-#  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed, 
+#  select(nhs_board_of_treatment, specialty, indicator = ongoing_completed,
 #         urgency, date, number = `number_seen/on_list`, proportion = `proportion_seen/on_list`) %>%
 #  mutate(proportion = proportion/100) %>%
 #  bind_rows(select(addrem_qtr_split, - total)) %>%
-#  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty), 
+#  filter(str_detect(topsix$specialties[topsix$date == max_date & topsix$nhs_board_of_treatment == "NHS Scotland"], specialty),
 #         nhs_board_of_treatment=="NHS Scotland",
 #         indicator %in% c("additions_to_list", "Completed", "Ongoing")) %>%
 #  ungroup() %>%
@@ -178,7 +178,7 @@ ggsave("top_six_spec_plot_additions_mar.png", plot = topsixplot(max_date2, "NHS 
 #Save March and June graphs
 ggsave("hb_var_plot_jun.png", plot = hb_var_plot(max_date), dpi=300, dev='png', height=24, width=36, units="cm", path = here::here("..","R plots", "Snapshot plots", "June 2022"))
 
-ggsave("hb_var_plot_mar.png", plot = hb_var_plot(hb_var_plotdata, max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("hb_var_plot_mar.png", plot = hb_var_plot(max_date2), dpi=300, dev='png', height=24, width=20, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 
 #2.1.4 - HBT comparison for a particular specialty ----
@@ -189,7 +189,7 @@ ggsave("hb_comparison_ophthalmology_dg_fv_jun.png", plot = hb_spec_plot(max_date
 
 
 #Save version for QE March
-ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(hb_var_plotdata, max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
+ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(max_date2, "Ophthalmology", c("NHS Dumfries & Galloway", "NHS Forth Valley")), dpi=300, dev='png', height=12, width=26, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
 
 
 #2.2 - Distribution of waits ----
@@ -198,7 +198,7 @@ ggsave("hb_comparison_ophthalmology_dg_fv_mar.png", plot = hb_spec_plot(hb_var_p
 dow_4wk_plot <- dow_4wk_qtr_pub %>%
   mutate(weeks2 = case_when(weeks == "000-004"  ~"<=4",
                             weeks == "Over 104" ~">104",
-                            TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE))) 
+                            TRUE ~  gsub("(?<![0-9])0+", "", weeks, perl = TRUE)))
 
 #Save this plot
 ggsave("dow Scotland all specs qe mar 2022.png", plot = dow_barplot(dow_4wk_plot,"NHS Scotland", "All Specialties", max_date2), dpi=300, dev='png', height=15, width=18, units="cm", path = here::here("..","R plots", "Snapshot plots", "March 2022"))
