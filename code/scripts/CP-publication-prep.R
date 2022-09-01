@@ -14,6 +14,11 @@
 
 #### 2 - Import data ----
 
+# Copy data quality summaries
+
+file.copy(here::here("data", "dq_summaries.csv"),
+          here::here("data", "processed_data", "dq_summaries.csv"))
+
 #2.1 - Specialty exclusions ----
 #Use the latest specialty exclusions list from the publication folder
 
