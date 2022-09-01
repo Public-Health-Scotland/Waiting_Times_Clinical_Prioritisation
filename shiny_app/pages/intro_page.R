@@ -196,7 +196,8 @@ output$accessibility_notes <- renderUI({
 
 numbers$dq_table <- DT::renderDataTable({
 
-  sparkline_table(dq_table(app_data[["total_comp_jun"]], input$hbt_dq_filter, input$month_dq_filter))
+  sparkline_table(dq_table(app_data[["total_comp_jun"]],
+                           input$hbt_dq_filter, input$month_dq_filter))
 
 })
 

@@ -15,7 +15,8 @@ dq_table <- function(dq_data, hbt, month_year){
 
 
   dataset <- dq_data %>%
-    filter(nhs_board_of_treatment==hbt ) %>%
+    filter(nhs_board_of_treatment==hbt,
+           specialty=="All Specialties") %>%
     mutate(completeness = round(completeness, 1),
            comp_format = paste0(completeness, "%"),
            indicator = case_when(indicator=="additions_to_list"~"Additions to the waiting list",
