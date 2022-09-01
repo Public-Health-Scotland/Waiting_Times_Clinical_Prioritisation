@@ -398,8 +398,8 @@ hb_var_plotdata %<>%
 # 2.8 - Save data for Excel and app ----
 
 # LHS is base for file name, RHS is object to write
-marjun_data <- list("add_perf_mon" = add_perf_monthly,
-              "add_perf_qtr" = add_perf_quarterly,
+marjun_data <- list("add_perf_mon_specs" = add_perf_monthly,
+              "add_perf_qtr_specs" = add_perf_quarterly,
               "add_mon" = add_mon,
               "perf_qtr_split" = perf_qtr_split,
               "perf_mon_split" = perf_split,
