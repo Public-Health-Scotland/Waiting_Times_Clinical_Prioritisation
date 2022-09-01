@@ -77,5 +77,18 @@ You can password protect the app for pre-release access.
 
 
 
+### Input data files
 
+You will need the following data in your `data` folder - obtain from colleagues
+
+* Distribution of Waits 4 week bands.xlsx
+* Distribution of Waits larger time bands.xlsx
+* dq_summaries.csv
+* HB Population by SIMD 2020 estimate.xlsx
+* Performance excl. Lothian Dental Monthly Week Flags.xlsx
+* Performance excl. Lothian Dental Quarterly Week Flags.xlsx
+* Removal Reason excl. Lothian Dental by age gender SIMD.xlsx
+* Removal Reason excl. Lothian Dental by age gender.xlsx
+* Removal Reason excl. Lothian Dental.xlsx
+* Spec Exclusions.xlsx
 
