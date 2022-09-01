@@ -12,6 +12,7 @@ output$download_ui <-  renderUI({
              shinydashboard::box(width=NULL, height="400px",
                                  tagList(
                                    p(strong("Follow the steps below to generate the dataset to download.")),
+                                   p(strong("Note that the figures presented for 'All Specialities' do not match the total of the specialty breakdown. This is due to specialties with a low volume of patients at Scotland level being excluded from the specialty breakdown.")),
                                    radioButtons("download_timescale",
                                                 "1. Select timescale ",
                                                 choices = c("monthly", "quarterly"),
