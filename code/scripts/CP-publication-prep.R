@@ -27,6 +27,8 @@ exclusions_path <- here::here("data", "Spec Exclusions.xlsx")
 exclusions <- read.xlsx(exclusions_path, sheet = "IPDC", na.strings = "") %>%
   as.list(Specialties)
 
+exclusions$Specialties <- append(exclusions$Specialties,c("Mental Health Nursing", "Occupational Medicine", "General Nursing"))
+
 
 #2.2 - Performance ----
 #Read in the BOXI publication output, reformat dates and select correct specialties
