@@ -4,7 +4,7 @@ This repository contains the Reproducible Analytical Pipeline (RAP) to produce t
 
 The repository also contains the necessary code to run and deploy the accompanying shiny app.
 
-The first release of the publication is scheduled for 06 September 2022. This page will be updated as the development of the outputs continues.
+The publication, released on 06 September 2022, is a one-off retrospective analysis of data relating to the Scottish Government's clinical prioritisation Framework, and covers the period July 2021 to June 2022. The Framework became no longer applicable as of 22 July 2022.  
 
 ## Workflow
 
@@ -30,11 +30,8 @@ You will need the following data in your `data` folder - obtain from colleagues
 * Distribution of Waits 4 week bands.xlsx
 * Distribution of Waits larger time bands.xlsx
 * dq_summaries.csv
-* HB Population by SIMD 2020 estimate.xlsx
-* Performance excl. Lothian Dental Monthly Week Flags.xlsx
-* Performance excl. Lothian Dental Quarterly Week Flags.xlsx
-* Removal Reason excl. Lothian Dental by age gender SIMD.xlsx
-* Removal Reason excl. Lothian Dental by age gender.xlsx
+* Performance excl. Lothian Dental Monthly.xlsx
+* Performance excl. Lothian Dental Quarterly.xlsx
 * Removal Reason excl. Lothian Dental.xlsx
 * Spec Exclusions.xlsx
 
