@@ -10,7 +10,7 @@ The first release of the publication is scheduled for 06 September 2022. This pa
 
 * Create a `data` folder with subfolder `processed_data`
 
-1. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this.
+1. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this. See "Input data files" below for the files you need.
 
 2. Run `code/Main.R` (takes ~ 5 minutes). This 
 
@@ -21,6 +21,23 @@ The first release of the publication is scheduled for 06 September 2022. This pa
     * Transfers the processed data from `data/processed data` to `shiny_app/data` as .rds files so that the shiny app can run
     
 3. Launch shiny app by running `shiny_app/app.R`
+
+
+## Input data files
+
+You will need the following data in your `data` folder - obtain from colleagues
+
+* Distribution of Waits 4 week bands.xlsx
+* Distribution of Waits larger time bands.xlsx
+* dq_summaries.csv
+* HB Population by SIMD 2020 estimate.xlsx
+* Performance excl. Lothian Dental Monthly Week Flags.xlsx
+* Performance excl. Lothian Dental Quarterly Week Flags.xlsx
+* Removal Reason excl. Lothian Dental by age gender SIMD.xlsx
+* Removal Reason excl. Lothian Dental by age gender.xlsx
+* Removal Reason excl. Lothian Dental.xlsx
+* Spec Exclusions.xlsx
+
     
     
 ## shiny app
@@ -75,20 +92,4 @@ You can password protect the app for pre-release access.
 
 * `functions` contains R scripts with the functions corresponding to each of the app pages. Additionally `core_functions.R` has some useful centralised functions, `navigation_buttons.R` has the links for the navigation buttons and `modals.R` defines information modals which pop up with information when you click on them
 
-
-
-### Input data files
-
-You will need the following data in your `data` folder - obtain from colleagues
-
-* Distribution of Waits 4 week bands.xlsx
-* Distribution of Waits larger time bands.xlsx
-* dq_summaries.csv
-* HB Population by SIMD 2020 estimate.xlsx
-* Performance excl. Lothian Dental Monthly Week Flags.xlsx
-* Performance excl. Lothian Dental Quarterly Week Flags.xlsx
-* Removal Reason excl. Lothian Dental by age gender SIMD.xlsx
-* Removal Reason excl. Lothian Dental by age gender.xlsx
-* Removal Reason excl. Lothian Dental.xlsx
-* Spec Exclusions.xlsx
 
