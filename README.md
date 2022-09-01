@@ -4,55 +4,48 @@ This repository contains the Reproducible Analytical Pipeline (RAP) to produce t
 
 The repository also contains the necessary code to run and deploy the accompanying shiny app.
 
-The first release of the publication is scheduled for 06 September 2022. This page will be updated as the development of the outputs continues.
+The publication, released on 06 September 2022, is a one-off retrospective analysis of data relating to the Scottish Government's clinical prioritisation Framework, and covers the period July 2021 to June 2022. The Framework became no longer applicable as of 22 July 2022.  
 
-## Source files
+## Workflow
 
-Data from BOXI must be processed for use in the shiny app and Excel output, with the data being saved as .csv in [/data/processed data]. Currently this process is done at the start of the `CP-publication-prep.R` script but it should be transferred to a separate script. Note that the filenames match the df names used in section 3 of `CP-publication-prep.R` but should be made more user-friendly as part of the planned script updates. The csv files are:
+* Create a `data` folder with subfolder `processed_data`
 
-* addrem_perf
-    + Combined data containly monthly additions, completed and ongoing waits, plus the 2019 monthly averages for these metrics.
-    + Used for plotting the monthly trends in activity.
+1. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this. See "Input data files" below for the files you need.
+
+2. Run `code/Main.R` (takes ~ 5 minutes). This 
+
+    * Processes the data in `data` and saves it out in `data/processed data`
     
-* perf_qtr_split
-    + Quarterly performance data, with calculated proportions in each CP category.
-
-* topsix_specs
-    + List of top six specialties based on ongoing waits, per HBT and quarter
-    + Used to filter data for fig. 3 in draft report
-
-* hb_plotdata
-    + Quarterly additions, admissions and ongoing waits by HBT, specialty and urgency, with columns for total within each HBT/specialty/date/indicator group and proportion of indicator that is in category P2
-    + Used for producing facetted graphs fig. 5 and 6 in draft report.
-
-* dow_4wk_qtr_pub    
-    + Distribution of waits data, split into 4-week bands up to 52 weeks, then 13-week bands
-    + Used for distribution of waits graphs/tables only.
+    * Creates plots and saves them out in `plots` (the code will create this folder if it doesn't already exist)
     
-* addhbr
-    + Monthly additions by HBR, specialty and urgency
+    * Transfers the processed data from `data/processed data` to `shiny_app/data` as .rds files so that the shiny app can run
     
-* add_simd
-    + Quarterly age-sex-SIMD standardised addition rates for funnel plots.
-    + Contains upper and lower CI data points
+3. Launch shiny app by running `shiny_app/app.R`
 
+
+## Input data files
+
+You will need the following data in your `data` folder - obtain from colleagues
+
+* Distribution of Waits 4 week bands.xlsx
+* Distribution of Waits larger time bands.xlsx
+* dq_summaries.csv
+* Performance excl. Lothian Dental Monthly.xlsx
+* Performance excl. Lothian Dental Quarterly.xlsx
+* Removal Reason excl. Lothian Dental.xlsx
+* Spec Exclusions.xlsx
+
+    
+    
 ## shiny app
 
 The code for the shiny app can be found in the `shiny_app` folder
-
-### Running the shiny app
-
-* Make sure that you have all the necessary csv files obtained from running `CP-publication-prep.R`. These can be found in `data/processed data`
-
-* Run the script `app_data_preparation.R`, which will copy the csv files over to the `shiny_app/data` folder as rds files
-
-* Open `shiny_app/app.R` and select "run app"
 
 ### Password protect the shiny app (PRA)
 
 You can password protect the app for pre-release access.
 
-* Open `admin/create_crententials.R` (hidden file not pushed to Github - obtain this separately from collaborators).
+* Open `shiny_app/admin/create_crententials.R` (hidden file not pushed to Github - obtain this separately from collaborators)
 
 * Edit the script with the chosen username and password for pre-realease access
 
@@ -95,8 +88,5 @@ You can password protect the app for pre-release access.
 * `pages` contains separate R scripts of app content, one for each page of the app
 
 * `functions` contains R scripts with the functions corresponding to each of the app pages. Additionally `core_functions.R` has some useful centralised functions, `navigation_buttons.R` has the links for the navigation buttons and `modals.R` defines information modals which pop up with information when you click on them
-
-
-
 
 

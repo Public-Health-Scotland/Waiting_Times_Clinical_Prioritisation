@@ -73,3 +73,6 @@ old scripts/**
 #zip files
 
 *.[zZ][iI][pP]*
+
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
