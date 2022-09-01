@@ -10,7 +10,7 @@
 # Description - Main file for data wrangling and graph making for
 #               CP publication
 #
-# Approximate run time - 5 minutes
+# Approximate run time - 3 minutes
 #########################################################################
 
 gc()
