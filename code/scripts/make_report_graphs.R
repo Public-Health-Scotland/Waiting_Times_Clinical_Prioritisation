@@ -34,7 +34,7 @@ names(linecolours) <- c("Additions", "Seen", "All removals (including patients s
 
 # 1.4 Import Data -----
 
-add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_jun.csv"),
+add_perf <- read.csv(here::here("data", "processed data", "add_perf_mon_specs_jun.csv"),
                      stringsAsFactors = FALSE, check.names = FALSE) %>%
   mutate(date = as.Date(date),
          nhs_board_of_treatment = str_replace(nhs_board_of_treatment, "NHS Scotland", "NHSScotland"))
