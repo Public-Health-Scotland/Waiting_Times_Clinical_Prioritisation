@@ -8,11 +8,11 @@ The publication, released on 06 September 2022, is a one-off retrospective analy
 
 ## Workflow
 
-* Create a `data` folder with subfolder `processed_data`
+1. Create a `data` folder with subfolder `processed_data`
 
-1. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this. See "Input data files" below for the files you need.
+2. Transfer the necessary input files to the `data` folder. You can use the helper function in `functions/admin_functions.R` to do this. See "Input data files" below for the files you need.
 
-2. Run `code/Main.R` (takes ~ 5 minutes). This 
+3. Run `code/Main.R` (takes ~ 5 minutes). This 
 
     * Processes the data in `data` and saves it out in `data/processed data`
     
@@ -20,7 +20,7 @@ The publication, released on 06 September 2022, is a one-off retrospective analy
     
     * Transfers the processed data from `data/processed data` to `shiny_app/data` as .rds files so that the shiny app can run
     
-3. Launch shiny app by running `shiny_app/app.R`
+4. Launch shiny app by running `shiny_app/app.R`
 
 
 ## Input data files
