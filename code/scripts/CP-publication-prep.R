@@ -71,7 +71,7 @@ perf_2019_specs <- read.csv("/PHI_conf/WaitingTimes/SoT/Publications/Inpatient, 
 #2.2.1 - Monthly ----
 
 #monthly ipdc wt data
-perf_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian Dental Monthly.xlsx"),
+perf_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Monthly.xlsx"),
                       sheet = "IPDC Clinical Prioritisation") %>%
   #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   clean_names(use_make_names = FALSE) %>%
@@ -125,7 +125,7 @@ perf_comp <- perf %>%
 
 
 #2.2.2 - Quarterly ----
-perf_qtr_all <- read.xlsx(here::here("data", "snapshot", "Performance excl. Lothian Dental Quarterly.xlsx"),
+perf_qtr_all <- read.xlsx(here::here("data", "Performance excl. Lothian Dental Quarterly.xlsx"),
                           sheet = "IPDC Clinical Prioritisation") %>%
   clean_names(use_make_names = FALSE) %>% #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   mutate(date =openxlsx::convertToDate(date), #Convert dates from Excel format
@@ -160,7 +160,7 @@ perf_qtr_split <- perf_qtr %>%
 #2.3 - Distribution of wait ----
 #dow 4 week bands data for publication, max date set to end of latest quarter
 
-dow_4wk <- read.xlsx(here::here("data", "snapshot", "Distribution of Waits 4 week bands.xlsx"),
+dow_4wk <- read.xlsx(here::here("data", "Distribution of Waits 4 week bands.xlsx"),
                      sheet = "IPDC Clinical Prioritisation", detectDates = FALSE) %>%
   #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   clean_names(use_make_names = FALSE) %>%
@@ -183,7 +183,7 @@ dow_4wk_qtr_pub <- dow_4wk %>%
   summarise(`number_seen/on_list` = sum(`number_seen/on_list`))
 
 #dow large week bands data for publication, max date set to end of latest quarter
-dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits larger time bands.xlsx"),
+dow_large <-  read.xlsx(here::here("data", "Distribution of Waits larger time bands.xlsx"),
                         sheet = "IPDC Clinical Prioritisation") %>%
   #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   clean_names(use_make_names = FALSE) %>%
@@ -197,7 +197,7 @@ dow_large <-  read.xlsx(here::here("data", "snapshot", "Distribution of Waits la
            fill = list(`number_seen/on_list` = 0))
 
 #2.4 - Additions by HBT ----
-addrem <- read.xlsx(here::here("data","snapshot", "Removal Reason excl. Lothian Dental.xlsx"),
+addrem <- read.xlsx(here::here("data", "Removal Reason excl. Lothian Dental.xlsx"),
                     sheet = "IPDC Clinical Prioritisation") %>%
   #make column names sensible but allow `90th percentile` to start with a number rather than "x"
   clean_names(use_make_names = FALSE) %>%
