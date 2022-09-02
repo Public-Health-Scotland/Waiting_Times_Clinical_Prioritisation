@@ -12,6 +12,9 @@ gc()
 project_directory <- rstudioapi::getActiveProject()
 if (!is.null(project_directory)){ setwd(project_directory) }
 
+# Create output directory
+dir.create(here::here("shiny_app", "data"))
+
 processed_data_folder <- "data/processed data/"
 shiny_data_folder <- "shiny_app/data/"
 
