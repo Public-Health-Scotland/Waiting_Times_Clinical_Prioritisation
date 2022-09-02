@@ -2,7 +2,7 @@
 
 This repository contains the Reproducible Analytical Pipeline (RAP) to produce the quarterly statistics on clinical prioritisation, part of the [Stage of Treatment (SoT) publication](https://publichealthscotland.scot/publications/nhs-waiting-times-stage-of-treatment/).
 
-The repository also contains the necessary code to run and deploy the accompanying shiny app.
+The repository also contains the necessary code to run and deploy the accompanying [shiny app](https://scotland.shinyapps.io/phs-waiting-times-cp/).
 
 The publication, released on 06 September 2022, is a one-off retrospective analysis of data relating to the Scottish Government's clinical prioritisation Framework, and covers the period July 2021 to June 2022. The Framework became no longer applicable as of 22 July 2022.  
 
