@@ -350,7 +350,7 @@ numbers$activity_table_output <- DT::renderDataTable({
                             timescale=input$timescale_choice),
              rows_to_display = 25,
              # These columns have thousand separator added
-             add_separator_cols = c(7,8,9))
+             add_separator_cols = c(7,8))
   })
 
 })
