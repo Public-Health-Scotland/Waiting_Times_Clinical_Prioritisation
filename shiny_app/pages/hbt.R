@@ -141,7 +141,6 @@ plots$waits_hbt_plot_ongoing <- renderPlotly({
 
   make_dow_hbt_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         healthboards = input$hbt_filter_hbt,
-                        n_hbts = length(input$hbt_filter_hbt),
                         waiting_status = "waiting",
                         qend = input$quarter_end_spec_hbt,
                         spec = input$spec_filter_hbt)
@@ -157,7 +156,6 @@ plots$waits_hbt_plot_admitted <- renderPlotly({
 
   make_dow_hbt_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         healthboards = input$hbt_filter_hbt,
-                        n_hbts = length(input$hbt_filter_hbt),
                         waiting_status = "admitted",
                         qend = input$quarter_end_spec_hbt,
                         spec = input$spec_filter_hbt)

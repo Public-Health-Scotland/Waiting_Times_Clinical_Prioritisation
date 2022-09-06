@@ -132,10 +132,10 @@ waits_hbt <- function(input_data, waiting_status,
     unique()
 
   # Check there aren't 0 waits in the categories
-  validate(
-    need(!(unique(dataset$total)==0),
-         "No patients in this selection.")
-  )
+  # validate(
+  #   need(!(unique(dataset$total)==0),
+  #        "No patients in this selection.")
+  # )
 
 
   yaxis_title <- hbt
@@ -173,13 +173,13 @@ waits_hbt <- function(input_data, waiting_status,
       barmode = "stack") %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
-
+  
   return(p)
 
 }
 
 # Calls waits_hbt and wraps them in facetted view for chosen waiting_status
-make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
+make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"),
                                   waiting_status, qend, spec){
 
   validate(
@@ -187,22 +187,27 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
          "There are no entries matching your selection. Please choose again.")
   )
 
-  plot_list <- vector("list", length = n_hbts) #initialize empty list to store plots
 
   # Get health boards in order by descending P2 proportion
   hb_ordered <- data %>%
+    group_by(across(c(-urgency, -`number_seen/on_list`, -weeks))) %>%
+    mutate(total = sum(`number_seen/on_list`)) %>%
+    ungroup %>% 
     filter(specialty == spec,
            date==get_short_date(qend),
-           nhs_board_of_treatment %in% healthboards) %>%
+           nhs_board_of_treatment %in% healthboards,
+           total != 0) %>%
     select("nhs_board_of_treatment", "p2_proportion") %>%
     unique() %>%
     arrange(desc(p2_proportion)) %>%
     .$nhs_board_of_treatment
 
+plot_list <- vector("list", length = length(hb_ordered)) #initialize empty list to store plots
+
   #create patients waiting DoW plots for each spec
   for(i in seq_along(hb_ordered)){
 
-    if(i < n_hbts){
+    if(i < length(hb_ordered)){
       hbt_plot <- waits_hbt(input_data = data,
                                waiting_status = waiting_status,
                                qend=qend,
@@ -219,19 +224,23 @@ make_dow_hbt_suplots <- function(data, healthboards = c("NHS Scotland"), n_hbts,
                                legend = TRUE)
     }
 
-    plot_list[[i]] <- hbt_plot #save plot
+    # save plot
+    if(is.null(hbt_plot)){
+      plot_list[[i]] <- plotly_empty()
+    }
+    else{
+      plot_list[[i]] <- hbt_plot
+    }
   }
 
   plot_title <- case_when(waiting_status == "waiting" ~ "Patients waiting for treatment at quarter end",
                           waiting_status == "admitted" ~ "Patients admitted for treatment during quarter",
                           TRUE ~ "")
-
-  # Create annotations for graphs
   # Create annotations for graphs
   annotations = make_annotation(y_choice=0.95)
 
   #create facetted plot by specialty
-  subplot(plot_list, nrows=n_hbts, shareX = TRUE, titleY = TRUE) %>%
+  subplot(plot_list, nrows=length(hb_ordered), shareX = TRUE, titleY = TRUE) %>%
     layout(title=plot_title, margin = list(b = 10, t = 40), annotations = annotations) %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
