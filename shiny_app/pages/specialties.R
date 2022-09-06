@@ -155,7 +155,6 @@ plots$waits_spec_plot_ongoing <- renderPlotly({
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
-                   n_specs = length(input$specialty_filter),
                    waiting_status = "waiting",
                    qend = input$quarter_end_spec,
                    hbt = input$hbt_filter_spec)
@@ -171,7 +170,6 @@ plots$waits_spec_plot_admitted <- renderPlotly({
   make_dow_spec_suplots(data = app_data[["dow_4wk_qtr_pub_jun"]],
                         plotdata=app_data[["hb_plotdata_jun"]],
                    specialties = input$specialty_filter,
-                   n_specs = length(input$specialty_filter),
                    waiting_status = "admitted",
                    qend = input$quarter_end_spec,
                    hbt = input$hbt_filter_spec)

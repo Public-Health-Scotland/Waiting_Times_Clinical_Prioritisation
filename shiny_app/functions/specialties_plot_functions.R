@@ -174,7 +174,7 @@ waits_specs <- function(input_data, waiting_status,
 }
 
 #calls wait_specs and wraps them in facetted view for chosen waiting_status
-make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialties"), n_specs,
+make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialties"),
                              waiting_status, qend, hbt){
 
   validate(
@@ -183,23 +183,28 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
   )
 
 
-  plot_list <- vector("list", length = n_specs) #initialize empty list to store plots
 
   # Get specialties in order by descending P2 proportion
   specs_ordered <- data %>%
+    group_by(across(c(-urgency, -`number_seen/on_list`, -weeks))) %>%
+    mutate(total = sum(`number_seen/on_list`)) %>%
+    ungroup %>% 
     filter(specialty %in% specialties,
            date==get_short_date(qend),
-           nhs_board_of_treatment == hbt) %>%
+           nhs_board_of_treatment == hbt,
+           total != 0) %>%
     select("specialty", "p2_proportion") %>%
     unique() %>%
     arrange(desc(p2_proportion)) %>%
     .$specialty
 
+  plot_list <- vector("list", length = length(specs_ordered)) #initialize empty list to store plots
+  
 
   #create patients waiting DoW plots for each spec
   for(i in seq_along(specs_ordered)){
 
-    if(i < n_specs){
+    if(i < length(specs_ordered)){
       spec_plot <- waits_specs(input_data = data,
                                waiting_status = waiting_status,
                                qend=input$quarter_end_spec,
@@ -227,7 +232,7 @@ make_dow_spec_suplots <- function(data, plotdata, specialties = c("All Specialti
   annotations = make_annotation(y_choice=0.95)
 
   #create facetted plot by specialty
-  subplot(plot_list, nrows=n_specs, shareX = TRUE, titleY = TRUE) %>%
+  subplot(plot_list, nrows=length(specs_ordered), shareX = TRUE, titleY = TRUE) %>%
     layout(title=plot_title, margin = list(b = 10, t = 40),annotations = annotations) %>% #split by group
     # leaving only save plot button
     config(displaylogo = F, displayModeBar = TRUE, modeBarButtonsToRemove = bttn_remove )
