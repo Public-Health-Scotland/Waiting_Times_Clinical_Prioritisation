@@ -134,7 +134,7 @@ waits_hbt <- function(input_data, waiting_status,
   # Check there aren't 0 waits in the categories
   validate(
     need(!(unique(dataset$total)==0),
-         "No individuals in this selection.")
+         "No patients in this selection.")
   )
 
 
