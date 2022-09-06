@@ -63,7 +63,7 @@ You can password protect the app for pre-release access.
 
 * Run the app to check that the login page is active and test your credentials.
 
-* Note: the `admin` folder is ignored but git to prevent the sharing credentials on Github.
+* Note: the `admin` folder is ignored by git to prevent sharing credentials on Github.
 
 ### Deploying the shiny app
 
