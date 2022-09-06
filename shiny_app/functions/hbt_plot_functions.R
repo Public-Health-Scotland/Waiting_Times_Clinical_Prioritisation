@@ -131,6 +131,12 @@ waits_hbt <- function(input_data, waiting_status,
     ungroup() %>%
     unique()
 
+  # Check there aren't 0 waits in the categories
+  validate(
+    need(!(unique(dataset$total)==0),
+         "No individuals in this selection.")
+  )
+
 
   yaxis_title <- hbt
 
