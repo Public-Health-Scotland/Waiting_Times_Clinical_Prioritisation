@@ -41,7 +41,7 @@ spec_waits_table <- function(input_data,
     mutate(weeks = factor(weeks, levels=get_pretty_weeks(unique(input_data$weeks)))
     ) %>%
     make_cols_factors(c("ongoing_completed", "specialty", "urgency")) %>%
-    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, `number_seen/on_list`)
+    select(date, ongoing_completed, nhs_board_of_treatment, specialty, urgency, weeks, `number_seen/on_list`)
 
   names(dataset) <- replace_colnames(names(dataset))
 
