@@ -1,30 +1,38 @@
 ####################### Setup #######################
+if(!require('pacman')){
+  install.packages('pacman')
+} #loads pacman or installs and then loads it if necessary
 
-# Shiny packages
-library(shiny)
-library(shinycssloaders)
-library(shinyjs)
-library(shinyWidgets)
-library(shinyBS)
-library(shinymanager)
 
-# Data wrangling packages
-library(tidyr)
-library(dplyr)
-library(magrittr)
-library(lubridate)
-library(glue)
+p_load(shiny, shinycssloaders, shinyjs, shinyWidgets, shinyBS, shinymanager,
+       tidyr, dplyr, magrittr, lubridate, glue, ggplot2, plotly, sparkline,
+       phsstyles, htmlwidgets)
 
-# Plotting packages
-library(ggplot2)
-library(plotly)
-library(sparkline)
-
-# PHS styling packages
-library(phsstyles)
-
-#html dpendencies
-library(htmlwidgets)
+# # Shiny packages
+# library(shiny)
+# library(shinycssloaders)
+# library(shinyjs)
+# library(shinyWidgets)
+# library(shinyBS)
+# library(shinymanager)
+# 
+# # Data wrangling packages
+# library(tidyr)
+# library(dplyr)
+# library(magrittr)
+# library(lubridate)
+# library(glue)
+# 
+# # Plotting packages
+# library(ggplot2)
+# library(plotly)
+# library(sparkline)
+# 
+# # PHS styling packages
+# library(phsstyles)
+# 
+# #html dpendencies
+# library(htmlwidgets)
 
 
 # Load packages and functions, and data wrangling
