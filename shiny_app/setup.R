@@ -1,12 +1,18 @@
 ####################### Setup #######################
+
+# PHS styling packages
+library(phsstyles)
+
+#Shiny, wrangling, plotting, and html packages
+#loads pacman or installs and then loads it if necessary
 if(!require('pacman')){
   install.packages('pacman')
-} #loads pacman or installs and then loads it if necessary
+} 
 
 
 p_load(shiny, shinycssloaders, shinyjs, shinyWidgets, shinyBS, shinymanager,
        tidyr, dplyr, magrittr, lubridate, glue, ggplot2, plotly, sparkline,
-       phsstyles, htmlwidgets)
+       phsstyles, htmlwidgets, shinydashboard)
 
 # # Shiny packages
 # library(shiny)
@@ -28,8 +34,7 @@ p_load(shiny, shinycssloaders, shinyjs, shinyWidgets, shinyBS, shinymanager,
 # library(plotly)
 # library(sparkline)
 # 
-# # PHS styling packages
-# library(phsstyles)
+
 # 
 # #html dpendencies
 # library(htmlwidgets)
